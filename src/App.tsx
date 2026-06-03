@@ -2,18 +2,17 @@ import React from "react";
 import {
   AlertCircle,
   BarChart3,
+  Bike,
   CheckCircle2,
+  CloudRain,
   Database,
-  FileJson,
-  FileText,
   GitMerge,
-  Lightbulb,
   LoaderCircle,
+  MapPinned,
   Play,
-  RefreshCw,
   Rows3,
+  Route,
   Search,
-  Sparkles,
   Workflow,
 } from "lucide-react";
 
@@ -31,23 +30,22 @@ import {
 } from "./pdlRuntime";
 
 type RuntimeState = "loading" | "ready" | "error";
-type OutputFormat = "csv" | "jsonl";
 
-interface Recipe {
+interface StoryStep {
   id: string;
+  number: string;
   title: string;
-  stage: string;
-  summary: string;
   question: string;
+  summary: string;
+  pdlLabel: string;
+  algrafLabel: string;
   pdlSource: string;
   algrafSource: string;
-  graphLabel: string;
   evidence: string[];
   conclusion: string;
-  nextQuestion: string;
 }
 
-interface RunSnapshot {
+interface StepSnapshot {
   pdlDisplay: PdlRunResult | null;
   pdlCsv: PdlRunResult | null;
   pdlDiagnostics: PdlEditorDiagnostic[];
@@ -56,277 +54,418 @@ interface RunSnapshot {
   error: string | null;
 }
 
-const RAW_ORDERS = `order_id,order_date,customer_id,region,status,gross_amount,discount,channel,units
-1001,2026-01-03,C001,North, completed ,120,10,Web,2
-1002,2026-01-04,C002,South,pending,75,,Store,1
-1003,2026-01-05,C003,West,completed,200,25,Partner,3
-1004,2026-01-05,C001,North,completed,80,0,Web,1
-1005,2026-01-06,C004,East,returned,50,5,Store,1
-1006,2026-01-07,C005,West,completed,150,,Web,2
-1007,2026-01-08,C006,South,completed,90,0,Partner,1
-1008,2026-01-09,C002,South,completed,130,15,Web,2
-1009,2026-01-10,C003,West, completed,210,20,Store,4
-1010,2026-01-11,C004,East,completed,70,0,Web,1
-1011,2026-01-12,C005,West,cancelled,95,,Partner,1
-1012,2026-01-13,C006,South,completed,160,10,Store,2
+type StepSnapshots = Record<string, StepSnapshot>;
+
+const TRIPS_RAW = `trip_id,trip_date,started_at,rider_type,pass_type,bike_type,start_station_id,end_station_id,duration_min,distance_km,fare_usd,status
+T1001,2026-04-01,07:42,member,monthly,classic,S01,S04,18,4.2,3.80,completed
+T1002,2026-04-01,08:10,member,monthly,classic,S02,S05,22,5.1,4.40,completed
+T1003,2026-04-01,12:35,visitor,single,ebike,S08,S03,34,7.8,9.20,completed
+T1004,2026-04-01,17:55,member,monthly,ebike,S04,S01,16,4.0,4.10,completed
+T1005,2026-04-02,07:25,member,monthly,classic,S01,S06,21,4.9,4.20,completed
+T1006,2026-04-02,09:05,visitor,day,classic,S03,S07,46,9.6,11.50,completed
+T1007,2026-04-02,18:20,member,monthly,classic,S05,S02,24,5.4,4.60,completed
+T1008,2026-04-03,08:30,member,monthly,ebike,S02,S04,15,3.7,4.00,completed
+T1009,2026-04-03,11:12,visitor,single,classic,S07,S03,29,6.1,7.70,completed
+T1010,2026-04-03,16:45,member,monthly,classic,S06,S01,20,4.6,4.00,completed
+T1011,2026-04-04,10:18,visitor,day,ebike,S08,S09,52,11.2,15.10,completed
+T1012,2026-04-04,13:44,visitor,day,classic,S09,S08,39,8.3,10.80,completed
+T1013,2026-04-04,15:20,member,monthly,cargo,S04,S10,31,5.8,7.10,completed
+T1014,2026-04-05,08:08,member,monthly,classic,S01,S05,19,4.1,3.90,completed
+T1015,2026-04-05,14:15,visitor,single,ebike,S03,S08,43,9.4,13.80,completed
+T1016,2026-04-05,19:02,member,monthly,classic,S05,S01,22,4.7,4.30,completed
+T1017,2026-04-06,07:48,member,monthly,classic,S02,S06,23,5.0,4.50,completed
+T1018,2026-04-06,08:12,member,monthly,classic,S01,S04,17,4.2,3.70,completed
+T1019,2026-04-06,12:10,visitor,single,ebike,S08,S03,36,8.0,9.80,cancelled
+T1020,2026-04-06,17:36,member,monthly,ebike,S04,S02,14,3.5,3.90,completed
+T1021,2026-04-07,07:55,member,monthly,classic,S06,S01,20,4.4,4.00,completed
+T1022,2026-04-07,09:40,visitor,day,classic,S03,S07,48,9.9,12.20,completed
+T1023,2026-04-07,18:08,member,monthly,classic,S05,S02,26,5.5,4.90,completed
+T1024,2026-04-08,08:16,member,monthly,ebike,S02,S04,15,3.8,4.10,completed
+T1025,2026-04-08,11:30,visitor,single,classic,S07,S03,33,6.8,8.60,completed
+T1026,2026-04-08,16:25,member,monthly,cargo,S04,S10,35,6.2,7.60,completed
+T1027,2026-04-09,07:32,member,monthly,classic,S01,S06,22,4.9,4.30,completed
+T1028,2026-04-09,13:20,visitor,day,ebike,S08,S09,57,12.4,16.50,completed
+T1029,2026-04-09,17:42,member,monthly,classic,S06,S01,21,4.7,4.20,completed
+T1030,2026-04-10,08:05,member,monthly,classic,S02,S05,24,5.1,4.60,completed
+T1031,2026-04-10,12:14,visitor,single,classic,S03,S08,41,8.7,11.70,maintenance
+T1032,2026-04-10,18:52,member,monthly,ebike,S05,S02,19,4.5,4.80,completed
+T1033,2026-04-11,10:25,visitor,day,ebike,S08,S09,64,13.5,18.20,completed
+T1034,2026-04-11,11:40,visitor,day,classic,S09,S03,44,9.0,12.10,completed
+T1035,2026-04-11,15:18,member,monthly,classic,S04,S01,18,4.0,3.80,completed
+T1036,2026-04-12,08:42,member,monthly,classic,S01,S05,20,4.3,4.10,completed
+T1037,2026-04-12,14:12,visitor,single,ebike,S03,S08,47,9.8,14.30,completed
+T1038,2026-04-12,19:05,member,monthly,classic,S05,S01,23,4.8,4.40,completed
+T1039,2026-04-13,07:58,member,monthly,classic,S02,S06,25,5.2,4.80,completed
+T1040,2026-04-13,08:22,member,monthly,classic,S01,S04,18,4.1,3.90,completed
+T1041,2026-04-13,17:18,member,monthly,ebike,S04,S02,16,3.7,4.20,completed
+T1042,2026-04-14,07:46,member,monthly,classic,S06,S01,19,4.4,3.90,completed
+T1043,2026-04-14,12:05,visitor,single,classic,S07,S03,35,7.0,9.10,completed
+T1044,2026-04-14,18:36,member,monthly,classic,S05,S02,27,5.8,5.10,completed
 `;
 
-const CUSTOMERS = `customer_id,segment,signup_month
-C001,Enterprise,2025-11
-C002,SMB,2025-10
-C003,Enterprise,2025-08
-C004,Consumer,2025-09
-C005,SMB,2025-12
-C006,Consumer,2026-01
+const STATIONS = `station_id,station_name,zone,capacity,opened_year
+S01,Central Station,Downtown,32,2021
+S02,Library Plaza,Downtown,28,2020
+S03,River Park,Riverfront,22,2022
+S04,Market Hall,Market,26,2021
+S05,North Campus,Campus,24,2020
+S06,Science Center,Campus,18,2023
+S07,Marina Gate,Riverfront,20,2022
+S08,Museum Loop,Cultural,30,2021
+S09,Harbor Point,Riverfront,16,2023
+S10,Warehouse Row,Market,14,2024
 `;
 
-const CLEANING_PIPELINE = `load "orders_raw.csv"
+const WEATHER_DAILY = `trip_date,temp_f,precip_in,wind_mph,condition
+2026-04-01,62,0.00,8,clear
+2026-04-02,65,0.00,6,clear
+2026-04-03,58,0.18,13,rain
+2026-04-04,61,0.04,10,cloudy
+2026-04-05,67,0.00,7,clear
+2026-04-06,54,0.32,16,rain
+2026-04-07,56,0.21,14,rain
+2026-04-08,63,0.00,9,clear
+2026-04-09,66,0.00,5,clear
+2026-04-10,59,0.08,12,cloudy
+2026-04-11,70,0.00,6,clear
+2026-04-12,73,0.00,7,clear
+2026-04-13,57,0.27,15,rain
+2026-04-14,60,0.11,11,cloudy
+`;
+
+const CLEANED_TRIPS_PIPELINE = `load "trips_raw.csv"
   | filter lower(trim("status")) == "completed"
-  | mutate
-      "net_revenue" = "gross_amount" - coalesce("discount", 0),
-      "region_channel" = concat(upper(trim("region")), lit(" / "), lower(trim("channel"))),
-      "value_band" = if_else("gross_amount" >= 150, lit("large"), lit("standard"))
   | select
-      "order_id",
-      "order_date",
-      "customer_id",
-      "region",
-      "channel",
-      "net_revenue",
-      "units",
-      "value_band",
-      "region_channel"
-  | sort "order_date"
+      "trip_id",
+      "trip_date",
+      "rider_type",
+      "pass_type",
+      "bike_type",
+      "start_station_id",
+      "end_station_id",
+      "duration_min",
+      "distance_km",
+      "fare_usd"
+  | sort "trip_date", "trip_id"
 `;
 
-const RECIPES: Recipe[] = [
+const STORY_STEPS: StoryStep[] = [
   {
-    id: "clean-orders",
-    title: "Clean Raw Orders",
-    stage: "Prepare",
-    summary: "Normalize statuses, remove non-completed rows, calculate net revenue, and keep a tidy table.",
-    question: "Which rows are fit for analysis?",
-    pdlSource: CLEANING_PIPELINE,
-    graphLabel: "Order-level scatter",
-    evidence: [
-      "Only completed orders should enter revenue analysis; pending, returned, and cancelled rows stay out.",
-      "Status values need normalization because the raw export includes extra spaces.",
-      "Net revenue is derived from gross amount minus discount, with blank discounts treated as zero.",
-    ],
-    conclusion:
-      "The first finding is about data quality: after cleaning, 9 of 12 order rows are valid completed transactions. That gives us a defensible table before any chart tells a business story.",
-    nextQuestion: "After the eligible rows are stable, summarize revenue by region, segment, or day.",
-    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Completed orders by date") {
-    Theme(name: "minimal")
-    Parse(column: order_date, as: "date", format: "%Y-%m-%d")
-    Scale(fill: region, palette: "accent")
-    Scale(size: units, range: [3, 9], label: "Units")
-    Guide(axis: x, label: "Order date")
-    Guide(axis: y, label: "Net revenue")
+    id: "eligible-rides",
+    number: "01",
+    title: "Establish the Valid Trip Set",
+    question: "Which rides can we analyze?",
+    summary:
+      "Start by removing cancelled and maintenance rows, then keep the trip fields used by the first exploratory chart.",
+    pdlLabel: "clean-valid-rides.pdl",
+    algrafLabel: "duration-distance.ag",
+    pdlSource: `let cleaned =
+${indentPipeline(CLEANED_TRIPS_PIPELINE)}
 
-    Space(order_date * net_revenue) {
+cleaned
+  | select
+      "trip_id",
+      "trip_date",
+      "rider_type",
+      "bike_type",
+      "duration_min",
+      "distance_km",
+      "fare_usd"
+  | sort "trip_date", "trip_id"
+`,
+    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Valid bike-share trips") {
+    Theme(name: "minimal")
+    Scale(fill: rider_type, palette: "accent", label: "Rider type")
+    Scale(size: fare_usd,
+          range: [3, 10],
+          breaks: [4, 8, 12, 16],
+          labels: ["$4", "$8", "$12", "$16"],
+          label: "Fare")
+    Guide(axis: x, label: "Distance (km)")
+    Guide(axis: y, label: "Duration (min)")
+
+    Space(distance_km * duration_min) {
         Point(
-            fill: region,
-            size: units,
-            alpha: 0.78,
-            tooltip: [order_id, customer_id, region, channel, net_revenue],
-            highlight: region
+            fill: rider_type,
+            size: fare_usd,
+            alpha: 0.72,
+            tooltip: [trip_id, trip_date, rider_type, bike_type, fare_usd],
+            highlight: rider_type
         )
     }
 }
 `,
-  },
-  {
-    id: "region-revenue",
-    title: "Summarize Regions",
-    stage: "Aggregate",
-    summary: "Turn order rows into regional metrics with grouped revenue, order count, and total units.",
-    question: "Where is revenue concentrated?",
-    pdlSource: `let cleaned =
-${indentPipeline(CLEANING_PIPELINE)}
-
-cleaned
-  | group_by "region"
-  | agg
-      sum("net_revenue") as "net_revenue",
-      count() as "orders",
-      sum("units") as "units"
-  | sort "net_revenue" desc
-`,
-    graphLabel: "Horizontal revenue bar chart",
     evidence: [
-      "West contributes 515 in net revenue, more than any other region in this sample.",
-      "South follows with 355, while North and East trail with smaller completed-order totals.",
-      "The aggregation keeps order count and units available for follow-up checks.",
+      "The valid set removes cancelled and maintenance events before any metric is calculated.",
+      "The table contains only fields used by the scatterplot and tooltip.",
+      "Visitor rides tend to sit farther right and higher up: longer distances and longer durations.",
     ],
     conclusion:
-      "Regional revenue is concentrated in the West. The chart makes that visible, but the PDL table gives the exact totals and keeps the result auditable.",
-    nextQuestion: "Check whether West is strong because of customer segment mix, channel mix, or unusually large orders.",
-    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Net revenue by region") {
-    Theme(name: "minimal")
-    Scale(fill: region, palette: "accent")
-    Guide(axis: x, label: "Net revenue")
-    Guide(axis: y, label: "Region")
+      "The service has two visible ride modes: compact member commuting and longer visitor leisure rides. That split should drive the next summaries.",
+  },
+  {
+    id: "daily-demand",
+    number: "02",
+    title: "Compare Daily Demand by Rider Type",
+    question: "Does demand behave differently for members and visitors?",
+    summary:
+      "Aggregate the cleaned trips by day and rider type so the chart can show volume and revenue without carrying trip-level fields.",
+    pdlLabel: "daily-demand.pdl",
+    algrafLabel: "daily-demand.ag",
+    pdlSource: `let cleaned =
+${indentPipeline(CLEANED_TRIPS_PIPELINE)}
 
-    Space(net_revenue * region) {
-        Bar(fill: region, alpha: 0.86)
+cleaned
+  | group_by "trip_date", "rider_type"
+  | agg
+      count() as "trips",
+      sum("fare_usd") as "revenue"
+  | sort "trip_date", "rider_type"
+`,
+    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Daily trips by rider type") {
+    Theme(name: "minimal")
+    Parse(column: trip_date, as: "date", format: "%Y-%m-%d")
+    Scale(stroke: rider_type, palette: "accent", label: "Rider type")
+    Scale(fill: rider_type, palette: "accent", label: "Rider type")
+    Scale(size: revenue,
+          range: [3, 10],
+          breaks: [10, 25, 50],
+          labels: ["$10", "$25", "$50"],
+          label: "Revenue")
+    Scale(axis: y, domain: [0, 4], breaks: [0, 1, 2, 3, 4], labels: ["0", "1", "2", "3", "4"], expand: [0, 0.05])
+    Guide(axis: x, label: "Date", timeFormat: "%b %-d", tickLabelRows: 2)
+    Guide(axis: y, label: "Trips")
+
+    Space(trip_date * trips) {
+        Line(stroke: rider_type, strokeWidth: 2.4)
+        Point(
+            fill: rider_type,
+            size: revenue,
+            alpha: 0.86,
+            tooltip: [trip_date, rider_type, trips, revenue],
+            highlight: rider_type
+        )
     }
 }
 `,
+    evidence: [
+      "The final table is one row per date and rider type.",
+      "Revenue remains in the table because the chart uses it as point size.",
+      "Visitor demand spikes on weekend dates while member demand is steadier across weekdays.",
+    ],
+    conclusion:
+      "Members provide the predictable base of demand; visitors create the peaks. Operations should plan for both rather than averaging them together.",
   },
   {
-    id: "segment-revenue",
-    title: "Join Segments",
-    stage: "Enrich",
-    summary: "Join customer attributes to the cleaned orders before grouping by market segment.",
-    question: "Which customer segment carries the business?",
-    pdlSource: `let customers =
-  load "customers.csv"
-  | select "customer_id", "segment"
+    id: "station-context",
+    number: "03",
+    title: "Join Station Context",
+    question: "Which station zones are producing demand?",
+    summary:
+      "Join trip starts to station metadata, then aggregate by zone. The station table supplies context the raw trips do not contain.",
+    pdlLabel: "start-zone-demand.pdl",
+    algrafLabel: "zone-revenue.ag",
+    pdlSource: `let cleaned =
+${indentPipeline(CLEANED_TRIPS_PIPELINE)}
 
-let cleaned =
-${indentPipeline(CLEANING_PIPELINE)}
+let start_stations =
+  load "stations.csv"
+  | select
+      "station_id" as "start_station_id",
+      "zone",
+      "capacity"
 
 cleaned
-  | join customers on "customer_id" kind left
-  | group_by "segment"
+  | join start_stations on "start_station_id" kind left
+  | group_by "zone"
   | agg
-      sum("net_revenue") as "revenue",
-      count() as "orders",
-      sum("units") as "units"
+      count() as "trips",
+      sum("fare_usd") as "revenue",
+      mean("duration_min") as "avg_duration"
   | sort "revenue" desc
 `,
-    graphLabel: "Segment comparison",
-    evidence: [
-      "The customers lookup adds segment labels through the shared customer_id key.",
-      "Enterprise customers account for 555 in revenue after the join.",
-      "Consumer and SMB are closer together, with 310 and 265 respectively.",
-    ],
-    conclusion:
-      "The customer context changes the interpretation: Enterprise is the leading segment, so the regional result is partly a segment story, not just a geography story.",
-    nextQuestion: "Inspect whether Enterprise revenue is coming from many customers or a few high-value accounts.",
-    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Revenue by customer segment") {
+    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Start-zone revenue") {
     Theme(name: "minimal")
-    Scale(fill: segment, palette: "accent")
-    Guide(axis: x, label: "Segment")
-    Guide(axis: y, label: "Revenue")
+    Scale(fill: zone, palette: "accent", label: "Start zone")
+    Scale(size: trips,
+          range: [4, 12],
+          breaks: [4, 8, 12],
+          labels: ["4", "8", "12"],
+          label: "Trips")
+    Scale(axis: x,
+          breaks: [0, 100, 200, 300],
+          labels: ["$0", "$100", "$200", "$300"],
+          expand: [0, 0.05])
+    Guide(axis: x, label: "Revenue")
+    Guide(axis: y, label: "Start zone")
 
-    Space(segment * revenue) {
-        Bar(fill: segment, alpha: 0.86)
+    Space(revenue * zone) {
+        Bar(fill: zone, alpha: 0.84)
+        Point(
+            fill: "#24343a",
+            size: trips,
+            alpha: 0.85,
+            tooltip: [zone, trips, revenue, avg_duration]
+        )
     }
 }
 `,
+    evidence: [
+      "The trip table is joined only after filtering to valid completed rides.",
+      "The prepared result carries zone, trips, revenue, and avg_duration because each appears in the chart.",
+      "Riverfront and Cultural stations are important visitor-oriented revenue zones, while Downtown and Campus anchor commuter volume.",
+    ],
+    conclusion:
+      "Station geography explains more than raw trip counts. Visitor-heavy zones generate larger revenue per ride, while commuter zones produce steadier throughput.",
   },
   {
-    id: "daily-trend",
-    title: "Trend Over Time",
-    stage: "Model Shape",
-    summary: "Collapse transaction rows into a daily series that can be plotted as a stable trend.",
-    question: "What changed over the collection window?",
+    id: "weather-context",
+    number: "04",
+    title: "Join Weather Context",
+    question: "Does weather change ride behavior?",
+    summary:
+      "Join daily weather to valid trips, aggregate by date and condition, and compare precipitation with average duration.",
+    pdlLabel: "weather-behavior.pdl",
+    algrafLabel: "weather-duration.ag",
     pdlSource: `let cleaned =
-${indentPipeline(CLEANING_PIPELINE)}
+${indentPipeline(CLEANED_TRIPS_PIPELINE)}
+
+let weather =
+  load "weather_daily.csv"
+  | select
+      "trip_date",
+      "condition",
+      "precip_in"
 
 cleaned
-  | group_by "order_date"
+  | join weather on "trip_date" kind left
+  | group_by "trip_date", "condition", "precip_in"
   | agg
-      sum("net_revenue") as "revenue",
-      count() as "orders"
-  | sort "order_date"
+      count() as "trips",
+      mean("duration_min") as "avg_duration",
+      sum("fare_usd") as "revenue"
+  | sort "trip_date"
 `,
-    graphLabel: "Daily revenue trend",
-    evidence: [
-      "The daily table collapses order-level noise into one row per order date.",
-      "January 5 is the local high point because two completed orders land on the same day.",
-      "The series has visible gaps, which is important context before calling it a trend.",
-    ],
-    conclusion:
-      "The sample does not prove a durable trend, but it does show where activity clusters. The honest conclusion is a short-window peak, not a forecast.",
-    nextQuestion: "Bring in more days before fitting a trend or comparing periods.",
-    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Daily completed-order revenue") {
+    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Weather and ride duration") {
     Theme(name: "minimal")
-    Parse(column: order_date, as: "date", format: "%Y-%m-%d")
-    Guide(axis: x, label: "Date")
-    Guide(axis: y, label: "Revenue")
+    Scale(fill: condition, palette: "accent", label: "Condition")
+    Scale(size: trips,
+          range: [4, 12],
+          breaks: [2, 3, 4],
+          labels: ["2", "3", "4"],
+          label: "Trips")
+    Scale(axis: x,
+          domain: [0, 0.35],
+          breaks: [0, 0.1, 0.2, 0.3],
+          labels: ["0", "0.1", "0.2", "0.3"],
+          expand: [0.02, 0])
+    Scale(axis: y,
+          breaks: [15, 25, 35, 45],
+          labels: ["15", "25", "35", "45"])
+    Guide(axis: x, label: "Precipitation (in)")
+    Guide(axis: y, label: "Average duration (min)")
 
-    Space(order_date * revenue) {
-        Line(stroke: "#2f6fbb", strokeWidth: 2.6)
-        Point(fill: "#e15b4f", size: 5)
+    Space(precip_in * avg_duration) {
+        Point(
+            fill: condition,
+            size: trips,
+            alpha: 0.82,
+            tooltip: [trip_date, condition, precip_in, trips, avg_duration, revenue],
+            highlight: condition
+        )
     }
 }
 `,
+    evidence: [
+      "Weather is joined by trip_date, not manually copied into the trip table.",
+      "The prepared table is one row per day and condition, with precipitation, trips, average duration, and revenue.",
+      "Rainy days show fewer points but not necessarily short rides; the sample suggests lower volume more than shorter duration.",
+    ],
+    conclusion:
+      "Weather appears to suppress volume more than ride length. The operational response is staffing/rebalancing capacity, not assuming all rainy-day rides are short.",
   },
   {
-    id: "channel-mix",
-    title: "Compare Channels",
-    stage: "Explain",
-    summary: "Keep two categorical dimensions in the summary and map them to grouped bars.",
-    question: "How do acquisition channels vary by region?",
+    id: "station-priority",
+    number: "05",
+    title: "Prioritize Rebalancing Attention",
+    question: "Which individual start stations need attention?",
+    summary:
+      "Join station names and capacity, then summarize start-station activity. This turns exploration into an operating priority list.",
+    pdlLabel: "station-priority.pdl",
+    algrafLabel: "station-throughput.ag",
     pdlSource: `let cleaned =
-${indentPipeline(CLEANING_PIPELINE)}
+${indentPipeline(CLEANED_TRIPS_PIPELINE)}
+
+let start_stations =
+  load "stations.csv"
+  | select
+      "station_id" as "start_station_id",
+      "station_name",
+      "zone",
+      "capacity"
 
 cleaned
-  | group_by "region", "channel"
+  | join start_stations on "start_station_id" kind left
+  | group_by "station_name", "zone", "capacity"
   | agg
-      sum("net_revenue") as "net_revenue",
-      count() as "orders"
-  | sort "region", "channel"
+      count() as "trips",
+      sum("fare_usd") as "revenue"
+  | sort "trips" desc
 `,
-    graphLabel: "Grouped regional channel chart",
-    evidence: [
-      "Region and channel are both retained in the grouped table, so the chart can compare mix.",
-      "West has completed revenue across partner, web, and store channels.",
-      "North and East only appear through web in this small sample.",
-    ],
-    conclusion:
-      "Channel mix explains part of the regional pattern: West is broader across channels, while some regions are represented by a single channel in the current data.",
-    nextQuestion: "Use a larger extract to see whether single-channel regions are real behavior or sample sparsity.",
-    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Regional revenue by channel") {
+    algrafSource: `Chart(data: "prepared.csv", width: 760, height: 470, title: "Start-station throughput") {
     Theme(name: "minimal")
-    Scale(fill: channel, palette: "accent")
-    Guide(axis: x, label: "Region and channel")
-    Guide(axis: y, label: "Net revenue")
+    Scale(fill: zone, palette: "accent", label: "Zone")
+    Scale(size: capacity,
+          range: [4, 12],
+          breaks: [16, 24, 32],
+          labels: ["16 docks", "24 docks", "32 docks"],
+          label: "Dock capacity")
+    Scale(axis: x, domain: [0, 8], breaks: [0, 2, 4, 6, 8], labels: ["0", "2", "4", "6", "8"], expand: [0, 0.05])
+    Guide(axis: x, label: "Trips")
+    Guide(axis: y, label: "Station")
 
-    Space((region / channel) * net_revenue) {
-        Bar(fill: channel, alpha: 0.88)
+    Space(trips * station_name) {
+        Bar(fill: zone, alpha: 0.84)
+        Point(
+            fill: "#24343a",
+            size: capacity,
+            alpha: 0.85,
+            tooltip: [station_name, zone, capacity, trips, revenue]
+        )
     }
 }
 `,
+    evidence: [
+      "Station names and capacity come from the station lookup, not the trip export.",
+      "The prepared output keeps the fields used by the priority chart and tooltip.",
+      "Stations with high trip counts and lower capacity are the first candidates for rebalancing review.",
+    ],
+    conclusion:
+      "The exploration ends with an action list: inspect high-throughput start stations against dock capacity before changing fleet allocation.",
   },
 ];
 
-const INVESTIGATION_STEPS = [
+const INTAKE_STEPS = [
   {
     icon: <Search size={18} aria-hidden="true" />,
-    title: "Where did this data come from?",
-    body: "Treat the orders table as an export from an operational system. Before analysis, inspect its grain, keys, messy values, and missing fields.",
+    title: "Start with trip events",
+    body: "The raw export includes operational rows that are not valid completed rides, so eligibility has to be explicit.",
   },
   {
     icon: <GitMerge size={18} aria-hidden="true" />,
-    title: "Can we join other context?",
-    body: "Ask whether another file explains the rows. Here, customers.csv can add segment context through customer_id.",
+    title: "Join context only when needed",
+    body: "Stations explain geography and capacity. Weather explains day-level conditions. Neither belongs in the first clean table.",
   },
   {
     icon: <Workflow size={18} aria-hidden="true" />,
-    title: "What table answers the question?",
-    body: "Use PDL to make the analytic table explicit: clean eligibility, derive net revenue, join lookup data, or aggregate.",
+    title: "Prepare one table per question",
+    body: "Each PDL program emits the smallest table that supports the chart and conclusion for that section.",
   },
   {
-    icon: <Lightbulb size={18} aria-hidden="true" />,
-    title: "What conclusion is justified?",
-    body: "Use Algraf for visual evidence, then write the conclusion narrowly enough that the prepared table supports it.",
+    icon: <BarChart3 size={18} aria-hidden="true" />,
+    title: "Render the evidence",
+    body: "Every section pairs the prepared table with an Algraf chart so the claim can be checked from source to SVG.",
   },
-];
-
-const SOURCE_QUESTIONS = [
-  "What is the row grain? One row appears to be one order event.",
-  "Which rows belong in revenue analysis? Only completed orders after status normalization.",
-  "Which fields are derived? Net revenue must be calculated; it is not a raw column.",
-];
-
-const JOIN_QUESTIONS = [
-  "Do the files share a stable key? Both tables include customer_id.",
-  "What does the lookup add? Segment and signup month give customer context.",
-  "What should we verify? One customer row per customer_id before joining.",
 ];
 
 export function App(): React.ReactElement {
@@ -335,29 +474,25 @@ export function App(): React.ReactElement {
   const [pdlState, setPdlState] = React.useState<RuntimeState>("loading");
   const [algrafState, setAlgrafState] = React.useState<RuntimeState>("loading");
   const [runtimeError, setRuntimeError] = React.useState<string | null>(null);
-  const [activeRecipeId, setActiveRecipeId] = React.useState(RECIPES[0].id);
-  const activeRecipe = RECIPES.find((recipe) => recipe.id === activeRecipeId) ?? RECIPES[0];
-  const [ordersCsv, setOrdersCsv] = React.useState(RAW_ORDERS);
-  const [customersCsv, setCustomersCsv] = React.useState(CUSTOMERS);
-  const [pdlSource, setPdlSource] = React.useState(activeRecipe.pdlSource);
-  const [algrafSource, setAlgrafSource] = React.useState(activeRecipe.algrafSource);
-  const [outputFormat, setOutputFormat] = React.useState<OutputFormat>("csv");
+  const [tripsCsv, setTripsCsv] = React.useState(TRIPS_RAW);
+  const [stationsCsv, setStationsCsv] = React.useState(STATIONS);
+  const [weatherCsv, setWeatherCsv] = React.useState(WEATHER_DAILY);
+  const [pdlSources, setPdlSources] = React.useState<Record<string, string>>(() =>
+    Object.fromEntries(STORY_STEPS.map((step) => [step.id, step.pdlSource])),
+  );
+  const [algrafSources, setAlgrafSources] = React.useState<Record<string, string>>(() =>
+    Object.fromEntries(STORY_STEPS.map((step) => [step.id, step.algrafSource])),
+  );
   const [running, setRunning] = React.useState(false);
-  const [snapshot, setSnapshot] = React.useState<RunSnapshot>({
-    pdlDisplay: null,
-    pdlCsv: null,
-    pdlDiagnostics: [],
-    algrafResult: null,
-    algrafDiagnostics: [],
-    error: null,
-  });
+  const [snapshots, setSnapshots] = React.useState<StepSnapshots>({});
 
   const files = React.useMemo(
     () => ({
-      "orders_raw.csv": ordersCsv,
-      "customers.csv": customersCsv,
+      "trips_raw.csv": tripsCsv,
+      "stations.csv": stationsCsv,
+      "weather_daily.csv": weatherCsv,
     }),
-    [customersCsv, ordersCsv],
+    [stationsCsv, tripsCsv, weatherCsv],
   );
 
   React.useEffect(() => {
@@ -394,11 +529,6 @@ export function App(): React.ReactElement {
     };
   }, []);
 
-  React.useEffect(() => {
-    setPdlSource(activeRecipe.pdlSource);
-    setAlgrafSource(activeRecipe.algrafSource);
-  }, [activeRecipe.algrafSource, activeRecipe.pdlSource]);
-
   const runWorkflow = React.useCallback(() => {
     if (!pdlRuntime || !algrafRuntime) {
       return;
@@ -407,37 +537,40 @@ export function App(): React.ReactElement {
     setRunning(true);
     window.setTimeout(() => {
       try {
-        const pdlEditorResponse: PdlEditorServiceResult = pdlRuntime.editorService(
-          pdlSource,
-          files,
-          { kind: "diagnostics" },
-          "memory/studio.pdl",
-        );
-        const pdlDiagnostics = pdlEditorResponse.diagnostics;
-        const pdlDisplay = pdlRuntime.run(pdlSource, files, outputFormat);
-        const pdlCsv = outputFormat === "csv" ? pdlDisplay : pdlRuntime.run(pdlSource, files, "csv");
-        const preparedCsv = pdlCsv.stdout ?? "";
-        const algrafFiles = preparedCsv ? { ...files, "prepared.csv": preparedCsv } : files;
-        const algrafResult = preparedCsv ? algrafRuntime.render(algrafSource, algrafFiles) : null;
+        const nextSnapshots: StepSnapshots = {};
 
-        setSnapshot({
-          pdlDisplay,
-          pdlCsv,
-          pdlDiagnostics,
-          algrafResult,
-          algrafDiagnostics: algrafResult?.diagnostics ?? [],
-          error: pdlEditorResponse.error ?? pdlDisplay.error ?? pdlCsv.error ?? algrafResult?.error ?? null,
-        });
+        for (const step of STORY_STEPS) {
+          const pdlSource = pdlSources[step.id] ?? step.pdlSource;
+          const algrafSource = algrafSources[step.id] ?? step.algrafSource;
+          const pdlEditorResponse: PdlEditorServiceResult = pdlRuntime.editorService(
+            pdlSource,
+            files,
+            { kind: "diagnostics" },
+            `memory/${step.id}.pdl`,
+          );
+          const pdlCsv = pdlRuntime.run(pdlSource, files, "csv");
+          const preparedCsv = pdlCsv.stdout ?? "";
+          const algrafFiles = preparedCsv ? { ...files, "prepared.csv": preparedCsv } : files;
+          const algrafResult = preparedCsv ? algrafRuntime.render(algrafSource, algrafFiles) : null;
+
+          nextSnapshots[step.id] = {
+            pdlDisplay: pdlCsv,
+            pdlCsv,
+            pdlDiagnostics: pdlEditorResponse.diagnostics,
+            algrafResult,
+            algrafDiagnostics: algrafResult?.diagnostics ?? [],
+            error: pdlEditorResponse.error ?? pdlCsv.error ?? algrafResult?.error ?? null,
+          };
+        }
+
+        setSnapshots(nextSnapshots);
       } catch (error: unknown) {
-        setSnapshot((current) => ({
-          ...current,
-          error: errorMessage(error),
-        }));
+        setRuntimeError(errorMessage(error));
       } finally {
         setRunning(false);
       }
     }, 0);
-  }, [algrafRuntime, algrafSource, files, outputFormat, pdlRuntime, pdlSource]);
+  }, [algrafRuntime, algrafSources, files, pdlRuntime, pdlSources]);
 
   React.useEffect(() => {
     if (pdlState !== "ready" || algrafState !== "ready") {
@@ -449,15 +582,20 @@ export function App(): React.ReactElement {
   }, [algrafState, pdlState, runWorkflow]);
 
   const runtimeReady = pdlState === "ready" && algrafState === "ready";
-  const preparedCsv = snapshot.pdlCsv?.stdout ?? "";
-  const algrafEditorFiles = React.useMemo(
-    () => (preparedCsv ? { ...files, "prepared.csv": preparedCsv } : files),
-    [files, preparedCsv],
-  );
-  const displayOutput = snapshot.pdlDisplay?.stdout ?? "";
-  const outputRows = outputFormat === "csv" ? countDataRows(displayOutput) : countJsonlRows(displayOutput);
-  const pdlDiagnosticCount = snapshot.pdlDiagnostics.length + (snapshot.pdlDisplay?.diagnostics.length ?? 0);
-  const algrafDiagnosticCount = snapshot.algrafDiagnostics.length;
+  const totalPreparedRows = STORY_STEPS.reduce((total, step) => {
+    const csv = snapshots[step.id]?.pdlCsv?.stdout ?? "";
+    return total + countDataRows(csv);
+  }, 0);
+  const totalDiagnostics = STORY_STEPS.reduce((total, step) => {
+    const snapshot = snapshots[step.id] ?? emptyStepSnapshot();
+    return (
+      total +
+      snapshot.pdlDiagnostics.length +
+      pdlRuntimeDiagnosticsForSnapshot(snapshot).length +
+      snapshot.algrafDiagnostics.length +
+      (snapshot.error ? 1 : 0)
+    );
+  }, 0);
 
   return (
     <div className="studio-shell">
@@ -478,34 +616,34 @@ export function App(): React.ReactElement {
       <main>
         <section className="hero">
           <div className="hero-copy">
-            <p className="eyebrow">Order export case study</p>
-            <h1>Start with raw orders. Earn the chart.</h1>
+            <p className="eyebrow">Urban bike-share case study</p>
+            <h1>Explore a real operating question, one table and one graph at a time.</h1>
             <p>
-              The studio begins with an imperfect order export, asks what the rows mean, checks whether
-              customer context can be joined, then uses PDL and Algraf to turn one analysis question into
-              evidence and a defensible conclusion.
+              Start with trip events, then add station and weather context only when the question calls for
+              it. Each section has the same four folds: a PDL editor, an Algraf editor, prepared output data,
+              and the rendered chart.
             </p>
             <div className="hero-actions">
               <button className="primary-button" type="button" disabled={!runtimeReady || running} onClick={runWorkflow}>
                 {running ? <LoaderCircle className="spin" size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
-                Run workflow
+                Run all sections
               </button>
-              <a className="secondary-button" href="#analysis-question">
-                <Sparkles size={16} aria-hidden="true" />
-                Choose question
+              <a className="secondary-button" href="#story">
+                <Route size={16} aria-hidden="true" />
+                Read the story
               </a>
             </div>
           </div>
           <div className="hero-status" aria-label="Current workflow summary">
-            <Metric label="Raw order rows" value={String(countDataRows(ordersCsv))} />
-            <Metric label="Join rows" value={String(countDataRows(customersCsv))} />
-            <Metric label="Question" value={activeRecipe.question} />
-            <Metric label="Prepared rows" value={preparedCsv ? String(countDataRows(preparedCsv)) : "0"} />
+            <Metric label="Trip rows" value={String(countDataRows(tripsCsv))} />
+            <Metric label="Stations" value={String(countDataRows(stationsCsv))} />
+            <Metric label="Prepared rows" value={String(totalPreparedRows)} />
+            <Metric label="Diagnostics" value={String(totalDiagnostics)} />
           </div>
         </section>
 
         <section className="step-grid" aria-label="Investigation workflow">
-          {INVESTIGATION_STEPS.map((step) => (
+          {INTAKE_STEPS.map((step) => (
             <article className="step-card" key={step.title}>
               <div className="step-icon">{step.icon}</div>
               <h2>{step.title}</h2>
@@ -517,227 +655,102 @@ export function App(): React.ReactElement {
         <section className="case-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">1. Raw intake</p>
-              <h2>Before transforming anything, ask what the files are.</h2>
-            </div>
-          </div>
-          <div className="case-grid">
-            <QuestionCard
-              icon={<Database size={17} aria-hidden="true" />}
-              label="Primary source"
-              title="orders_raw.csv"
-              body="An operational order export with one row per order event. It has useful analysis fields, but also mixed status formatting and blank discounts."
-              questions={SOURCE_QUESTIONS}
-            />
-            <QuestionCard
-              icon={<GitMerge size={17} aria-hidden="true" />}
-              label="Join candidate"
-              title="customers.csv"
-              body="A small lookup table that explains who placed each order. It should be joined only after the order rows are cleaned enough to analyze."
-              questions={JOIN_QUESTIONS}
-            />
-          </div>
-        </section>
-
-        <section className="source-grid" aria-label="Raw data files">
-          <DataPanel
-            className="raw-panel"
-            icon={<Database size={16} aria-hidden="true" />}
-            label="Raw orders"
-            meta={`${countDataRows(ordersCsv)} rows`}
-            value={ordersCsv}
-            onChange={setOrdersCsv}
-            modelUri="inmemory://datafarm/orders_raw.csv"
-          />
-          <DataPanel
-            className="raw-panel"
-            icon={<FileText size={16} aria-hidden="true" />}
-            label="Customers lookup"
-            meta={`${countDataRows(customersCsv)} rows`}
-            value={customersCsv}
-            onChange={setCustomersCsv}
-            modelUri="inmemory://datafarm/customers.csv"
-          />
-        </section>
-
-        <section className="recipe-section" id="analysis-question">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">2. Explore</p>
-              <h2>Pick the next analysis question</h2>
+              <p className="eyebrow">Raw data</p>
+              <h2>Three sources at the top of the analysis</h2>
               <p className="section-copy">
-                Each question rewrites the PDL table and the Algraf chart together, so the conclusion is tied
-                to a visible transformation.
+                The raw trip export is intentionally not enough. Station metadata and weather are available,
+                but the story only joins them when they answer a concrete question.
               </p>
             </div>
-            <button className="secondary-button" type="button" onClick={runWorkflow} disabled={!runtimeReady || running}>
-              <RefreshCw size={16} aria-hidden="true" />
-              Refresh
-            </button>
           </div>
-          <div className="recipe-list">
-            {RECIPES.map((recipe) => (
-              <button
-                aria-pressed={recipe.id === activeRecipe.id}
-                className={`recipe-button ${recipe.id === activeRecipe.id ? "recipe-button-active" : ""}`}
-                key={recipe.id}
-                type="button"
-                onClick={() => setActiveRecipeId(recipe.id)}
-              >
-                <span>{recipe.stage}</span>
-                <strong>{recipe.title}</strong>
-                <small>{recipe.question}</small>
-              </button>
-            ))}
+          <div className="source-grid source-grid-three" aria-label="Raw data files">
+            <DataPanel
+              className="raw-panel"
+              icon={<Bike size={16} aria-hidden="true" />}
+              label="Trip events"
+              meta={`${countDataRows(tripsCsv)} rows`}
+              value={tripsCsv}
+              onChange={setTripsCsv}
+              modelUri="inmemory://datafarm/trips_raw.csv"
+            />
+            <DataPanel
+              className="raw-panel"
+              icon={<MapPinned size={16} aria-hidden="true" />}
+              label="Stations"
+              meta={`${countDataRows(stationsCsv)} rows`}
+              value={stationsCsv}
+              onChange={setStationsCsv}
+              modelUri="inmemory://datafarm/stations.csv"
+            />
+            <DataPanel
+              className="raw-panel"
+              icon={<CloudRain size={16} aria-hidden="true" />}
+              label="Daily weather"
+              meta={`${countDataRows(weatherCsv)} rows`}
+              value={weatherCsv}
+              onChange={setWeatherCsv}
+              modelUri="inmemory://datafarm/weather_daily.csv"
+            />
           </div>
         </section>
 
-        <section className="section-heading analysis-heading">
-          <div>
-            <p className="eyebrow">3. Prepare and visualize</p>
-            <h2>{activeRecipe.title}</h2>
-            <p className="section-copy">{activeRecipe.summary}</p>
-          </div>
-        </section>
+        <section className="story-stack" id="story" aria-label="Linear exploration story">
+          {STORY_STEPS.map((step) => {
+            const snapshot = snapshots[step.id] ?? emptyStepSnapshot();
+            const preparedCsv = snapshot.pdlCsv?.stdout ?? "";
+            const pdlSource = pdlSources[step.id] ?? step.pdlSource;
+            const algrafSource = algrafSources[step.id] ?? step.algrafSource;
+            const algrafFiles = preparedCsv ? { ...files, "prepared.csv": preparedCsv } : files;
 
-        <section className="workspace-grid">
-          <PdlPanel
-            className="code-panel"
-            icon={<Workflow size={16} aria-hidden="true" />}
-            label="PDL preparation"
-            meta={activeRecipe.summary}
-            value={pdlSource}
-            onChange={setPdlSource}
-            diagnostics={snapshot.pdlDiagnostics}
-            files={files}
-            runtime={pdlRuntime}
-          />
-          <AlgrafPanel
-            className="code-panel"
-            icon={<BarChart3 size={16} aria-hidden="true" />}
-            label="Algraf chart"
-            meta={activeRecipe.graphLabel}
-            value={algrafSource}
-            onChange={setAlgrafSource}
-            diagnostics={diagnosticsForAlgrafEditor(snapshot.algrafDiagnostics, snapshot.algrafResult?.error ?? null)}
-            files={algrafEditorFiles}
-            runtime={algrafRuntime}
-          />
-        </section>
-
-        <section className="results-grid">
-          <article className="result-panel">
-            <div className="panel-header">
-              <span>
-                {outputFormat === "csv" ? <Rows3 size={16} aria-hidden="true" /> : <FileJson size={16} aria-hidden="true" />}
-                Prepared data
-              </span>
-              <div className="segmented-control" aria-label="Output format">
-                <button
-                  aria-pressed={outputFormat === "csv"}
-                  type="button"
-                  onClick={() => setOutputFormat("csv")}
-                >
-                  CSV
-                </button>
-                <button
-                  aria-pressed={outputFormat === "jsonl"}
-                  type="button"
-                  onClick={() => setOutputFormat("jsonl")}
-                >
-                  JSONL
-                </button>
-              </div>
-            </div>
-            <pre className="output-block">{displayOutput || runtimeError || "Waiting for the browser runtimes..."}</pre>
-            <div className="result-footnote">
-              {outputRows} rows shown. Algraf receives the same PDL result as CSV in `prepared.csv`.
-            </div>
-          </article>
-
-          <article className="result-panel">
-            <div className="panel-header">
-              <span>
-                <BarChart3 size={16} aria-hidden="true" />
-                Rendered SVG
-              </span>
-              <StatusLine running={running} snapshot={snapshot} />
-            </div>
-            <div className="chart-stage">
-              {snapshot.algrafResult?.svg ? (
-                <div className="chart-host" dangerouslySetInnerHTML={{ __html: snapshot.algrafResult.svg }} />
-              ) : (
-                <div className="empty-chart">
-                  <AlertCircle size={22} aria-hidden="true" />
-                  {snapshot.error ?? runtimeError ?? "No chart rendered yet"}
-                </div>
-              )}
-            </div>
-          </article>
-        </section>
-
-        <section className="conclusion-section" aria-label="Evidence and conclusion">
-          <article className="conclusion-card">
-            <p className="eyebrow">4. Conclusion</p>
-            <h2>What the current evidence supports</h2>
-            <p className="conclusion-text">{activeRecipe.conclusion}</p>
-            <ul className="evidence-list">
-              {activeRecipe.evidence.map((item) => (
-                <li key={item}>
-                  <CheckCircle2 size={15} aria-hidden="true" />
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
-            <div className="next-question">
-              <strong>Next question</strong>
-              <span>{activeRecipe.nextQuestion}</span>
-            </div>
-          </article>
-          <article className="audit-card">
-            <p className="eyebrow">Audit trail</p>
-            <h2>The conclusion is tied to source</h2>
-            <div className="audit-metrics">
-              <Metric label="Output form" value={outputFormat.toUpperCase()} />
-              <Metric label="PDL issues" value={String(pdlDiagnosticCount)} />
-              <Metric label="Algraf issues" value={String(algrafDiagnosticCount)} />
-              <Metric label="Prepared rows" value={preparedCsv ? String(countDataRows(preparedCsv)) : "0"} />
-            </div>
-          </article>
-        </section>
-
-        <section className="diagnostics-section">
-          <DiagnosticsPanel
-            title="PDL diagnostics"
-            diagnostics={[
-              ...snapshot.pdlDiagnostics.map(editorDiagnosticToDisplay),
-              ...(snapshot.pdlDisplay?.diagnostics ?? []).map(runtimeDiagnosticToDisplay),
-              ...(snapshot.pdlCsv?.diagnostics ?? []).map(runtimeDiagnosticToDisplay),
-            ]}
-          />
-          <DiagnosticsPanel
-            title="Algraf diagnostics"
-            diagnostics={snapshot.algrafDiagnostics.map(algrafDiagnosticToDisplay)}
-          />
+            return (
+              <StorySection
+                algrafDiagnostics={diagnosticsForAlgrafEditor(snapshot.algrafDiagnostics, snapshot.algrafResult?.error ?? null)}
+                algrafFiles={algrafFiles}
+                algrafRuntime={algrafRuntime}
+                algrafSource={algrafSource}
+                key={step.id}
+                onAlgrafChange={(value) =>
+                  setAlgrafSources((current) => ({
+                    ...current,
+                    [step.id]: value,
+                  }))
+                }
+                onPdlChange={(value) =>
+                  setPdlSources((current) => ({
+                    ...current,
+                    [step.id]: value,
+                  }))
+                }
+                pdlDiagnostics={snapshot.pdlDiagnostics}
+                pdlFiles={files}
+                pdlRuntime={pdlRuntime}
+                pdlSource={pdlSource}
+                runtimeError={runtimeError}
+                running={running}
+                snapshot={snapshot}
+                step={step}
+              />
+            );
+          })}
         </section>
 
         <section className="guide-section">
           <div>
             <p className="eyebrow">Method</p>
-            <h2>Keep the claim as traceable as the code</h2>
+            <h2>What this studio is demonstrating</h2>
           </div>
           <div className="guide-grid">
             <div>
-              <h3>Source first</h3>
-              <p>Do not begin with a chart. First ask what produced the rows, what the grain is, and which rows belong in the analysis.</p>
+              <h3>One question per table</h3>
+              <p>The prepared output should not be a dumping ground. Each section emits the table its chart uses.</p>
             </div>
             <div>
-              <h3>Join with purpose</h3>
-              <p>Only join context that answers the question. Here, customer segment explains revenue patterns that raw orders cannot.</p>
+              <h3>Context is deliberate</h3>
+              <p>Station and weather joins happen only after the raw trips establish the first pattern.</p>
             </div>
             <div>
-              <h3>Conclude narrowly</h3>
-              <p>Let PDL define the evidence table and Algraf show it. The written conclusion should not outrun those two artifacts.</p>
+              <h3>Charts are source</h3>
+              <p>Algraf makes the visual evidence inspectable beside the PDL transformation that prepared it.</p>
             </div>
           </div>
         </section>
@@ -770,36 +783,6 @@ function Metric({ label, value }: { label: string; value: string }): React.React
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
-  );
-}
-
-function QuestionCard({
-  icon,
-  label,
-  title,
-  body,
-  questions,
-}: {
-  icon: React.ReactElement;
-  label: string;
-  title: string;
-  body: string;
-  questions: string[];
-}): React.ReactElement {
-  return (
-    <article className="question-card">
-      <div className="question-card-kicker">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <h3>{title}</h3>
-      <p>{body}</p>
-      <ul>
-        {questions.map((question) => (
-          <li key={question}>{question}</li>
-        ))}
-      </ul>
-    </article>
   );
 }
 
@@ -836,95 +819,145 @@ function DataPanel({
   );
 }
 
-function PdlPanel({
-  className,
-  icon,
-  label,
-  meta,
-  value,
-  onChange,
-  diagnostics,
-  files,
-  runtime,
+function StorySection({
+  step,
+  pdlSource,
+  algrafSource,
+  pdlFiles,
+  algrafFiles,
+  pdlRuntime,
+  algrafRuntime,
+  pdlDiagnostics,
+  algrafDiagnostics,
+  snapshot,
+  runtimeError,
+  running,
+  onPdlChange,
+  onAlgrafChange,
 }: {
-  className: string;
-  icon: React.ReactElement;
-  label: string;
-  meta: string;
-  value: string;
-  onChange: (value: string) => void;
-  diagnostics: PdlEditorDiagnostic[];
-  files: Record<string, string>;
-  runtime: PdlRuntime | null;
+  step: StoryStep;
+  pdlSource: string;
+  algrafSource: string;
+  pdlFiles: Record<string, string>;
+  algrafFiles: Record<string, string>;
+  pdlRuntime: PdlRuntime | null;
+  algrafRuntime: AlgrafRuntime | null;
+  pdlDiagnostics: PdlEditorDiagnostic[];
+  algrafDiagnostics: AlgrafDiagnostic[];
+  snapshot: StepSnapshot;
+  runtimeError: string | null;
+  running: boolean;
+  onPdlChange: (value: string) => void;
+  onAlgrafChange: (value: string) => void;
 }): React.ReactElement {
+  const preparedOutput = snapshot.pdlDisplay?.stdout ?? "";
+  const preparedRows = countDataRows(preparedOutput);
+
   return (
-    <article className={`editor-panel ${className}`}>
-      <div className="panel-header">
-        <span>
-          {icon}
-          {label}
-        </span>
-        <small>{meta}</small>
+    <article className="story-section">
+      <div className="story-section-header">
+        <div className="story-number">{step.number}</div>
+        <div>
+          <p className="eyebrow">Exploration step</p>
+          <h2>{step.title}</h2>
+          <p>{step.question}</p>
+        </div>
+        <StatusLine running={running} snapshot={snapshot} />
       </div>
-      <div className="editor-host">
-        <PdlEditor
-          diagnostics={diagnostics}
-          files={files}
-          modelUri="inmemory://datafarm/studio.pdl"
-          onChange={onChange}
-          runtime={runtime}
-          value={value}
-        />
+
+      <p className="story-summary">{step.summary}</p>
+
+      <div className="fourfold-grid">
+        <article className="editor-panel fold-panel">
+          <div className="panel-header">
+            <span>
+              <Workflow size={16} aria-hidden="true" />
+              {step.pdlLabel}
+            </span>
+            <small>PDL</small>
+          </div>
+          <div className="editor-host story-editor-host">
+            <PdlEditor
+              diagnostics={pdlDiagnostics}
+              files={pdlFiles}
+              modelUri={`inmemory://datafarm/${step.id}.pdl`}
+              onChange={onPdlChange}
+              runtime={pdlRuntime}
+              value={pdlSource}
+            />
+          </div>
+        </article>
+
+        <article className="editor-panel fold-panel">
+          <div className="panel-header">
+            <span>
+              <BarChart3 size={16} aria-hidden="true" />
+              {step.algrafLabel}
+            </span>
+            <small>Algraf</small>
+          </div>
+          <div className="editor-host story-editor-host">
+            <AlgrafEditor
+              diagnostics={algrafDiagnostics}
+              files={algrafFiles}
+              modelUri={`inmemory://datafarm/${step.id}.ag`}
+              onChange={onAlgrafChange}
+              runtime={algrafRuntime}
+              value={algrafSource}
+            />
+          </div>
+        </article>
+
+        <article className="result-panel fold-panel">
+          <div className="panel-header">
+            <span>
+              <Rows3 size={16} aria-hidden="true" />
+              Prepared output
+            </span>
+            <small>{preparedRows} rows, CSV</small>
+          </div>
+          <pre className="output-block">{preparedOutput || runtimeError || "Waiting for the browser runtimes..."}</pre>
+        </article>
+
+        <article className="result-panel fold-panel">
+          <div className="panel-header">
+            <span>
+              <BarChart3 size={16} aria-hidden="true" />
+              Rendered chart
+            </span>
+          </div>
+          <div className="chart-stage">
+            {snapshot.algrafResult?.svg ? (
+              <div className="chart-host" dangerouslySetInnerHTML={{ __html: snapshot.algrafResult.svg }} />
+            ) : (
+              <div className="empty-chart">
+                <AlertCircle size={22} aria-hidden="true" />
+                {snapshot.error ?? runtimeError ?? "No chart rendered yet"}
+              </div>
+            )}
+          </div>
+        </article>
+      </div>
+
+      <div className="story-conclusion">
+        <div>
+          <h3>Conclusion</h3>
+          <p>{step.conclusion}</p>
+        </div>
+        <ul className="evidence-list">
+          {step.evidence.map((item) => (
+            <li key={item}>
+              <CheckCircle2 size={15} aria-hidden="true" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
       </div>
     </article>
   );
 }
 
-function AlgrafPanel({
-  className,
-  icon,
-  label,
-  meta,
-  value,
-  onChange,
-  diagnostics,
-  files,
-  runtime,
-}: {
-  className: string;
-  icon: React.ReactElement;
-  label: string;
-  meta: string;
-  value: string;
-  onChange: (value: string) => void;
-  diagnostics: AlgrafDiagnostic[];
-  files: Record<string, string>;
-  runtime: AlgrafRuntime | null;
-}): React.ReactElement {
-  return (
-    <article className={`editor-panel ${className}`}>
-      <div className="panel-header">
-        <span>
-          {icon}
-          {label}
-        </span>
-        <small>{meta}</small>
-      </div>
-      <div className="editor-host">
-        <AlgrafEditor
-          diagnostics={diagnostics}
-          files={files}
-          modelUri="inmemory://datafarm/studio.ag"
-          onChange={onChange}
-          runtime={runtime}
-          value={value}
-        />
-      </div>
-    </article>
-  );
-}
-
-function StatusLine({ running, snapshot }: { running: boolean; snapshot: RunSnapshot }): React.ReactElement {
+function StatusLine({ running, snapshot }: { running: boolean; snapshot: StepSnapshot }): React.ReactElement {
   if (running) {
     return (
       <small className="status-text">
@@ -951,66 +984,8 @@ function StatusLine({ running, snapshot }: { running: boolean; snapshot: RunSnap
   );
 }
 
-interface DisplayDiagnostic {
-  code: string;
-  severity: string;
-  message: string;
-}
-
-function DiagnosticsPanel({
-  title,
-  diagnostics,
-}: {
-  title: string;
-  diagnostics: DisplayDiagnostic[];
-}): React.ReactElement {
-  return (
-    <article className="diagnostics-panel">
-      <div className="panel-header">
-        <span>
-          <AlertCircle size={16} aria-hidden="true" />
-          {title}
-        </span>
-        <small>{diagnostics.length} items</small>
-      </div>
-      {diagnostics.length > 0 ? (
-        <ul>
-          {diagnostics.slice(0, 8).map((diagnostic, index) => (
-            <li key={`${diagnostic.code}-${index}`} className={`diagnostic diagnostic-${diagnostic.severity}`}>
-              <strong>{diagnostic.code}</strong>
-              <span>{diagnostic.message}</span>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="empty-diagnostics">No diagnostics.</p>
-      )}
-    </article>
-  );
-}
-
-function editorDiagnosticToDisplay(diagnostic: PdlEditorDiagnostic): DisplayDiagnostic {
-  return {
-    code: diagnostic.code,
-    severity: diagnostic.severity,
-    message: diagnostic.message,
-  };
-}
-
-function runtimeDiagnosticToDisplay(diagnostic: PdlRuntimeDiagnostic): DisplayDiagnostic {
-  return {
-    code: diagnostic.code,
-    severity: diagnostic.severity,
-    message: diagnostic.help ? `${diagnostic.message} ${diagnostic.help}` : diagnostic.message,
-  };
-}
-
-function algrafDiagnosticToDisplay(diagnostic: AlgrafDiagnostic): DisplayDiagnostic {
-  return {
-    code: diagnostic.code,
-    severity: diagnostic.severity === "information" ? "info" : diagnostic.severity,
-    message: diagnostic.help ? `${diagnostic.message} ${diagnostic.help}` : diagnostic.message,
-  };
+function pdlRuntimeDiagnosticsForSnapshot(snapshot: StepSnapshot): PdlRuntimeDiagnostic[] {
+  return snapshot.pdlDisplay?.diagnostics ?? [];
 }
 
 function diagnosticsForAlgrafEditor(diagnostics: AlgrafDiagnostic[], error: string | null): AlgrafDiagnostic[] {
@@ -1029,6 +1004,17 @@ function diagnosticsForAlgrafEditor(diagnostics: AlgrafDiagnostic[], error: stri
   ];
 }
 
+function emptyStepSnapshot(): StepSnapshot {
+  return {
+    pdlDisplay: null,
+    pdlCsv: null,
+    pdlDiagnostics: [],
+    algrafResult: null,
+    algrafDiagnostics: [],
+    error: null,
+  };
+}
+
 function indentPipeline(source: string): string {
   return source
     .trimEnd()
@@ -1040,10 +1026,6 @@ function indentPipeline(source: string): string {
 function countDataRows(csv: string): number {
   const lines = csv.trim().split(/\r?\n/).filter(Boolean);
   return Math.max(0, lines.length - 1);
-}
-
-function countJsonlRows(jsonl: string): number {
-  return jsonl.trim() ? jsonl.trim().split(/\r?\n/).length : 0;
 }
 
 function errorMessage(error: unknown): string {
