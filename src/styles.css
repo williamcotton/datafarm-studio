@@ -262,6 +262,7 @@ p {
   color: #162127;
   font-size: 20px;
   line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .step-grid {
@@ -272,8 +273,11 @@ p {
 }
 
 .step-card,
+.question-card,
 .editor-panel,
 .result-panel,
+.conclusion-card,
+.audit-card,
 .diagnostics-panel,
 .guide-section {
   border: 1px solid #dce5e2;
@@ -304,6 +308,80 @@ p {
 .step-card p {
   margin-bottom: 0;
   font-size: 14px;
+}
+
+.case-section {
+  margin: 30px 0 12px;
+}
+
+.section-copy {
+  max-width: 760px;
+  margin: 8px 0 0;
+  font-size: 14px;
+}
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.question-card {
+  padding: 18px;
+}
+
+.question-card-kicker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #176c5c;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.question-card h3 {
+  font-size: 18px;
+}
+
+.question-card p {
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.question-card ul,
+.evidence-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.question-card li {
+  position: relative;
+  padding: 8px 0 8px 18px;
+  border-top: 1px solid #edf2f0;
+  color: #42545b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.question-card li::before {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d46658;
+  content: "";
+}
+
+.source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
 }
 
 .recipe-section {
@@ -375,9 +453,13 @@ p {
   line-height: 1.35;
 }
 
+.analysis-heading {
+  margin-top: 26px;
+}
+
 .workspace-grid {
   display: grid;
-  grid-template-columns: minmax(280px, 0.64fr) minmax(280px, 0.64fr) minmax(390px, 1fr) minmax(390px, 1fr);
+  grid-template-columns: repeat(2, minmax(420px, 1fr));
   gap: 12px;
   align-items: stretch;
 }
@@ -548,6 +630,79 @@ p {
   color: #a33d2d;
 }
 
+.conclusion-section {
+  display: grid;
+  grid-template-columns: minmax(420px, 1.18fr) minmax(320px, 0.82fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.conclusion-card,
+.audit-card {
+  padding: 20px;
+}
+
+.conclusion-text {
+  max-width: 880px;
+  color: #26363c;
+  font-size: 16px;
+}
+
+.evidence-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.evidence-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  color: #415157;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.evidence-list svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: #176c5c;
+}
+
+.next-question {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid #dce5e2;
+  border-radius: 8px;
+  background: #f7faf9;
+}
+
+.next-question strong {
+  color: #176c5c;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.next-question span {
+  color: #2a3b42;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.audit-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.audit-metrics .metric {
+  min-height: 82px;
+  box-shadow: none;
+}
+
 .diagnostics-section {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -623,10 +778,13 @@ p {
 @media (max-width: 1180px) {
   .hero,
   .results-grid,
+  .conclusion-section,
   .guide-section {
     grid-template-columns: 1fr;
   }
 
+  .source-grid,
+  .case-grid,
   .workspace-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -655,10 +813,13 @@ p {
   }
 
   .hero-status,
+  .source-grid,
+  .case-grid,
   .workspace-grid,
   .step-grid,
   .recipe-list,
   .diagnostics-section,
+  .audit-metrics,
   .guide-grid {
     grid-template-columns: 1fr;
   }

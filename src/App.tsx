@@ -6,10 +6,13 @@ import {
   Database,
   FileJson,
   FileText,
+  GitMerge,
+  Lightbulb,
   LoaderCircle,
   Play,
   RefreshCw,
   Rows3,
+  Search,
   Sparkles,
   Workflow,
 } from "lucide-react";
@@ -39,6 +42,9 @@ interface Recipe {
   pdlSource: string;
   algrafSource: string;
   graphLabel: string;
+  evidence: string[];
+  conclusion: string;
+  nextQuestion: string;
 }
 
 interface RunSnapshot {
@@ -102,6 +108,14 @@ const RECIPES: Recipe[] = [
     question: "Which rows are fit for analysis?",
     pdlSource: CLEANING_PIPELINE,
     graphLabel: "Order-level scatter",
+    evidence: [
+      "Only completed orders should enter revenue analysis; pending, returned, and cancelled rows stay out.",
+      "Status values need normalization because the raw export includes extra spaces.",
+      "Net revenue is derived from gross amount minus discount, with blank discounts treated as zero.",
+    ],
+    conclusion:
+      "The first finding is about data quality: after cleaning, 9 of 12 order rows are valid completed transactions. That gives us a defensible table before any chart tells a business story.",
+    nextQuestion: "After the eligible rows are stable, summarize revenue by region, segment, or day.",
     algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Completed orders by date") {
     Theme(name: "minimal")
     Parse(column: order_date, as: "date", format: "%Y-%m-%d")
@@ -140,6 +154,14 @@ cleaned
   | sort "net_revenue" desc
 `,
     graphLabel: "Horizontal revenue bar chart",
+    evidence: [
+      "West contributes 515 in net revenue, more than any other region in this sample.",
+      "South follows with 355, while North and East trail with smaller completed-order totals.",
+      "The aggregation keeps order count and units available for follow-up checks.",
+    ],
+    conclusion:
+      "Regional revenue is concentrated in the West. The chart makes that visible, but the PDL table gives the exact totals and keeps the result auditable.",
+    nextQuestion: "Check whether West is strong because of customer segment mix, channel mix, or unusually large orders.",
     algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Net revenue by region") {
     Theme(name: "minimal")
     Scale(fill: region, palette: "accent")
@@ -175,6 +197,14 @@ cleaned
   | sort "revenue" desc
 `,
     graphLabel: "Segment comparison",
+    evidence: [
+      "The customers lookup adds segment labels through the shared customer_id key.",
+      "Enterprise customers account for 555 in revenue after the join.",
+      "Consumer and SMB are closer together, with 310 and 265 respectively.",
+    ],
+    conclusion:
+      "The customer context changes the interpretation: Enterprise is the leading segment, so the regional result is partly a segment story, not just a geography story.",
+    nextQuestion: "Inspect whether Enterprise revenue is coming from many customers or a few high-value accounts.",
     algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Revenue by customer segment") {
     Theme(name: "minimal")
     Scale(fill: segment, palette: "accent")
@@ -204,6 +234,14 @@ cleaned
   | sort "order_date"
 `,
     graphLabel: "Daily revenue trend",
+    evidence: [
+      "The daily table collapses order-level noise into one row per order date.",
+      "January 5 is the local high point because two completed orders land on the same day.",
+      "The series has visible gaps, which is important context before calling it a trend.",
+    ],
+    conclusion:
+      "The sample does not prove a durable trend, but it does show where activity clusters. The honest conclusion is a short-window peak, not a forecast.",
+    nextQuestion: "Bring in more days before fitting a trend or comparing periods.",
     algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Daily completed-order revenue") {
     Theme(name: "minimal")
     Parse(column: order_date, as: "date", format: "%Y-%m-%d")
@@ -234,6 +272,14 @@ cleaned
   | sort "region", "channel"
 `,
     graphLabel: "Grouped regional channel chart",
+    evidence: [
+      "Region and channel are both retained in the grouped table, so the chart can compare mix.",
+      "West has completed revenue across partner, web, and store channels.",
+      "North and East only appear through web in this small sample.",
+    ],
+    conclusion:
+      "Channel mix explains part of the regional pattern: West is broader across channels, while some regions are represented by a single channel in the current data.",
+    nextQuestion: "Use a larger extract to see whether single-channel regions are real behavior or sample sparsity.",
     algrafSource: `Chart(data: "prepared.csv", width: 760, height: 430, title: "Regional revenue by channel") {
     Theme(name: "minimal")
     Scale(fill: channel, palette: "accent")
@@ -248,27 +294,39 @@ cleaned
   },
 ];
 
-const SCIENCE_STEPS = [
+const INVESTIGATION_STEPS = [
   {
-    icon: <Database size={18} aria-hidden="true" />,
-    title: "Start with raw files",
-    body: "Keep source data visible. Record odd status casing, blanks, and lookup tables before writing transformations.",
+    icon: <Search size={18} aria-hidden="true" />,
+    title: "Where did this data come from?",
+    body: "Treat the orders table as an export from an operational system. Before analysis, inspect its grain, keys, messy values, and missing fields.",
+  },
+  {
+    icon: <GitMerge size={18} aria-hidden="true" />,
+    title: "Can we join other context?",
+    body: "Ask whether another file explains the rows. Here, customers.csv can add segment context through customer_id.",
   },
   {
     icon: <Workflow size={18} aria-hidden="true" />,
-    title: "Prepare with PDL",
-    body: "Filter, mutate, join, aggregate, and sort as a reproducible program instead of a hidden notebook cell.",
+    title: "What table answers the question?",
+    body: "Use PDL to make the analytic table explicit: clean eligibility, derive net revenue, join lookup data, or aggregate.",
   },
   {
-    icon: <Rows3 size={18} aria-hidden="true" />,
-    title: "Choose the data form",
-    body: "Use CSV for charts and inspection, JSON Lines for row-oriented logs, and Arrow streams for typed CLI handoff.",
+    icon: <Lightbulb size={18} aria-hidden="true" />,
+    title: "What conclusion is justified?",
+    body: "Use Algraf for visual evidence, then write the conclusion narrowly enough that the prepared table supports it.",
   },
-  {
-    icon: <BarChart3 size={18} aria-hidden="true" />,
-    title: "Render with Algraf",
-    body: "Treat the chart as source too: parse types, map channels, train scales, and emit deterministic SVG.",
-  },
+];
+
+const SOURCE_QUESTIONS = [
+  "What is the row grain? One row appears to be one order event.",
+  "Which rows belong in revenue analysis? Only completed orders after status normalization.",
+  "Which fields are derived? Net revenue must be calculated; it is not a raw column.",
+];
+
+const JOIN_QUESTIONS = [
+  "Do the files share a stable key? Both tables include customer_id.",
+  "What does the lookup add? Segment and signup month give customer context.",
+  "What should we verify? One customer row per customer_id before joining.",
 ];
 
 export function App(): React.ReactElement {
@@ -420,34 +478,34 @@ export function App(): React.ReactElement {
       <main>
         <section className="hero">
           <div className="hero-copy">
-            <p className="eyebrow">A source-first data-science workbench</p>
-            <h1>Move from raw data to prepared tables to reproducible charts.</h1>
+            <p className="eyebrow">Order export case study</p>
+            <h1>Start with raw orders. Earn the chart.</h1>
             <p>
-              This studio fuses the PDL and Algraf browser runtimes into a guided workflow. Edit the raw
-              files, change the transformation, choose the output form, and render an SVG chart from the
-              prepared table.
+              The studio begins with an imperfect order export, asks what the rows mean, checks whether
+              customer context can be joined, then uses PDL and Algraf to turn one analysis question into
+              evidence and a defensible conclusion.
             </p>
             <div className="hero-actions">
               <button className="primary-button" type="button" disabled={!runtimeReady || running} onClick={runWorkflow}>
                 {running ? <LoaderCircle className="spin" size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
                 Run workflow
               </button>
-              <a className="secondary-button" href="#recipes">
+              <a className="secondary-button" href="#analysis-question">
                 <Sparkles size={16} aria-hidden="true" />
-                Browse recipes
+                Choose question
               </a>
             </div>
           </div>
           <div className="hero-status" aria-label="Current workflow summary">
-            <Metric label="Recipe" value={activeRecipe.title} />
+            <Metric label="Raw order rows" value={String(countDataRows(ordersCsv))} />
+            <Metric label="Join rows" value={String(countDataRows(customersCsv))} />
+            <Metric label="Question" value={activeRecipe.question} />
             <Metric label="Prepared rows" value={preparedCsv ? String(countDataRows(preparedCsv)) : "0"} />
-            <Metric label="Shown as" value={outputFormat.toUpperCase()} />
-            <Metric label="Diagnostics" value={String(pdlDiagnosticCount + algrafDiagnosticCount)} />
           </div>
         </section>
 
-        <section className="step-grid" aria-label="Data science workflow">
-          {SCIENCE_STEPS.map((step) => (
+        <section className="step-grid" aria-label="Investigation workflow">
+          {INVESTIGATION_STEPS.map((step) => (
             <article className="step-card" key={step.title}>
               <div className="step-icon">{step.icon}</div>
               <h2>{step.title}</h2>
@@ -456,11 +514,61 @@ export function App(): React.ReactElement {
           ))}
         </section>
 
-        <section className="recipe-section" id="recipes">
+        <section className="case-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Recipes</p>
-              <h2>Pick a data-science move</h2>
+              <p className="eyebrow">1. Raw intake</p>
+              <h2>Before transforming anything, ask what the files are.</h2>
+            </div>
+          </div>
+          <div className="case-grid">
+            <QuestionCard
+              icon={<Database size={17} aria-hidden="true" />}
+              label="Primary source"
+              title="orders_raw.csv"
+              body="An operational order export with one row per order event. It has useful analysis fields, but also mixed status formatting and blank discounts."
+              questions={SOURCE_QUESTIONS}
+            />
+            <QuestionCard
+              icon={<GitMerge size={17} aria-hidden="true" />}
+              label="Join candidate"
+              title="customers.csv"
+              body="A small lookup table that explains who placed each order. It should be joined only after the order rows are cleaned enough to analyze."
+              questions={JOIN_QUESTIONS}
+            />
+          </div>
+        </section>
+
+        <section className="source-grid" aria-label="Raw data files">
+          <DataPanel
+            className="raw-panel"
+            icon={<Database size={16} aria-hidden="true" />}
+            label="Raw orders"
+            meta={`${countDataRows(ordersCsv)} rows`}
+            value={ordersCsv}
+            onChange={setOrdersCsv}
+            modelUri="inmemory://datafarm/orders_raw.csv"
+          />
+          <DataPanel
+            className="raw-panel"
+            icon={<FileText size={16} aria-hidden="true" />}
+            label="Customers lookup"
+            meta={`${countDataRows(customersCsv)} rows`}
+            value={customersCsv}
+            onChange={setCustomersCsv}
+            modelUri="inmemory://datafarm/customers.csv"
+          />
+        </section>
+
+        <section className="recipe-section" id="analysis-question">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">2. Explore</p>
+              <h2>Pick the next analysis question</h2>
+              <p className="section-copy">
+                Each question rewrites the PDL table and the Algraf chart together, so the conclusion is tied
+                to a visible transformation.
+              </p>
             </div>
             <button className="secondary-button" type="button" onClick={runWorkflow} disabled={!runtimeReady || running}>
               <RefreshCw size={16} aria-hidden="true" />
@@ -484,25 +592,15 @@ export function App(): React.ReactElement {
           </div>
         </section>
 
+        <section className="section-heading analysis-heading">
+          <div>
+            <p className="eyebrow">3. Prepare and visualize</p>
+            <h2>{activeRecipe.title}</h2>
+            <p className="section-copy">{activeRecipe.summary}</p>
+          </div>
+        </section>
+
         <section className="workspace-grid">
-          <DataPanel
-            className="raw-panel"
-            icon={<Database size={16} aria-hidden="true" />}
-            label="Raw orders"
-            meta={`${countDataRows(ordersCsv)} rows`}
-            value={ordersCsv}
-            onChange={setOrdersCsv}
-            modelUri="inmemory://datafarm/orders_raw.csv"
-          />
-          <DataPanel
-            className="raw-panel"
-            icon={<FileText size={16} aria-hidden="true" />}
-            label="Customers lookup"
-            meta={`${countDataRows(customersCsv)} rows`}
-            value={customersCsv}
-            onChange={setCustomersCsv}
-            modelUri="inmemory://datafarm/customers.csv"
-          />
           <PdlPanel
             className="code-panel"
             icon={<Workflow size={16} aria-hidden="true" />}
@@ -578,6 +676,36 @@ export function App(): React.ReactElement {
           </article>
         </section>
 
+        <section className="conclusion-section" aria-label="Evidence and conclusion">
+          <article className="conclusion-card">
+            <p className="eyebrow">4. Conclusion</p>
+            <h2>What the current evidence supports</h2>
+            <p className="conclusion-text">{activeRecipe.conclusion}</p>
+            <ul className="evidence-list">
+              {activeRecipe.evidence.map((item) => (
+                <li key={item}>
+                  <CheckCircle2 size={15} aria-hidden="true" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="next-question">
+              <strong>Next question</strong>
+              <span>{activeRecipe.nextQuestion}</span>
+            </div>
+          </article>
+          <article className="audit-card">
+            <p className="eyebrow">Audit trail</p>
+            <h2>The conclusion is tied to source</h2>
+            <div className="audit-metrics">
+              <Metric label="Output form" value={outputFormat.toUpperCase()} />
+              <Metric label="PDL issues" value={String(pdlDiagnosticCount)} />
+              <Metric label="Algraf issues" value={String(algrafDiagnosticCount)} />
+              <Metric label="Prepared rows" value={preparedCsv ? String(countDataRows(preparedCsv)) : "0"} />
+            </div>
+          </article>
+        </section>
+
         <section className="diagnostics-section">
           <DiagnosticsPanel
             title="PDL diagnostics"
@@ -595,21 +723,21 @@ export function App(): React.ReactElement {
 
         <section className="guide-section">
           <div>
-            <p className="eyebrow">Good practice</p>
-            <h2>Keep every step inspectable</h2>
+            <p className="eyebrow">Method</p>
+            <h2>Keep the claim as traceable as the code</h2>
           </div>
           <div className="guide-grid">
             <div>
-              <h3>Raw data</h3>
-              <p>Preserve the original files and make assumptions explicit: casing, missing discounts, lookup joins, and rejected statuses.</p>
+              <h3>Source first</h3>
+              <p>Do not begin with a chart. First ask what produced the rows, what the grain is, and which rows belong in the analysis.</p>
             </div>
             <div>
-              <h3>Prepared forms</h3>
-              <p>CSV is ideal for charting and quick review. JSON Lines is useful for row logs. Arrow streams are the right CLI handoff for typed tables.</p>
+              <h3>Join with purpose</h3>
+              <p>Only join context that answers the question. Here, customer segment explains revenue patterns that raw orders cannot.</p>
             </div>
             <div>
-              <h3>Graphs</h3>
-              <p>Chart after preparation. Use Algraf to declare parsing, scales, guides, and marks so the visual result is reproducible source.</p>
+              <h3>Conclude narrowly</h3>
+              <p>Let PDL define the evidence table and Algraf show it. The written conclusion should not outrun those two artifacts.</p>
             </div>
           </div>
         </section>
@@ -642,6 +770,36 @@ function Metric({ label, value }: { label: string; value: string }): React.React
       <span>{label}</span>
       <strong>{value}</strong>
     </div>
+  );
+}
+
+function QuestionCard({
+  icon,
+  label,
+  title,
+  body,
+  questions,
+}: {
+  icon: React.ReactElement;
+  label: string;
+  title: string;
+  body: string;
+  questions: string[];
+}): React.ReactElement {
+  return (
+    <article className="question-card">
+      <div className="question-card-kicker">
+        {icon}
+        <span>{label}</span>
+      </div>
+      <h3>{title}</h3>
+      <p>{body}</p>
+      <ul>
+        {questions.map((question) => (
+          <li key={question}>{question}</li>
+        ))}
+      </ul>
+    </article>
   );
 }
 
