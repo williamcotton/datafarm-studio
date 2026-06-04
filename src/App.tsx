@@ -163,11 +163,12 @@ export function App(): React.ReactElement {
       (snapshot.error ? 1 : 0)
     );
   }, 0);
+  const homeHref = import.meta.env.BASE_URL;
 
   return (
     <div className="studio-shell">
       <header className="topbar">
-        <a className="brand" href="/">
+        <a className="brand" href={homeHref}>
           <span className="brand-mark">Df</span>
           <span>
             <strong>Datafarm Studio</strong>

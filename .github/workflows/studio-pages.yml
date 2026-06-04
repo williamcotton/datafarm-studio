@@ -1,0 +1,80 @@
+name: Deploy studio to GitHub Pages
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/studio-pages.yml"
+      - "index.html"
+      - "package-lock.json"
+      - "package.json"
+      - "public/**"
+      - "src/**"
+      - "tsconfig.json"
+      - "vite.config.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build studio
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Compute Vite base path
+        id: vite-base
+        run: |
+          repo_name="${GITHUB_REPOSITORY#*/}"
+          owner="${GITHUB_REPOSITORY_OWNER}"
+
+          if [ "${repo_name,,}" = "${owner,,}.github.io" ]; then
+            echo "path=/" >> "$GITHUB_OUTPUT"
+          else
+            echo "path=/${repo_name}/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install studio dependencies
+        run: npm ci
+
+      - name: Build studio
+        env:
+          VITE_BASE_PATH: ${{ steps.vite-base.outputs.path }}
+        run: npm run build
+
+      - name: Verify production WASM artifacts
+        run: |
+          test -s dist/wasm/algraf.wasm
+          test -s dist/wasm/pdl.wasm
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy studio
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
