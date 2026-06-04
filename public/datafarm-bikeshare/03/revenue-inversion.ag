@@ -1,0 +1,23 @@
+Chart(
+    data: "revenue_inversion.csv",
+    width: 680,
+    height: 440,
+    marginRight: 120,
+    title: "The count lies: a third of rides, most of the money",
+    caption: "Each line is a rider type. The lines cross: members fall from 66% of rides to 39% of revenue; visitors rise from 34% to 61%."
+) {
+    Theme(name: "minimal")
+    Scale(stroke: rider_type, palette: "accent", label: "Rider type")
+    Scale(fill: rider_type, palette: "accent")
+    Scale(axis: x, domain: ["Share of rides", "Share of revenue"])
+    Scale(axis: y, domain: [0, 70], breaks: [0, 20, 40, 60],
+          labels: ["0%", "20%", "40%", "60%"], expand: [0.02, 0.05])
+    Guide(axis: x, label: null)
+    Guide(axis: y, label: "Share of total")
+    Guide(legend: false)
+    Space(metric * share) {
+        Line(stroke: rider_type, strokeWidth: 3, alpha: 0.9, group: rider_type)
+        Point(fill: rider_type, size: 7)
+        Label(label: rider_type, at: "end", group: rider_type, dx: 35, fill: rider_type)
+    }
+}

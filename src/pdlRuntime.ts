@@ -20,8 +20,24 @@ export interface PdlRuntimeDiagnostic {
 
 export interface PdlRunResult {
   stdout: string | null;
+  outputs: PdlNamedOutput[];
   diagnostics: PdlRuntimeDiagnostic[];
   error: string | null;
+}
+
+export interface PdlNamedOutput {
+  name: string;
+  table: PdlNamedOutputTable;
+}
+
+export interface PdlNamedOutputTable {
+  columns: string[];
+  rows: string[][];
+}
+
+export interface PdlRunOptions {
+  stdoutFormat?: string;
+  programPath?: string;
 }
 
 export interface TextPosition {
@@ -89,7 +105,7 @@ interface PdlWasmExports extends WebAssembly.Exports {
 }
 
 export interface PdlRuntime {
-  run(source: string, files: Record<string, string>, stdoutFormat?: string): PdlRunResult;
+  run(source: string, files: Record<string, string>, options?: PdlRunOptions): PdlRunResult;
   editorService<T = unknown>(
     source: string,
     files: Record<string, string>,
@@ -112,8 +128,8 @@ export async function loadPdlRuntime(url = publicAssetUrl("wasm/pdl.wasm")): Pro
   assertPdlExports(exports);
 
   return {
-    run(source, files, stdoutFormat = "csv") {
-      return runWithExports(exports, source, files, stdoutFormat);
+    run(source, files, options = {}) {
+      return runWithExports(exports, source, files, options);
     },
     editorService<T = unknown>(
       source: string,
@@ -161,9 +177,21 @@ function runWithExports(
   exports: PdlWasmExports,
   source: string,
   files: Record<string, string>,
-  stdoutFormat: string,
+  options: PdlRunOptions,
 ): PdlRunResult {
-  return callJson<PdlRunResult>(exports, { source, files, stdout_format: stdoutFormat }, exports.pdl_run_json);
+  const payload: Record<string, unknown> = {
+    source,
+    files,
+    program_path: options.programPath ?? "memory/main.pdl",
+  };
+  if (options.stdoutFormat) {
+    payload.stdout_format = options.stdoutFormat;
+  }
+  const result = callJson<PdlRunResult>(exports, payload, exports.pdl_run_json);
+  return {
+    ...result,
+    outputs: result.outputs ?? [],
+  };
 }
 
 function editorServiceWithExports<T>(

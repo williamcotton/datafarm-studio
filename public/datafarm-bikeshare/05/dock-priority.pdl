@@ -1,0 +1,21 @@
+// Step 05 - The decision: revenue per dock, ranked. Small high-revenue stations
+// rise to the top; this is the rebalancing review order.
+
+let cleaned =
+  load "../data/trips_raw.csv"
+  | filter lower(trim("status")) == lit("completed")
+  | select "trip_id", "start_station_id", "fare_usd"
+
+let stations =
+  load "../data/stations.csv"
+  | select "station_id", "station_name", "zone", "capacity"
+
+cleaned
+  | join stations on ("start_station_id", "station_id")
+  | group_by "station_name", "zone", "capacity"
+  | agg count() as "trips", sum("fare_usd") as "revenue"
+  | mutate "revenue" = round("revenue", 2)
+  | mutate "rev_per_dock" = round("revenue" / to_number("capacity"), 2)
+  | sort "rev_per_dock" desc
+  | select "station_name", "zone", "capacity", "trips", "revenue", "rev_per_dock"
+  | save "dock_priority.csv"

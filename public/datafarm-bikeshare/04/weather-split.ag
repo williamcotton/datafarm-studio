@@ -1,0 +1,19 @@
+Chart(
+    data: "weather_split.csv",
+    width: 700,
+    height: 430,
+    title: "Rain taxes the riders who pay",
+    caption: "Per-day rides by day type: members hold, visitors collapse."
+) {
+    Theme(name: "minimal")
+    Scale(fill: rider_type, palette: "accent", label: "Rider type")
+    Scale(axis: x, domain: ["Dry", "Rain"])
+    Scale(axis: y, domain: [0, 2.6], breaks: [0, 0.5, 1, 1.5, 2, 2.5], expand: [0, 0])
+    Guide(axis: x, label: "Day type")
+    Guide(axis: y, label: "Rides per day")
+    Space(weather / rider_type * avg_per_day) {
+        Bar(fill: rider_type, alpha: 0.86,
+            tooltip: [weather, rider_type, days, trips, avg_per_day, revenue])
+        Text(label: avg_per_day, format: ".2f", dy: -8, anchor: "middle", size: 10)
+    }
+}

@@ -1,0 +1,24 @@
+Chart(
+    data: "valid_trips.csv",
+    width: 760,
+    height: 430,
+    title: "Two businesses wearing one logo",
+    caption: "Each dot is one ride; size is fare. Two clusters separate before any join, and the upper cluster is the pricey one."
+) {
+    Theme(name: "minimal")
+    Scale(fill: rider_type, palette: "accent", label: "Rider type")
+    Scale(size: fare_usd,
+          range: [3, 11],
+          breaks: [5, 10, 15],
+          labels: ["$5", "$10", "$15"],
+          label: "Fare")
+    Guide(axis: x, label: "Distance (km)")
+    Guide(axis: y, label: "Duration (min)")
+    Space(distance_km * duration_min) {
+        Point(fill: rider_type, size: fare_usd, alpha: 0.74,
+              tooltip: [trip_id, trip_date, rider_type, bike_type, fare_usd],
+              highlight: rider_type)
+        Text(x: 4.6, y: 22, label: "members: short, cheap, frequent", anchor: "start", fill: "#666666", size: 10)
+        Text(x: 12.5, y: 62, label: "visitors: long, expensive, rare", anchor: "end", fill: "#666666", size: 10)
+    }
+}

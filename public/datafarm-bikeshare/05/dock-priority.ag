@@ -1,0 +1,22 @@
+Chart(
+    data: "dock_priority.csv",
+    width: 740,
+    height: 470,
+    marginLeft: 170,
+    marginRight: 80,
+    title: "The priority list: where a missing bike costs the most",
+    caption: "Ranked by revenue per dock: review the small high-value stations first."
+) {
+    Theme(name: "minimal")
+    Scale(fill: zone, palette: "accent", label: "Zone")
+    Scale(axis: x, domain: [0, 4], breaks: [0, 1, 2, 3, 4],
+          labels: ["$0", "$1", "$2", "$3", "$4"], expand: [0, 0.02])
+    Scale(axis: y, domain: ["Market Hall", "Science Center", "North Campus", "Library Plaza", "Central Station", "Marina Gate", "Museum Loop", "Harbor Point", "River Park"])
+    Guide(axis: x, label: "Revenue per dock")
+    Guide(axis: y, label: null)
+    Space(rev_per_dock * station_name) {
+        Bar(fill: zone, layout: "stack", alpha: 0.86,
+            tooltip: [station_name, zone, capacity, trips, revenue, rev_per_dock])
+        Text(label: rev_per_dock, dx: 6, anchor: "start", format: "$.2f", size: 10)
+    }
+}

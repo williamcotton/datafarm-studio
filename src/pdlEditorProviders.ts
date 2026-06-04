@@ -153,12 +153,17 @@ function requestFeature<T>(
   if (!runtime) {
     return null;
   }
-  const response = runtime.editorService<T>(model.getValue(), getFiles(model), request, "memory/main.pdl");
+  const response = runtime.editorService<T>(model.getValue(), getFiles(model), request, programPathForModel(model));
   if (response.error) {
     console.warn(`PDL editor service failed: ${response.error}`);
     return null;
   }
   return response.result;
+}
+
+function programPathForModel(model: monaco.editor.ITextModel): string {
+  const path = model.uri.path.replace(/^\/+/, "");
+  return path ? `memory/${path}` : "memory/main.pdl";
 }
 
 function toTextPosition(position: monaco.IPosition): TextPosition {

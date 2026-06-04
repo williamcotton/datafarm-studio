@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "npm run check && vite build",
+    "build": "npm run build:wasm && npm run check && vite build",
+    "build:wasm": "mkdir -p public/wasm && curl -L -o public/wasm/algraf.wasm https://github.com/williamcotton/algraf/releases/latest/download/algraf-wasm-latest.wasm && curl -L -o public/wasm/pdl.wasm https://github.com/williamcotton/pdl/releases/latest/download/pdl-wasm-latest.wasm",
+    "copy:wasm": "mkdir -p public/wasm && cp ../algraf/target/wasm32-unknown-unknown/release/algraf_wasm.wasm public/wasm/algraf.wasm && cp ../pdl/target/wasm32-unknown-unknown/release/pdl_wasm.wasm public/wasm/pdl.wasm",
     "check": "tsc --noEmit",
     "preview": "vite preview --host 0.0.0.0"
   },

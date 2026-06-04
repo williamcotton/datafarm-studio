@@ -1,0 +1,31 @@
+// Step 03 - The turn: collapse each rider type to its share of rides and share
+// of revenue, then reshape long so the slope chart can draw one line per rider.
+// Shares are computed by joining rider totals to one all-riders total row.
+
+let cleaned =
+  load "../data/trips_raw.csv"
+  | filter lower(trim("status")) == lit("completed")
+  | select "rider_type", "fare_usd"
+
+let by_rider =
+  cleaned
+  | group_by "rider_type"
+  | agg count() as "trips", sum("fare_usd") as "revenue"
+  | mutate "revenue" = round("revenue", 2)
+
+let totals =
+  by_rider
+  | agg sum("trips") as "total_trips", sum("revenue") as "total_revenue"
+  | mutate "join_key" = lit("all")
+
+by_rider
+  | mutate "join_key" = lit("all")
+  | join totals on "join_key"
+  | mutate
+      "Share of rides" = round(100 * "trips" / "total_trips", 2),
+      "Share of revenue" = round(100 * "revenue" / "total_revenue", 2)
+  | pivot_longer "Share of rides", "Share of revenue" names_to "metric" values_to "share"
+  | mutate "value" = if_else("metric" == lit("Share of rides"), "trips", "revenue")
+  | select "rider_type", "metric", "share", "value"
+  | sort "rider_type", "metric" desc
+  | save "revenue_inversion.csv"

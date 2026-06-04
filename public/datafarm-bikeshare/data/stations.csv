@@ -1,0 +1,11 @@
+station_id,station_name,zone,capacity,opened_year
+S01,Central Station,Downtown,32,2021
+S02,Library Plaza,Downtown,28,2020
+S03,River Park,Riverfront,22,2022
+S04,Market Hall,Market,26,2021
+S05,North Campus,Campus,24,2020
+S06,Science Center,Campus,18,2023
+S07,Marina Gate,Riverfront,20,2022
+S08,Museum Loop,Cultural,30,2021
+S09,Harbor Point,Riverfront,16,2023
+S10,Warehouse Row,Market,14,2024

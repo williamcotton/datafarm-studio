@@ -1,0 +1,15 @@
+// Step 02 - One row per ride, the fields the scatter needs.
+let cleaned =
+  load "../data/trips_raw.csv"
+  | filter lower(trim("status")) == lit("completed")
+  | select
+      "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
+      "start_station_id", "end_station_id",
+      "duration_min", "distance_km", "fare_usd"
+  | sort "trip_date", "trip_id"
+
+cleaned
+  | select
+      "trip_id", "trip_date", "rider_type", "bike_type",
+      "duration_min", "distance_km", "fare_usd"
+  | save "valid_trips.csv"

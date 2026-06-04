@@ -1,0 +1,5 @@
+weather,rider_type,days,trips,avg_per_day,revenue
+Dry,member,10,23,2.3,110.21
+Dry,visitor,10,15,1.5,220.61
+Rain,member,4,8,2.0,37.45
+Rain,visitor,4,1,0.25,10.29

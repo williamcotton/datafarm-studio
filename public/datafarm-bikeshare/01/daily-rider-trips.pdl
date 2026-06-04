@@ -1,0 +1,19 @@
+// Step 01 - The dashboard view: who rides most?
+// Filter to real rides, then count trips per day and rider type.
+// This is the table an operator already has, and the one that misleads.
+
+let cleaned =
+  load "../data/trips_raw.csv"
+  | filter lower(trim("status")) == lit("completed")
+  | select
+      "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
+      "start_station_id", "end_station_id",
+      "duration_min", "distance_km", "fare_usd"
+  | sort "trip_date", "trip_id"
+
+cleaned
+  | group_by "trip_date", "rider_type"
+  | agg count() as "trips", sum("fare_usd") as "revenue"
+  | mutate "revenue" = round("revenue", 2)
+  | sort "trip_date", "rider_type"
+  | save "daily_rider_trips.csv"
