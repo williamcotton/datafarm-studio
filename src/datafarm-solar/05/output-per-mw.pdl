@@ -2,7 +2,7 @@
 // next panel earns the most rise to the top; this is the siting priority order.
 
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "region", "capacity_mw", "generation_gwh"
 
 states

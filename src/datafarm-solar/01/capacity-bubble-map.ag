@@ -1,5 +1,5 @@
 Chart(
-    data: GeoJson("../data/us_counties.geojson"),
+    data: GeoJson("us_counties.geojson"),
     width: 820,
     height: 500,
     title: "Where we built the panels",

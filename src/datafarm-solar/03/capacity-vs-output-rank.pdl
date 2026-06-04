@@ -3,7 +3,7 @@
 // rankings. The reordering is the whole point.
 
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "region", "capacity_mw", "generation_gwh"
   | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
   | mutate

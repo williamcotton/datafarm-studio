@@ -2,13 +2,13 @@ Basemap
 -------
 The two map charts (01 bubble map, 04 seasonal pie map) reference
 
-    ../data/us_counties.geojson
+    us_counties.geojson
 
 This is the same US county basemap used by the us_city_bubbles / inset_city_pies
-examples - it is NOT bundled here (it's large and you already have it). Drop your
-existing us_counties.geojson into this data/ folder, or point the GeoJson(...) call
-at whatever basemap you prefer (a us_states.geojson works just as well with the
-albers_usa projection, since the overlays are positioned by long/lat).
+examples. The Studio runtime serves it as a root-level virtual file, so the
+Algraf examples use the bare filename. You can point the GeoJson(...) call at
+another basemap if you prefer; a us_states.geojson works just as well with the
+albers_usa projection, since the overlays are positioned by long/lat.
 
 Source tables
 -------------

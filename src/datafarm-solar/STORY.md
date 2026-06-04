@@ -54,7 +54,7 @@ and shaded by megawatts. This is the slide that goes in the board deck.
 ### PDL — `capacity-by-state.pdl`
 ```pdl
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "long", "lat", "region", "capacity_mw"
 
 states
@@ -64,7 +64,7 @@ states
 
 ### Algraf — `capacity-bubble-map.ag`  *(proportional-symbol map)*
 ```algraf
-Chart(data: GeoJson("../data/us_counties.geojson"), width: 820, height: 500,
+Chart(data: GeoJson("us_counties.geojson"), width: 820, height: 500,
       title: "Where we built the panels",
       subtitle: "Installed solar capacity (MW) by state, on a US county basemap",
       caption: "...") {
@@ -112,7 +112,7 @@ against peak sun hours. One derived column reframes everything.
 ### PDL — `sun-capacity-factor.pdl`
 ```pdl
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "region", "sun_hours", "capacity_mw", "generation_gwh"
 
 states
@@ -171,7 +171,7 @@ don't — they braid.
 ### PDL — `capacity-vs-output-rank.pdl`
 ```pdl
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "region", "capacity_mw", "generation_gwh"
   | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
   | mutate
@@ -237,7 +237,7 @@ pie is the answer.
 ### PDL — `seasonal-mix.pdl`
 ```pdl
 let seasonal =
-  load "../data/solar_seasonal.csv"
+  load "solar_seasonal.csv"
   | select "state", "season", "generation_gwh"
 
 seasonal
@@ -246,7 +246,7 @@ seasonal
 
 ### Algraf — `seasonal-pie-map.ag`  *(inset pies on a map)*
 ```algraf
-Chart(data: GeoJson("../data/us_counties.geojson"), width: 860, height: 520,
+Chart(data: GeoJson("us_counties.geojson"), width: 860, height: 520,
       title: "Winter tells the truth",
       subtitle: "Seasonal generation mix per state; pie size scales with annual output", caption: "...") {
     Theme(name: "void")
@@ -298,7 +298,7 @@ has — and read it as a siting list, coloured by region.
 ### PDL — `output-per-mw.pdl`
 ```pdl
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "region", "capacity_mw", "generation_gwh"
 
 states
@@ -373,4 +373,4 @@ One chart-side feature goes a step beyond the simpler examples: Step 3 uses
 `Scale(axis: y, domain: [11.5, 0.5])` to put rank 1 at the top. If a descending numeric
 domain is not supported, invert the rank in PDL (`12 - rank`) and relabel.
 
-Both maps reference the bundled `../data/us_counties.geojson`; see `data/README.txt`.
+Both maps reference the bundled `us_counties.geojson`; see `data/README.txt`.

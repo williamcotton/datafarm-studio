@@ -2,7 +2,7 @@
 // The chart also reads state_points.csv from this bundle to place each pie.
 
 let seasonal =
-  load "../data/solar_seasonal.csv"
+  load "solar_seasonal.csv"
   | select "state", "season", "generation_gwh"
 
 seasonal

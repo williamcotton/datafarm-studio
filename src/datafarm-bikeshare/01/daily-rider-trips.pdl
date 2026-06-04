@@ -3,7 +3,7 @@
 // This is the table an operator already has, and the one that misleads.
 
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select
       "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",

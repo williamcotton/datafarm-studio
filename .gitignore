@@ -2,3 +2,4 @@ node_modules/
 dist/
 public/wasm/*.wasm
 .DS_Store
+.playwright-cli/

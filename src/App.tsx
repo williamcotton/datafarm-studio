@@ -329,10 +329,12 @@ function runSharedStoryProgram(
 
   for (const step of story.steps) {
     const output = outputsByName.get(step.outputName) ?? null;
-    const pdlCsv = pdlRunResultForNamedOutput(storyRun, output, step);
+    const pdlCsv = pdlRunResultForSavedFile(storyRun, output, step);
     const preparedCsv = pdlCsv.stdout ?? "";
     const algrafSource = algrafSources[step.id] ?? step.algrafSource;
-    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv, outputsByName) : filesWithSupportingFiles(files, step);
+    const algrafFiles = preparedCsv
+      ? filesWithPreparedOutput(files, step, preparedCsv, outputsByName, storyRun.files)
+      : filesWithSupportingFiles(files, step);
     const algrafResult = preparedCsv ? algrafRuntime.render(algrafSource, algrafFiles) : null;
     const pdlEditorResponse = pdlEditorResponses[step.id] ?? emptyEditorResponse();
 
@@ -373,7 +375,7 @@ function runPerStepPrograms(
       programPath: step.programPath,
     });
     const preparedCsv = pdlCsv.stdout ?? "";
-    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : filesWithSupportingFiles(files, step);
+    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv, undefined, pdlCsv.files) : filesWithSupportingFiles(files, step);
     const algrafResult = preparedCsv ? algrafRuntime.render(algrafSource, algrafFiles) : null;
 
     nextSnapshots[step.id] = {
@@ -707,10 +709,26 @@ function pdlRunResultForNamedOutput(storyRun: PdlRunResult, output: PdlNamedOutp
   const missingOutputError = !storyRun.error && !output ? `missing named PDL output \`${step.outputName}\`` : null;
   return {
     stdout: output ? tableToCsv(output) : "",
+    files: storyRun.files,
     outputs: output ? [output] : [],
     diagnostics: storyRun.diagnostics,
     error: storyRun.error ?? missingOutputError,
   };
+}
+
+function pdlRunResultForSavedFile(storyRun: PdlRunResult, output: PdlNamedOutput | null, step: StoryStep): PdlRunResult {
+  const savedFile = storyRun.files?.[step.dataFile];
+  if (savedFile != null) {
+    return {
+      stdout: savedFile,
+      files: storyRun.files,
+      outputs: output ? [output] : [],
+      diagnostics: storyRun.diagnostics,
+      error: storyRun.error,
+    };
+  }
+
+  return pdlRunResultForNamedOutput(storyRun, output, step);
 }
 
 function filesWithPreparedOutput(
@@ -718,16 +736,21 @@ function filesWithPreparedOutput(
   step: StoryStep,
   preparedCsv: string,
   outputsByName?: Map<string, PdlNamedOutput>,
+  savedFiles?: Record<string, string>,
 ): Record<string, string> {
   const nextFiles = filesWithSupportingFiles(files, step);
   for (const supportingOutput of step.supportingOutputs ?? []) {
+    const savedFile = savedFiles?.[supportingOutput.dataFile];
     const output = outputsByName?.get(supportingOutput.outputName);
-    if (output) {
+    if (savedFile != null) {
+      nextFiles[supportingOutput.dataFile] = savedFile;
+    } else if (output) {
       nextFiles[supportingOutput.dataFile] = tableToCsv(output);
     }
   }
   return {
     ...nextFiles,
+    ...(savedFiles ?? {}),
     "prepared.csv": preparedCsv,
     [step.dataFile]: preparedCsv,
   };

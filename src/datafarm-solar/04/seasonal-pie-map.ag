@@ -1,5 +1,5 @@
 Chart(
-    data: GeoJson("../data/us_counties.geojson"),
+    data: GeoJson("us_counties.geojson"),
     width: 860,
     height: 520,
     title: "Winter tells the truth",

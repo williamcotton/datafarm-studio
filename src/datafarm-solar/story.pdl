@@ -3,7 +3,7 @@
 // Run from the project root; each output also has a standalone copy in NN/.
 
 let states =
-  load "data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "abbr", "long", "lat", "region",
            "sun_hours", "capacity_mw", "generation_gwh"
 
@@ -20,7 +20,7 @@ let ranked =
       "By output per MW" = rank() over (order_by "gen_per_mw" desc)
 
 let seasonal =
-  load "data/solar_seasonal.csv"
+  load "solar_seasonal.csv"
   | select "state", "season", "generation_gwh"
 
 output capacity_by_state =

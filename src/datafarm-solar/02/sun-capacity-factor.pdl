@@ -3,7 +3,7 @@
 // peak sun hours. capacity_factor = generation_gwh / (capacity_mw * 8.76).
 
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "region", "sun_hours", "capacity_mw", "generation_gwh"
 
 states

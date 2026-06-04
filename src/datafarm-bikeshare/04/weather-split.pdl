@@ -3,13 +3,13 @@
 // counts honest.
 
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select "trip_id", "trip_date", "rider_type", "fare_usd"
   | sort "trip_date", "trip_id"
 
 let weather =
-  load "../data/weather_daily.csv"
+  load "weather_daily.csv"
   | select "trip_date", "condition"
   | mutate "weather" = if_else("condition" == lit("rain"), lit("Rain"), lit("Dry"))
   | select "trip_date", "weather"

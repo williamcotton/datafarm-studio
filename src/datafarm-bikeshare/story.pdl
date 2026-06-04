@@ -2,7 +2,7 @@
 // One named output per section, in the same order as STORY.md.
 
 let cleaned =
-  load "data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select
       "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
@@ -22,7 +22,7 @@ let totals =
   | mutate "join_key" = lit("all")
 
 let weather =
-  load "data/weather_daily.csv"
+  load "weather_daily.csv"
   | select "trip_date", "condition"
   | mutate "weather" = if_else("condition" == lit("rain"), lit("Rain"), lit("Dry"))
   | select "trip_date", "weather"
@@ -40,7 +40,7 @@ let trips_by_weather =
   | mutate "revenue" = round("revenue", 2)
 
 let stations =
-  load "data/stations.csv"
+  load "stations.csv"
   | select "station_id", "station_name", "zone", "capacity"
 
 output daily_rider_trips =

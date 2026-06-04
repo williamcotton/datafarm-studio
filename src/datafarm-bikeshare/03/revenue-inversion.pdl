@@ -3,7 +3,7 @@
 // Shares are computed by joining rider totals to one all-riders total row.
 
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select "rider_type", "fare_usd"
 

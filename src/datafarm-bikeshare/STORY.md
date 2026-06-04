@@ -55,7 +55,7 @@ visitors are a thin one that vanishes on wet days.
 ### PDL — `daily-rider-trips.pdl`
 ```pdl
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select
       "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
@@ -122,7 +122,7 @@ fare. No join, no aggregation — just the rides. The point cloud splits in two.
 ### PDL — `valid-trips.pdl`
 ```pdl
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select
       "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
@@ -192,7 +192,7 @@ lines would run flat. They don't.
 ### PDL — `revenue-inversion.pdl`
 ```pdl
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select "rider_type", "fare_usd"
 
@@ -276,13 +276,13 @@ populations respond to weather in opposite ways.
 ### PDL — `weather-split.pdl`
 ```pdl
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select "trip_id", "trip_date", "rider_type", "fare_usd"
   | sort "trip_date", "trip_id"
 
 let weather =
-  load "../data/weather_daily.csv"
+  load "weather_daily.csv"
   | select "trip_date", "condition"
   | mutate "weather" = if_else("condition" == lit("rain"), lit("Rain"), lit("Dry"))
   | select "trip_date", "weather"
@@ -359,12 +359,12 @@ little. The exploration becomes an ordered action list.
 ### PDL — `dock-priority.pdl`
 ```pdl
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select "trip_id", "start_station_id", "fare_usd"
 
 let stations =
-  load "../data/stations.csv"
+  load "stations.csv"
   | select "station_id", "station_name", "zone", "capacity"
 
 cleaned

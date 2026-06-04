@@ -1,35 +1,35 @@
-import bikeStoryMarkdownSource from "../public/datafarm-bikeshare/STORY.md?raw";
-import bikeStoryProgramSource from "../public/datafarm-bikeshare/story.pdl?raw";
-import dailyRiderTripsPdl from "../public/datafarm-bikeshare/01/daily-rider-trips.pdl?raw";
-import dailyRiderTripsAlgraf from "../public/datafarm-bikeshare/01/daily-rider-trips.ag?raw";
-import validTripsPdl from "../public/datafarm-bikeshare/02/valid-trips.pdl?raw";
-import durationDistanceAlgraf from "../public/datafarm-bikeshare/02/duration-distance.ag?raw";
-import revenueInversionPdl from "../public/datafarm-bikeshare/03/revenue-inversion.pdl?raw";
-import revenueInversionAlgraf from "../public/datafarm-bikeshare/03/revenue-inversion.ag?raw";
-import bikeWeatherSplitPdl from "../public/datafarm-bikeshare/04/weather-split.pdl?raw";
-import bikeWeatherSplitAlgraf from "../public/datafarm-bikeshare/04/weather-split.ag?raw";
-import dockPriorityPdl from "../public/datafarm-bikeshare/05/dock-priority.pdl?raw";
-import dockPriorityAlgraf from "../public/datafarm-bikeshare/05/dock-priority.ag?raw";
-import tripsRawCsv from "../public/datafarm-bikeshare/data/trips_raw.csv?raw";
-import stationsCsv from "../public/datafarm-bikeshare/data/stations.csv?raw";
-import bikeWeatherDailyCsv from "../public/datafarm-bikeshare/data/weather_daily.csv?raw";
+import bikeStoryMarkdownSource from "./datafarm-bikeshare/STORY.md?raw";
+import bikeStoryProgramSource from "./datafarm-bikeshare/story.pdl?raw";
+import dailyRiderTripsPdl from "./datafarm-bikeshare/01/daily-rider-trips.pdl?raw";
+import dailyRiderTripsAlgraf from "./datafarm-bikeshare/01/daily-rider-trips.ag?raw";
+import validTripsPdl from "./datafarm-bikeshare/02/valid-trips.pdl?raw";
+import durationDistanceAlgraf from "./datafarm-bikeshare/02/duration-distance.ag?raw";
+import revenueInversionPdl from "./datafarm-bikeshare/03/revenue-inversion.pdl?raw";
+import revenueInversionAlgraf from "./datafarm-bikeshare/03/revenue-inversion.ag?raw";
+import bikeWeatherSplitPdl from "./datafarm-bikeshare/04/weather-split.pdl?raw";
+import bikeWeatherSplitAlgraf from "./datafarm-bikeshare/04/weather-split.ag?raw";
+import dockPriorityPdl from "./datafarm-bikeshare/05/dock-priority.pdl?raw";
+import dockPriorityAlgraf from "./datafarm-bikeshare/05/dock-priority.ag?raw";
+import tripsRawCsv from "./datafarm-bikeshare/data/trips_raw.csv?raw";
+import stationsCsv from "./datafarm-bikeshare/data/stations.csv?raw";
+import bikeWeatherDailyCsv from "./datafarm-bikeshare/data/weather_daily.csv?raw";
 
-import solarStoryMarkdownSource from "../public/datafarm-solar/STORY.md?raw";
-import solarStoryProgramSource from "../public/datafarm-solar/story.pdl?raw";
-import capacityByStatePdl from "../public/datafarm-solar/01/capacity-by-state.pdl?raw";
-import capacityBubbleMapAlgraf from "../public/datafarm-solar/01/capacity-bubble-map.ag?raw";
-import sunCapacityFactorPdl from "../public/datafarm-solar/02/sun-capacity-factor.pdl?raw";
-import sunCapacityFactorAlgraf from "../public/datafarm-solar/02/sun-capacity-factor.ag?raw";
-import capacityVsOutputRankPdl from "../public/datafarm-solar/03/capacity-vs-output-rank.pdl?raw";
-import capacityVsOutputRankAlgraf from "../public/datafarm-solar/03/capacity-vs-output-rank.ag?raw";
-import seasonalMixPdl from "../public/datafarm-solar/04/seasonal-mix.pdl?raw";
-import seasonalPieMapAlgraf from "../public/datafarm-solar/04/seasonal-pie-map.ag?raw";
-import outputPerMwPdl from "../public/datafarm-solar/05/output-per-mw.pdl?raw";
-import outputPerMwAlgraf from "../public/datafarm-solar/05/output-per-mw.ag?raw";
-import solarStateCsv from "../public/datafarm-solar/data/solar_state.csv?raw";
-import solarSeasonalCsv from "../public/datafarm-solar/data/solar_seasonal.csv?raw";
-import usCountiesGeoJson from "../public/datafarm-solar/data/us_counties.geojson?raw";
-import statePointsCsv from "../public/datafarm-solar/04/state_points.csv?raw";
+import solarStoryMarkdownSource from "./datafarm-solar/STORY.md?raw";
+import solarStoryProgramSource from "./datafarm-solar/story.pdl?raw";
+import capacityByStatePdl from "./datafarm-solar/01/capacity-by-state.pdl?raw";
+import capacityBubbleMapAlgraf from "./datafarm-solar/01/capacity-bubble-map.ag?raw";
+import sunCapacityFactorPdl from "./datafarm-solar/02/sun-capacity-factor.pdl?raw";
+import sunCapacityFactorAlgraf from "./datafarm-solar/02/sun-capacity-factor.ag?raw";
+import capacityVsOutputRankPdl from "./datafarm-solar/03/capacity-vs-output-rank.pdl?raw";
+import capacityVsOutputRankAlgraf from "./datafarm-solar/03/capacity-vs-output-rank.ag?raw";
+import seasonalMixPdl from "./datafarm-solar/04/seasonal-mix.pdl?raw";
+import seasonalPieMapAlgraf from "./datafarm-solar/04/seasonal-pie-map.ag?raw";
+import outputPerMwPdl from "./datafarm-solar/05/output-per-mw.pdl?raw";
+import outputPerMwAlgraf from "./datafarm-solar/05/output-per-mw.ag?raw";
+import solarStateCsv from "./datafarm-solar/data/solar_state.csv?raw";
+import solarSeasonalCsv from "./datafarm-solar/data/solar_seasonal.csv?raw";
+import usCountiesGeoJson from "./datafarm-solar/data/us_counties.geojson?raw";
+import statePointsCsv from "./datafarm-solar/04/state_points.csv?raw";
 
 export type StoryId = "bikeshare" | "solar";
 export type MethodIcon = "search" | "join" | "workflow" | "chart";
@@ -169,7 +169,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           label: "solar_state.csv",
           icon: "sun",
           source: solarStateCsv,
-          modelPath: "datafarm-solar/data/solar_state.csv",
+          modelPath: "solar_state.csv",
           language: "csv",
         },
         {
@@ -177,7 +177,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           label: "solar_seasonal.csv",
           icon: "seasonal",
           source: solarSeasonalCsv,
-          modelPath: "datafarm-solar/data/solar_seasonal.csv",
+          modelPath: "solar_seasonal.csv",
           language: "csv",
         },
         {
@@ -185,7 +185,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           label: "us_counties.geojson",
           icon: "geojson",
           source: usCountiesGeoJson,
-          modelPath: "datafarm-solar/data/us_counties.geojson",
+          modelPath: "us_counties.geojson",
           language: "json",
         },
       ],
@@ -359,7 +359,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           label: "trips_raw.csv",
           icon: "bike",
           source: tripsRawCsv,
-          modelPath: "datafarm-bikeshare/data/trips_raw.csv",
+          modelPath: "trips_raw.csv",
           language: "csv",
         },
         {
@@ -367,7 +367,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           label: "stations.csv",
           icon: "map",
           source: stationsCsv,
-          modelPath: "datafarm-bikeshare/data/stations.csv",
+          modelPath: "stations.csv",
           language: "csv",
         },
         {
@@ -375,7 +375,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           label: "weather_daily.csv",
           icon: "weather",
           source: bikeWeatherDailyCsv,
-          modelPath: "datafarm-bikeshare/data/weather_daily.csv",
+          modelPath: "weather_daily.csv",
           language: "csv",
         },
       ],
@@ -554,8 +554,6 @@ export function createStoryFiles(story: StoryBundle, rawSources: Record<string, 
   for (const rawFile of story.rawData.files) {
     const source = rawSources[rawFile.id] ?? rawFile.source;
     files[rawFile.label] = source;
-    files[`data/${rawFile.label}`] = source;
-    files[`../data/${rawFile.label}`] = source;
   }
   return files;
 }

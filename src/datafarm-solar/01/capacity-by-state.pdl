@@ -3,7 +3,7 @@
 // shared county GeoJSON. This is the view an energy board already has.
 
 let states =
-  load "../data/solar_state.csv"
+  load "solar_state.csv"
   | select "state", "long", "lat", "region", "capacity_mw"
 
 states

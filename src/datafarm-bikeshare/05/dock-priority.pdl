@@ -2,12 +2,12 @@
 // rise to the top; this is the rebalancing review order.
 
 let cleaned =
-  load "../data/trips_raw.csv"
+  load "trips_raw.csv"
   | filter lower(trim("status")) == lit("completed")
   | select "trip_id", "start_station_id", "fare_usd"
 
 let stations =
-  load "../data/stations.csv"
+  load "stations.csv"
   | select "station_id", "station_name", "zone", "capacity"
 
 cleaned
