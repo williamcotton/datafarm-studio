@@ -32,7 +32,7 @@ import {
   type StoryBundle,
   type StoryId,
   type StoryStep,
-} from "./bikeShareStory";
+} from "./storyBundles";
 import {
   loadPdlRuntime,
   type PdlEditorDiagnostic,
