@@ -14,11 +14,21 @@ import {
   Search,
   Workflow,
 } from "lucide-react";
+import { AlgrafEditor } from "algraf-editor";
+import { loadAlgrafRuntime, type AlgrafDiagnostic, type AlgrafRenderResult, type AlgrafRuntime } from "algraf-wasm";
+import { PdlEditor, defaultPdlTheme } from "pdl-editor";
+import {
+  loadPdlRuntime,
+  type PdlEditorDiagnostic,
+  type PdlEditorServiceResult,
+  type PdlNamedOutput,
+  type PdlRunResult,
+  type PdlRuntime,
+  type PdlRuntimeDiagnostic,
+} from "pdl-wasm";
 
-import { AlgrafEditor } from "./AlgrafEditor";
 import { DataEditor } from "./DataEditor";
-import { PdlEditor } from "./PdlEditor";
-import { loadAlgrafRuntime, type AlgrafDiagnostic, type AlgrafRenderResult, type AlgrafRuntime } from "./algrafRuntime";
+import { publicAssetUrl } from "./publicAssets";
 import {
   DEFAULT_STORY_ID,
   STORY_BUNDLES,
@@ -33,15 +43,9 @@ import {
   type StoryId,
   type StoryStep,
 } from "./storyBundles";
-import {
-  loadPdlRuntime,
-  type PdlEditorDiagnostic,
-  type PdlEditorServiceResult,
-  type PdlNamedOutput,
-  type PdlRunResult,
-  type PdlRuntime,
-  type PdlRuntimeDiagnostic,
-} from "./pdlRuntime";
+
+const DATAFARM_EDITOR_THEME_NAME = "datafarm-studio-light";
+const DATAFARM_EDITOR_THEME = defaultPdlTheme();
 
 type RuntimeState = "loading" | "ready" | "error";
 
@@ -87,7 +91,7 @@ export function App(): React.ReactElement {
     setPdlState("loading");
     setAlgrafState("loading");
 
-    loadPdlRuntime()
+    loadPdlRuntime({ wasmUrl: publicAssetUrl("wasm/pdl.wasm") })
       .then((runtime) => {
         if (cancelled) return;
         setPdlRuntime(runtime);
@@ -99,7 +103,7 @@ export function App(): React.ReactElement {
         setRuntimeError(errorMessage(error));
       });
 
-    loadAlgrafRuntime()
+    loadAlgrafRuntime({ wasmUrl: publicAssetUrl("wasm/algraf.wasm") })
       .then((runtime) => {
         if (cancelled) return;
         setAlgrafRuntime(runtime);
@@ -586,6 +590,8 @@ function StorySection({
               modelUri={modelUriForProgramPath(step.programPath)}
               onChange={onPdlChange}
               runtime={pdlRuntime}
+              theme={DATAFARM_EDITOR_THEME}
+              themeName={DATAFARM_EDITOR_THEME_NAME}
               value={pdlSource}
             />
           </div>
@@ -606,6 +612,8 @@ function StorySection({
               modelUri={`inmemory://datafarm/${story.slug}/${step.number}/${step.algrafLabel}`}
               onChange={onAlgrafChange}
               runtime={algrafRuntime}
+              theme={DATAFARM_EDITOR_THEME}
+              themeName={DATAFARM_EDITOR_THEME_NAME}
               value={algrafSource}
             />
           </div>

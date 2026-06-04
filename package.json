@@ -1,6 +1,6 @@
 {
   "name": "datafarm-studio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,11 +12,15 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
+    "algraf-editor": "file:../algraf/editors/monaco",
+    "algraf-wasm": "file:../algraf/packages/wasm",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.55.1",
     "monaco-editor-textmate": "^4.0.0",
     "monaco-textmate": "^3.0.1",
     "onigasm": "^2.2.5",
+    "pdl-editor": "file:../pdl/editors/monaco",
+    "pdl-wasm": "file:../pdl/packages/wasm",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

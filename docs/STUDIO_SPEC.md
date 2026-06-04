@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.2.0
+Status: 0.3.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.2.0. It is a Vite/React application with
+The current implementation is version 0.3.0. It is a Vite/React application with
 two bundled case studies. It is not yet a full IDE.
 
 The current case studies are product content and workflow demonstrations. They
@@ -88,7 +88,7 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.2.0 ships two curated workflows:
+Version 0.3.0 ships two curated workflows:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
@@ -204,7 +204,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.2.0 does not expose a general workspace model in the UI.
+Version 0.3.0 does not expose a general workspace model in the UI.
 
 Internally, Studio maintains editable per-story state:
 
@@ -229,7 +229,7 @@ metadata.
 
 A story is a curated analytical sequence.
 
-In version 0.2.0, stories are declared as `StoryBundle` values in
+In version 0.3.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -271,7 +271,7 @@ keys, editor model paths, and output routing identifiers.
 
 ## 7. Current Stories
 
-Version 0.2.0 ships two stories.
+Version 0.3.0 ships two stories.
 
 ### 7.1 Solar
 
@@ -344,12 +344,15 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
+Version 0.3.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+repository with filesystem package installs during local development.
 
-Version 0.2.0 requires a PDL v0.26-compatible WASM runtime. Bundled PDL story
-sources MUST use bare column references, backtick-escaped column references
-when needed, double-quoted string and path literals, and assignment-form
-column-producing stages. Studio MUST NOT ship active story sources that rely on
-v0.25 quoted-column references, `as` aliases, `col(...)`, or `lit(...)`.
+Version 0.3.0 requires a PDL v0.27-compatible browser package surface and a
+v0.26-compatible PDL source/WASM runtime. Bundled PDL story sources MUST use
+bare column references, backtick-escaped column references when needed,
+double-quoted string and path literals, and assignment-form column-producing
+stages. Studio MUST NOT ship active story sources that rely on v0.25
+quoted-column references, `as` aliases, `col(...)`, or `lit(...)`.
 
 The PDL WASM module MUST expose:
 
@@ -579,7 +582,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.2.0.
+These concepts are deferred in version 0.3.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -605,7 +608,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.2.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.3.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -628,7 +631,7 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.2.0 approximates this graph with story-level and per-section workflow
+Version 0.3.0 approximates this graph with story-level and per-section workflow
 functions in `src/App.tsx`.
 
 ## 19. Data Preview
@@ -688,6 +691,12 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
+For version 0.3.0 local validation, Studio uses filesystem installs of
+`pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
+repositories. Runtime loading still uses `public/wasm/pdl.wasm` and
+`public/wasm/algraf.wasm`, populated by `npm run copy:wasm` for coordinated
+local builds or by `npm run build:wasm` for downloaded release assets.
+
 ## 22. Build And Deployment
 
 `npm run dev` MUST start Vite for local browser testing.
@@ -731,7 +740,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.2.0 runs small bundled stories and does not define strict performance
+Version 0.3.0 runs small bundled stories and does not define strict performance
 budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -804,22 +813,23 @@ root.
 
 ## 28. Implementation Milestones
 
-Version 0.2.0 preserves the case-study alpha and updates it for PDL v0.26:
+Version 0.3.0 preserves the case-study alpha and consumes shared PDL and Algraf
+browser package integrations:
 
 - Vite/React shell;
 - story switcher;
 - two bundled stories;
 - editable raw data;
-- PDL Monaco editor;
-- Algraf Monaco editor;
-- PDL WASM runtime adapter;
-- Algraf WASM runtime adapter;
+- PDL Monaco editor from `pdl-editor`;
+- Algraf Monaco editor from `algraf-editor`;
+- PDL WASM runtime adapter from `pdl-wasm`;
+- Algraf WASM runtime adapter from `algraf-wasm`;
 - story-level named output routing;
 - per-section fallback runs after edits;
 - prepared CSV display;
 - SVG chart display;
-- GitHub Pages workflow.
-- v0.26-compatible PDL story syntax and editor highlighting.
+- GitHub Pages workflow;
+- v0.26-compatible PDL story syntax and shared upstream editor highlighting.
 
 Future versions should move from fixed case studies toward:
 
