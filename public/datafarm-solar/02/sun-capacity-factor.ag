@@ -1,0 +1,22 @@
+Chart(
+    data: "sun_capacity_factor.csv",
+    width: 760,
+    height: 440,
+    title: "Capacity isn't electricity",
+    caption: "Each dot is a state; size is installed capacity. Output per panel rises with the sun - the Sun Belt sits top-right, the Snow Belt bottom-left."
+) {
+    Theme(name: "minimal")
+    Scale(fill: region, palette: "accent", label: "Region")
+    Scale(size: capacity_mw, range: [4, 16],
+          breaks: [1000, 2500, 4000], labels: ["1 GW", "2.5 GW", "4 GW"], label: "Capacity")
+    Scale(axis: x, domain: [3.5, 7], breaks: [4, 5, 6, 7], labels: ["4", "5", "6", "7"])
+    Scale(axis: y, domain: [0.12, 0.32], breaks: [0.15, 0.20, 0.25, 0.30],
+          labels: ["15%", "20%", "25%", "30%"])
+    Guide(axis: x, label: "Peak sun hours per day")
+    Guide(axis: y, label: "Capacity factor (output per MW)")
+    Space(sun_hours * capacity_factor) {
+        Point(fill: region, size: capacity_mw, alpha: 0.8,
+              tooltip: [state, region, sun_hours, capacity_mw, capacity_factor])
+        Text(label: state, dy: -10, size: 7, fill: "#666666", anchor: "middle")
+    }
+}

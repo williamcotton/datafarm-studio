@@ -1,0 +1,12 @@
+state,region,sun_hours,capacity_mw,capacity_factor
+Massachusetts,Snow Belt,3.9,1700,0.148
+New York,Snow Belt,4.0,2000,0.155
+Minnesota,Snow Belt,4.1,1100,0.15
+North Carolina,Sun Belt,4.9,3000,0.2
+Florida,Sun Belt,5.2,2400,0.22
+Texas,Sun Belt,5.5,2600,0.248
+Colorado,Sun Belt,5.6,900,0.255
+California,Sun Belt,5.8,4200,0.262
+Nevada,Sun Belt,6.4,1500,0.28
+Arizona,Sun Belt,6.5,1800,0.29
+New Mexico,Sun Belt,6.6,700,0.3

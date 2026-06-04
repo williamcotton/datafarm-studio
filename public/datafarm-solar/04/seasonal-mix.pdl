@@ -1,0 +1,9 @@
+// Step 04 - The stress test: seasonal generation mix per state, for inset pies.
+// The chart also reads state_points.csv from this bundle to place each pie.
+
+let seasonal =
+  load "../data/solar_seasonal.csv"
+  | select "state", "season", "generation_gwh"
+
+seasonal
+  | save "seasonal_generation.csv"

@@ -1,0 +1,25 @@
+Chart(
+    data: "capacity_vs_output_rank.csv",
+    width: 720,
+    height: 520,
+    marginLeft: 140,
+    marginRight: 150,
+    title: "Ranked by panels, then by power: the board scrambles",
+    caption: "Each line is a state, ranked first by installed capacity, then by output per MW. New Mexico climbs from last to first; Massachusetts falls from 7th to last. We built big where the sun is weak."
+) {
+    Theme(name: "minimal")
+    Scale(stroke: region, palette: "accent", label: "Region")
+    Scale(fill: region, palette: "accent")
+    Scale(axis: x, domain: ["By capacity", "By output per MW"])
+    Scale(axis: y, reverse: true, domain: [11.5, 0.5], breaks: [1, 3, 5, 7, 9, 11],
+          labels: ["1", "3", "5", "7", "9", "11"])
+    Guide(axis: x, label: null)
+    Guide(axis: y, label: "Rank (1 = best)")
+    Guide(fill: null)
+    Space(metric * rank) {
+        Line(stroke: region, strokeWidth: 2.5, alpha: 0.85, group: state)
+        Point(fill: region, size: 6)
+        Label(label: state, at: "start", group: state, dx: -8, anchor: "end", fill: "#444444", size: 9)
+        Label(label: state, at: "end", group: state, dx: 8, anchor: "start", fill: "#444444", size: 9)
+    }
+}

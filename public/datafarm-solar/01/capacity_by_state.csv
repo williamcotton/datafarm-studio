@@ -1,0 +1,12 @@
+state,long,lat,region,capacity_mw
+California,-119.4,36.8,Sun Belt,4200
+North Carolina,-79.4,35.6,Sun Belt,3000
+Texas,-99.0,31.5,Sun Belt,2600
+Florida,-81.7,27.9,Sun Belt,2400
+New York,-75.5,42.9,Snow Belt,2000
+Arizona,-111.7,34.2,Sun Belt,1800
+Massachusetts,-71.8,42.3,Snow Belt,1700
+Nevada,-116.9,38.5,Sun Belt,1500
+Minnesota,-94.3,46.3,Snow Belt,1100
+Colorado,-105.5,39.0,Sun Belt,900
+New Mexico,-106.0,34.4,Sun Belt,700

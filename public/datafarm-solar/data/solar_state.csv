@@ -1,0 +1,12 @@
+state,abbr,long,lat,region,sun_hours,capacity_mw,generation_gwh
+California,CA,-119.4,36.8,Sun Belt,5.8,4200,9640
+Texas,TX,-99.0,31.5,Sun Belt,5.5,2600,5648
+Arizona,AZ,-111.7,34.2,Sun Belt,6.5,1800,4573
+Nevada,NV,-116.9,38.5,Sun Belt,6.4,1500,3679
+New Mexico,NM,-106.0,34.4,Sun Belt,6.6,700,1840
+Colorado,CO,-105.5,39.0,Sun Belt,5.6,900,2010
+Florida,FL,-81.7,27.9,Sun Belt,5.2,2400,4625
+North Carolina,NC,-79.4,35.6,Sun Belt,4.9,3000,5256
+New York,NY,-75.5,42.9,Snow Belt,4.0,2000,2716
+Massachusetts,MA,-71.8,42.3,Snow Belt,3.9,1700,2204
+Minnesota,MN,-94.3,46.3,Snow Belt,4.1,1100,1445

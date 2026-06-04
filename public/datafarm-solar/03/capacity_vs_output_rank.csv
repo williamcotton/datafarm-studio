@@ -1,0 +1,23 @@
+state,region,metric,rank
+California,Sun Belt,By capacity,1
+California,Sun Belt,By output per MW,4
+Texas,Sun Belt,By capacity,3
+Texas,Sun Belt,By output per MW,6
+Arizona,Sun Belt,By capacity,6
+Arizona,Sun Belt,By output per MW,2
+Nevada,Sun Belt,By capacity,8
+Nevada,Sun Belt,By output per MW,3
+New Mexico,Sun Belt,By capacity,11
+New Mexico,Sun Belt,By output per MW,1
+Colorado,Sun Belt,By capacity,10
+Colorado,Sun Belt,By output per MW,5
+Florida,Sun Belt,By capacity,4
+Florida,Sun Belt,By output per MW,7
+North Carolina,Sun Belt,By capacity,2
+North Carolina,Sun Belt,By output per MW,8
+New York,Snow Belt,By capacity,5
+New York,Snow Belt,By output per MW,9
+Massachusetts,Snow Belt,By capacity,7
+Massachusetts,Snow Belt,By output per MW,11
+Minnesota,Snow Belt,By capacity,9
+Minnesota,Snow Belt,By output per MW,10

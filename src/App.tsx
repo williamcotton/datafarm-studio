@@ -20,12 +20,17 @@ import { DataEditor } from "./DataEditor";
 import { PdlEditor } from "./PdlEditor";
 import { loadAlgrafRuntime, type AlgrafDiagnostic, type AlgrafRenderResult, type AlgrafRuntime } from "./algrafRuntime";
 import {
-  HERO_METRICS,
-  RAW_DATA,
-  STORY_PROGRAM_PATH,
-  STORY_PROGRAM_SOURCE,
-  STORY_STEPS,
-  createBikeShareFiles,
+  DEFAULT_STORY_ID,
+  STORY_BUNDLES,
+  createDefaultRawDataByStory,
+  createDefaultSourcesByStory,
+  createStoryFiles,
+  getStoryBundle,
+  type MethodIcon,
+  type RawDataFile,
+  type RawDataIcon,
+  type StoryBundle,
+  type StoryId,
   type StoryStep,
 } from "./bikeShareStory";
 import {
@@ -51,51 +56,31 @@ interface StepSnapshot {
 
 type StepSnapshots = Record<string, StepSnapshot>;
 
-const INTAKE_STEPS = [
-  {
-    icon: <Search size={18} aria-hidden="true" />,
-    title: "One question per table",
-    body: "Each section prepares the smallest CSV its chart needs, so the claim can be audited without extra baggage.",
-  },
-  {
-    icon: <GitMerge size={18} aria-hidden="true" />,
-    title: "Context joins late",
-    body: "Stations and weather join only when the story asks for them, after trip counts have exposed the first misread.",
-  },
-  {
-    icon: <Workflow size={18} aria-hidden="true" />,
-    title: "Named outputs drive charts",
-    body: "The default run executes one PDL story program and routes each named output to its matching Algraf file.",
-  },
-  {
-    icon: <BarChart3 size={18} aria-hidden="true" />,
-    title: "Chart form carries the argument",
-    body: "Area, scatter, slope, grouped bars, and ranked bars each match a different step in the decision.",
-  },
-];
-
 export function App(): React.ReactElement {
+  const [storyId, setStoryId] = React.useState<StoryId>(DEFAULT_STORY_ID);
   const [pdlRuntime, setPdlRuntime] = React.useState<PdlRuntime | null>(null);
   const [algrafRuntime, setAlgrafRuntime] = React.useState<AlgrafRuntime | null>(null);
   const [pdlState, setPdlState] = React.useState<RuntimeState>("loading");
   const [algrafState, setAlgrafState] = React.useState<RuntimeState>("loading");
   const [runtimeError, setRuntimeError] = React.useState<string | null>(null);
-  const [tripsCsv, setTripsCsv] = React.useState(RAW_DATA.trips);
-  const [stationsCsv, setStationsCsv] = React.useState(RAW_DATA.stations);
-  const [weatherCsv, setWeatherCsv] = React.useState(RAW_DATA.weather);
-  const [pdlSources, setPdlSources] = React.useState<Record<string, string>>(() =>
-    Object.fromEntries(STORY_STEPS.map((step) => [step.id, step.pdlSource])),
+  const [rawDataByStory, setRawDataByStory] = React.useState<Record<StoryId, Record<string, string>>>(() =>
+    createDefaultRawDataByStory(),
   );
-  const [algrafSources, setAlgrafSources] = React.useState<Record<string, string>>(() =>
-    Object.fromEntries(STORY_STEPS.map((step) => [step.id, step.algrafSource])),
+  const [pdlSourcesByStory, setPdlSourcesByStory] = React.useState<Record<StoryId, Record<string, string>>>(() =>
+    createDefaultSourcesByStory("pdl"),
+  );
+  const [algrafSourcesByStory, setAlgrafSourcesByStory] = React.useState<Record<StoryId, Record<string, string>>>(() =>
+    createDefaultSourcesByStory("algraf"),
   );
   const [running, setRunning] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<StepSnapshots>({});
 
-  const files = React.useMemo(
-    () => createBikeShareFiles(tripsCsv, stationsCsv, weatherCsv),
-    [stationsCsv, tripsCsv, weatherCsv],
-  );
+  const activeStory = React.useMemo(() => getStoryBundle(storyId), [storyId]);
+  const rawSources = rawDataByStory[activeStory.id] ?? {};
+  const pdlSources = pdlSourcesByStory[activeStory.id] ?? {};
+  const algrafSources = algrafSourcesByStory[activeStory.id] ?? {};
+
+  const files = React.useMemo(() => createStoryFiles(activeStory, rawSources), [activeStory, rawSources]);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -131,6 +116,12 @@ export function App(): React.ReactElement {
     };
   }, []);
 
+  React.useEffect(() => {
+    setRuntimeError(null);
+    setSnapshots({});
+    setRunning(false);
+  }, [activeStory.id]);
+
   const runWorkflow = React.useCallback(() => {
     if (!pdlRuntime || !algrafRuntime) {
       return;
@@ -139,10 +130,10 @@ export function App(): React.ReactElement {
     setRunning(true);
     window.setTimeout(() => {
       try {
-        const hasPdlEdits = STORY_STEPS.some((step) => (pdlSources[step.id] ?? step.pdlSource) !== step.pdlSource);
+        const hasPdlEdits = activeStory.steps.some((step) => (pdlSources[step.id] ?? step.pdlSource) !== step.pdlSource);
         const nextSnapshots = hasPdlEdits
-          ? runPerStepPrograms(pdlRuntime, algrafRuntime, files, pdlSources, algrafSources)
-          : runSharedStoryProgram(pdlRuntime, algrafRuntime, files, algrafSources);
+          ? runPerStepPrograms(activeStory, pdlRuntime, algrafRuntime, files, pdlSources, algrafSources)
+          : runSharedStoryProgram(activeStory, pdlRuntime, algrafRuntime, files, algrafSources);
         setSnapshots(nextSnapshots);
       } catch (error: unknown) {
         setRuntimeError(errorMessage(error));
@@ -150,7 +141,7 @@ export function App(): React.ReactElement {
         setRunning(false);
       }
     }, 0);
-  }, [algrafRuntime, algrafSources, files, pdlRuntime, pdlSources]);
+  }, [activeStory, algrafRuntime, algrafSources, files, pdlRuntime, pdlSources]);
 
   React.useEffect(() => {
     if (pdlState !== "ready" || algrafState !== "ready") {
@@ -162,7 +153,7 @@ export function App(): React.ReactElement {
   }, [algrafState, pdlState, runWorkflow]);
 
   const runtimeReady = pdlState === "ready" && algrafState === "ready";
-  const totalDiagnostics = STORY_STEPS.reduce((total, step) => {
+  const totalDiagnostics = activeStory.steps.reduce((total, step) => {
     const snapshot = snapshots[step.id] ?? emptyStepSnapshot();
     return (
       total +
@@ -180,25 +171,24 @@ export function App(): React.ReactElement {
           <span className="brand-mark">Df</span>
           <span>
             <strong>Datafarm Studio</strong>
-            <small>Urban bike-share story</small>
+            <small>{activeStory.brandSubtitle}</small>
           </span>
         </a>
-        <div className="runtime-pills" aria-label="Runtime status">
-          <RuntimePill label="PDL" state={pdlState} />
-          <RuntimePill label="Algraf" state={algrafState} />
+        <div className="topbar-controls">
+          <StorySwitcher activeStoryId={activeStory.id} onChange={setStoryId} />
+          <div className="runtime-pills" aria-label="Runtime status">
+            <RuntimePill label="PDL" state={pdlState} />
+            <RuntimePill label="Algraf" state={algrafState} />
+          </div>
         </div>
       </header>
 
       <main>
         <section className="hero">
           <div className="hero-copy">
-            <p className="eyebrow">Urban bike-share case study</p>
-            <h1>Two-thirds of the rides. Less than two-fifths of the money.</h1>
-            <p>
-              Forty-seven valid April rides, built up one table and one chart at a time. We begin with
-              the trip counts an operator already watches, then add station and weather context only
-              when a question forces it.
-            </p>
+            <p className="eyebrow">{activeStory.hero.eyebrow}</p>
+            <h1>{activeStory.hero.headline}</h1>
+            <p>{activeStory.hero.subhead}</p>
             <div className="hero-actions">
               <button className="primary-button" type="button" disabled={!runtimeReady || running} onClick={runWorkflow}>
                 {running ? <LoaderCircle className="spin" size={16} aria-hidden="true" /> : <Play size={16} aria-hidden="true" />}
@@ -213,17 +203,17 @@ export function App(): React.ReactElement {
               PDL editor to Algraf editor to prepared output to rendered chart. Diagnostics now: {totalDiagnostics}.
             </p>
           </div>
-          <div className="hero-status" aria-label="Bike-share headline metrics">
-            {HERO_METRICS.map((metric) => (
+          <div className="hero-status" aria-label={activeStory.hero.metricsAriaLabel}>
+            {activeStory.hero.metrics.map((metric) => (
               <Metric key={metric.label} label={metric.label} value={metric.value} />
             ))}
           </div>
         </section>
 
         <section className="step-grid" aria-label="Story method">
-          {INTAKE_STEPS.map((step) => (
+          {activeStory.methodSteps.map((step) => (
             <article className="step-card" key={step.title}>
-              <div className="step-icon">{step.icon}</div>
+              <div className="step-icon">{methodIcon(step.icon)}</div>
               <h2>{step.title}</h2>
               <p>{step.body}</p>
             </article>
@@ -233,52 +223,38 @@ export function App(): React.ReactElement {
         <section className="case-section">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">Raw data</p>
-              <h2>Three sources, joined on purpose</h2>
-              <p className="section-copy">
-                The trip export carries 49 rows: 47 completed rides plus one cancelled and one
-                maintenance row. Stations and weather stay separate until a section needs them.
-              </p>
+              <p className="eyebrow">{activeStory.rawData.eyebrow}</p>
+              <h2>{activeStory.rawData.heading}</h2>
+              <p className="section-copy">{activeStory.rawData.copy}</p>
             </div>
           </div>
           <div className="source-grid source-grid-three" aria-label="Raw data files">
-            <DataPanel
-              className="raw-panel"
-              icon={<Bike size={16} aria-hidden="true" />}
-              label="trips_raw.csv"
-              meta={`${countDataRows(tripsCsv)} rows`}
-              value={tripsCsv}
-              onChange={setTripsCsv}
-              modelUri="inmemory://datafarm/datafarm-bikeshare/data/trips_raw.csv"
-            />
-            <DataPanel
-              className="raw-panel"
-              icon={<MapPinned size={16} aria-hidden="true" />}
-              label="stations.csv"
-              meta={`${countDataRows(stationsCsv)} rows`}
-              value={stationsCsv}
-              onChange={setStationsCsv}
-              modelUri="inmemory://datafarm/datafarm-bikeshare/data/stations.csv"
-            />
-            <DataPanel
-              className="raw-panel"
-              icon={<CloudRain size={16} aria-hidden="true" />}
-              label="weather_daily.csv"
-              meta={`${countDataRows(weatherCsv)} rows`}
-              value={weatherCsv}
-              onChange={setWeatherCsv}
-              modelUri="inmemory://datafarm/datafarm-bikeshare/data/weather_daily.csv"
-            />
+            {activeStory.rawData.files.map((rawFile) => {
+              const value = rawSources[rawFile.id] ?? rawFile.source;
+              return (
+                <DataPanel
+                  className="raw-panel"
+                  icon={rawDataIcon(rawFile.icon)}
+                  key={rawFile.id}
+                  label={rawFile.label}
+                  language={rawFile.language}
+                  meta={rawFile.language === "csv" ? `${countDataRows(value)} rows` : `${formatBytes(value.length)}`}
+                  value={value}
+                  onChange={(nextValue) => updateRawSource(setRawDataByStory, activeStory, rawFile, nextValue)}
+                  modelUri={`inmemory://datafarm/${rawFile.modelPath}`}
+                />
+              );
+            })}
           </div>
         </section>
 
-        <section className="story-stack" id="story" aria-label="Bike-share story">
-          {STORY_STEPS.map((step) => {
+        <section className="story-stack" id="story" aria-label={`${activeStory.navLabel} story`}>
+          {activeStory.steps.map((step) => {
             const snapshot = snapshots[step.id] ?? emptyStepSnapshot();
             const preparedCsv = snapshot.pdlCsv?.stdout ?? "";
             const pdlSource = pdlSources[step.id] ?? step.pdlSource;
             const algrafSource = algrafSources[step.id] ?? step.algrafSource;
-            const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : files;
+            const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : filesWithSupportingFiles(files, step);
 
             return (
               <StorySection
@@ -288,15 +264,21 @@ export function App(): React.ReactElement {
                 algrafSource={algrafSource}
                 key={step.id}
                 onAlgrafChange={(value) =>
-                  setAlgrafSources((current) => ({
+                  setAlgrafSourcesByStory((current) => ({
                     ...current,
-                    [step.id]: value,
+                    [activeStory.id]: {
+                      ...current[activeStory.id],
+                      [step.id]: value,
+                    },
                   }))
                 }
                 onPdlChange={(value) =>
-                  setPdlSources((current) => ({
+                  setPdlSourcesByStory((current) => ({
                     ...current,
-                    [step.id]: value,
+                    [activeStory.id]: {
+                      ...current[activeStory.id],
+                      [step.id]: value,
+                    },
                   }))
                 }
                 pdlDiagnostics={snapshot.pdlDiagnostics}
@@ -306,6 +288,7 @@ export function App(): React.ReactElement {
                 runtimeError={runtimeError}
                 running={running}
                 snapshot={snapshot}
+                story={activeStory}
                 step={step}
               />
             );
@@ -314,22 +297,16 @@ export function App(): React.ReactElement {
 
         <section className="guide-section">
           <div>
-            <p className="eyebrow">Payoff</p>
-            <h2>Busy is not the same as valuable</h2>
+            <p className="eyebrow">{activeStory.guide.eyebrow}</p>
+            <h2>{activeStory.guide.heading}</h2>
           </div>
           <div className="guide-grid">
-            <div>
-              <h3>Counts mislead</h3>
-              <p>Member rides dominate the dashboard, but visitor rides carry most of the money.</p>
-            </div>
-            <div>
-              <h3>Revenue is exposed</h3>
-              <p>The high-value segment is weather-shy, so rainy days cut revenue harder than trip count.</p>
-            </div>
-            <div>
-              <h3>Docks become decisions</h3>
-              <p>The ranked output identifies the small stations where a missing bike costs the most.</p>
-            </div>
+            {activeStory.guide.items.map((item) => (
+              <div key={item.title}>
+                <h3>{item.title}</h3>
+                <p>{item.body}</p>
+              </div>
+            ))}
           </div>
         </section>
       </main>
@@ -338,22 +315,23 @@ export function App(): React.ReactElement {
 }
 
 function runSharedStoryProgram(
+  story: StoryBundle,
   pdlRuntime: PdlRuntime,
   algrafRuntime: AlgrafRuntime,
   files: Record<string, string>,
   algrafSources: Record<string, string>,
 ): StepSnapshots {
-  const pdlEditorResponses = editorResponsesForSteps(pdlRuntime, files, defaultPdlSources());
-  const storyRun = pdlRuntime.run(STORY_PROGRAM_SOURCE, files, { programPath: STORY_PROGRAM_PATH });
+  const pdlEditorResponses = editorResponsesForSteps(story, pdlRuntime, files, defaultPdlSources(story));
+  const storyRun = pdlRuntime.run(story.storyProgramSource, files, { programPath: story.storyProgramPath });
   const outputsByName = new Map(storyRun.outputs.map((output) => [output.name, output]));
   const nextSnapshots: StepSnapshots = {};
 
-  for (const step of STORY_STEPS) {
+  for (const step of story.steps) {
     const output = outputsByName.get(step.outputName) ?? null;
     const pdlCsv = pdlRunResultForNamedOutput(storyRun, output, step);
     const preparedCsv = pdlCsv.stdout ?? "";
     const algrafSource = algrafSources[step.id] ?? step.algrafSource;
-    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : files;
+    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv, outputsByName) : filesWithSupportingFiles(files, step);
     const algrafResult = preparedCsv ? algrafRuntime.render(algrafSource, algrafFiles) : null;
     const pdlEditorResponse = pdlEditorResponses[step.id] ?? emptyEditorResponse();
 
@@ -371,6 +349,7 @@ function runSharedStoryProgram(
 }
 
 function runPerStepPrograms(
+  story: StoryBundle,
   pdlRuntime: PdlRuntime,
   algrafRuntime: AlgrafRuntime,
   files: Record<string, string>,
@@ -379,7 +358,7 @@ function runPerStepPrograms(
 ): StepSnapshots {
   const nextSnapshots: StepSnapshots = {};
 
-  for (const step of STORY_STEPS) {
+  for (const step of story.steps) {
     const pdlSource = pdlSources[step.id] ?? step.pdlSource;
     const algrafSource = algrafSources[step.id] ?? step.algrafSource;
     const pdlEditorResponse: PdlEditorServiceResult = pdlRuntime.editorService(
@@ -393,7 +372,7 @@ function runPerStepPrograms(
       programPath: step.programPath,
     });
     const preparedCsv = pdlCsv.stdout ?? "";
-    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : files;
+    const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : filesWithSupportingFiles(files, step);
     const algrafResult = preparedCsv ? algrafRuntime.render(algrafSource, algrafFiles) : null;
 
     nextSnapshots[step.id] = {
@@ -407,6 +386,73 @@ function runPerStepPrograms(
   }
 
   return nextSnapshots;
+}
+
+function StorySwitcher({
+  activeStoryId,
+  onChange,
+}: {
+  activeStoryId: StoryId;
+  onChange: (storyId: StoryId) => void;
+}): React.ReactElement {
+  return (
+    <div className="segmented-control story-switcher" aria-label="Story">
+      {STORY_BUNDLES.map((story) => (
+        <button
+          aria-pressed={story.id === activeStoryId}
+          key={story.id}
+          onClick={() => onChange(story.id)}
+          type="button"
+        >
+          {story.navLabel}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function updateRawSource(
+  setRawDataByStory: React.Dispatch<React.SetStateAction<Record<StoryId, Record<string, string>>>>,
+  story: StoryBundle,
+  rawFile: RawDataFile,
+  value: string,
+): void {
+  setRawDataByStory((current) => ({
+    ...current,
+    [story.id]: {
+      ...current[story.id],
+      [rawFile.id]: value,
+    },
+  }));
+}
+
+function methodIcon(icon: MethodIcon): React.ReactElement {
+  switch (icon) {
+    case "search":
+      return <Search size={18} aria-hidden="true" />;
+    case "join":
+      return <GitMerge size={18} aria-hidden="true" />;
+    case "workflow":
+      return <Workflow size={18} aria-hidden="true" />;
+    case "chart":
+      return <BarChart3 size={18} aria-hidden="true" />;
+  }
+}
+
+function rawDataIcon(icon: RawDataIcon): React.ReactElement {
+  switch (icon) {
+    case "bike":
+      return <Bike size={16} aria-hidden="true" />;
+    case "map":
+    case "geojson":
+      return <MapPinned size={16} aria-hidden="true" />;
+    case "weather":
+      return <CloudRain size={16} aria-hidden="true" />;
+    case "sun":
+      return <BarChart3 size={16} aria-hidden="true" />;
+    case "seasonal":
+      return <Rows3 size={16} aria-hidden="true" />;
+  }
 }
 
 function RuntimePill({ label, state }: { label: string; state: RuntimeState }): React.ReactElement {
@@ -440,6 +486,7 @@ function DataPanel({
   className,
   icon,
   label,
+  language,
   meta,
   value,
   onChange,
@@ -448,6 +495,7 @@ function DataPanel({
   className: string;
   icon: React.ReactElement;
   label: string;
+  language: "csv" | "json";
   meta: string;
   value: string;
   onChange: (value: string) => void;
@@ -463,13 +511,14 @@ function DataPanel({
         <small>{meta}</small>
       </div>
       <div className="editor-host">
-        <DataEditor language="csv" modelUri={modelUri} onChange={onChange} value={value} />
+        <DataEditor language={language} modelUri={modelUri} onChange={onChange} value={value} />
       </div>
     </article>
   );
 }
 
 function StorySection({
+  story,
   step,
   pdlSource,
   algrafSource,
@@ -485,6 +534,7 @@ function StorySection({
   onPdlChange,
   onAlgrafChange,
 }: {
+  story: StoryBundle;
   step: StoryStep;
   pdlSource: string;
   algrafSource: string;
@@ -550,7 +600,7 @@ function StorySection({
             <AlgrafEditor
               diagnostics={algrafDiagnostics}
               files={algrafFiles}
-              modelUri={`inmemory://datafarm/datafarm-bikeshare/${step.number}/${step.algrafLabel}`}
+              modelUri={`inmemory://datafarm/${story.slug}/${step.number}/${step.algrafLabel}`}
               onChange={onAlgrafChange}
               runtime={algrafRuntime}
               value={algrafSource}
@@ -635,20 +685,21 @@ function StatusLine({ running, snapshot }: { running: boolean; snapshot: StepSna
 }
 
 function editorResponsesForSteps(
+  story: StoryBundle,
   pdlRuntime: PdlRuntime,
   files: Record<string, string>,
   pdlSources: Record<string, string>,
 ): Record<string, PdlEditorServiceResult> {
   return Object.fromEntries(
-    STORY_STEPS.map((step) => [
+    story.steps.map((step) => [
       step.id,
       pdlRuntime.editorService(pdlSources[step.id] ?? step.pdlSource, files, { kind: "diagnostics" }, step.programPath),
     ]),
   );
 }
 
-function defaultPdlSources(): Record<string, string> {
-  return Object.fromEntries(STORY_STEPS.map((step) => [step.id, step.pdlSource]));
+function defaultPdlSources(story: StoryBundle): Record<string, string> {
+  return Object.fromEntries(story.steps.map((step) => [step.id, step.pdlSource]));
 }
 
 function pdlRunResultForNamedOutput(storyRun: PdlRunResult, output: PdlNamedOutput | null, step: StoryStep): PdlRunResult {
@@ -661,11 +712,30 @@ function pdlRunResultForNamedOutput(storyRun: PdlRunResult, output: PdlNamedOutp
   };
 }
 
-function filesWithPreparedOutput(files: Record<string, string>, step: StoryStep, preparedCsv: string): Record<string, string> {
+function filesWithPreparedOutput(
+  files: Record<string, string>,
+  step: StoryStep,
+  preparedCsv: string,
+  outputsByName?: Map<string, PdlNamedOutput>,
+): Record<string, string> {
+  const nextFiles = filesWithSupportingFiles(files, step);
+  for (const supportingOutput of step.supportingOutputs ?? []) {
+    const output = outputsByName?.get(supportingOutput.outputName);
+    if (output) {
+      nextFiles[supportingOutput.dataFile] = tableToCsv(output);
+    }
+  }
   return {
-    ...files,
+    ...nextFiles,
     "prepared.csv": preparedCsv,
     [step.dataFile]: preparedCsv,
+  };
+}
+
+function filesWithSupportingFiles(files: Record<string, string>, step: StoryStep): Record<string, string> {
+  return {
+    ...files,
+    ...(step.supportingFiles ?? {}),
   };
 }
 
@@ -724,6 +794,16 @@ function csvCell(value: string): string {
 function countDataRows(csv: string): number {
   const lines = csv.trim().split(/\r?\n/).filter(Boolean);
   return Math.max(0, lines.length - 1);
+}
+
+function formatBytes(length: number): string {
+  if (length < 1024) {
+    return `${length} B`;
+  }
+  if (length < 1024 * 1024) {
+    return `${(length / 1024).toFixed(1)} KB`;
+  }
+  return `${(length / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function errorMessage(error: unknown): string {

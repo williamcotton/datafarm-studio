@@ -1,0 +1,58 @@
+// Datafarm Studio - Solar: Sun vs Subsidy.
+// One named output per section, in the same order as STORY.md.
+// Run from the project root; each output also has a standalone copy in NN/.
+
+let states =
+  load "data/solar_state.csv"
+  | select "state", "abbr", "long", "lat", "region",
+           "sun_hours", "capacity_mw", "generation_gwh"
+
+let scored =
+  states
+  | mutate
+      "capacity_factor" = round("generation_gwh" / ("capacity_mw" * 8.76), 3),
+      "gen_per_mw"      = round("generation_gwh" / "capacity_mw", 3)
+
+let ranked =
+  scored
+  | mutate
+      "By capacity"      = rank() over (order_by "capacity_mw" desc),
+      "By output per MW" = rank() over (order_by "gen_per_mw" desc)
+
+let seasonal =
+  load "data/solar_seasonal.csv"
+  | select "state", "season", "generation_gwh"
+
+output capacity_by_state =
+  states
+  | select "state", "long", "lat", "region", "capacity_mw"
+  | sort "capacity_mw" desc
+  | save "capacity_by_state.csv"
+
+output sun_capacity_factor =
+  scored
+  | select "state", "region", "sun_hours", "capacity_mw", "capacity_factor"
+  | sort "sun_hours"
+  | save "sun_capacity_factor.csv"
+
+output capacity_vs_output_rank =
+  ranked
+  | pivot_longer "By capacity", "By output per MW" names_to "metric" values_to "rank"
+  | select "state", "region", "metric", "rank"
+  | sort "state", "metric"
+  | save "capacity_vs_output_rank.csv"
+
+output state_points =
+  states
+  | select "state", "long", "lat", "generation_gwh"
+  | save "state_points.csv"
+
+output seasonal_generation =
+  seasonal
+  | save "seasonal_generation.csv"
+
+output output_per_mw =
+  scored
+  | select "state", "region", "capacity_mw", "generation_gwh", "gen_per_mw"
+  | sort "gen_per_mw" desc
+  | save "output_per_mw.csv"

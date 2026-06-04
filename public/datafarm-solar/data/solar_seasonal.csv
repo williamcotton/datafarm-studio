@@ -1,0 +1,34 @@
+state,season,generation_gwh
+California,Winter,2603
+California,Shoulder,4145
+California,Summer,2892
+Texas,Winter,1525
+Texas,Shoulder,2429
+Texas,Summer,1694
+Arizona,Winter,1235
+Arizona,Shoulder,1966
+Arizona,Summer,1372
+Nevada,Winter,993
+Nevada,Shoulder,1582
+Nevada,Summer,1104
+New Mexico,Winter,497
+New Mexico,Shoulder,791
+New Mexico,Summer,552
+Colorado,Winter,543
+Colorado,Shoulder,864
+Colorado,Summer,603
+Florida,Winter,1249
+Florida,Shoulder,1989
+Florida,Summer,1387
+North Carolina,Winter,1419
+North Carolina,Shoulder,2260
+North Carolina,Summer,1577
+New York,Winter,244
+New York,Shoulder,1331
+New York,Summer,1141
+Massachusetts,Winter,198
+Massachusetts,Shoulder,1080
+Massachusetts,Summer,926
+Minnesota,Winter,130
+Minnesota,Shoulder,708
+Minnesota,Summer,607

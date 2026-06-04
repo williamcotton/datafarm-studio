@@ -1,0 +1,12 @@
+state,region,capacity_mw,generation_gwh,gen_per_mw
+New Mexico,Sun Belt,700,1840,2.629
+Arizona,Sun Belt,1800,4573,2.541
+Nevada,Sun Belt,1500,3679,2.453
+California,Sun Belt,4200,9640,2.295
+Colorado,Sun Belt,900,2010,2.233
+Texas,Sun Belt,2600,5648,2.172
+Florida,Sun Belt,2400,4625,1.927
+North Carolina,Sun Belt,3000,5256,1.752
+New York,Snow Belt,2000,2716,1.358
+Minnesota,Snow Belt,1100,1445,1.314
+Massachusetts,Snow Belt,1700,2204,1.296

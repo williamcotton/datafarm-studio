@@ -1,0 +1,34 @@
+Chart(
+    data: GeoJson("../data/us_counties.geojson"),
+    width: 860,
+    height: 520,
+    title: "Winter tells the truth",
+    subtitle: "Seasonal generation mix per state; pie size scales with annual output",
+    caption: "Sun Belt pies stay balanced through winter; Snow Belt pies are a summer story with a sliver of winter. The low-sun fleet is seasonal as well as smaller."
+) {
+    Theme(name: "void")
+    Table points = "state_points.csv"
+    Table mix = "seasonal_generation.csv"
+    Space(geom, projection: "albers_usa") {
+        Geo(fill: "#f3f4f6", stroke: "#d1d5db", strokeWidth: 0.25)
+    }
+    Space(long * lat, projection: "albers_usa", data: points) {
+        Inset(data: mix,
+              match: [state => state],
+              size: generation_gwh,
+              minSize: 22,
+              maxSize: 54,
+              scales: "shared",
+              guides: false,
+              clip: "circle",
+              padding: 1) {
+            Space(generation_gwh, coords: "polar", theta: "y") {
+                Scale(fill: season,
+                      range: ["Winter" => "#4E79A7", "Shoulder" => "#9C755F", "Summer" => "#F28E2B"],
+                      label: "Season")
+                Bar(fill: season, layout: "fill")
+            }
+        }
+        Text(label: state, dy: -28, size: 7, fill: "#1f2937", anchor: "middle")
+    }
+}

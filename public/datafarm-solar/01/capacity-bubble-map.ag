@@ -1,0 +1,22 @@
+Chart(
+    data: GeoJson("../data/us_counties.geojson"),
+    width: 820,
+    height: 500,
+    title: "Where we built the panels",
+    subtitle: "Installed solar capacity (MW) by state, on a US county basemap",
+    caption: "Big buildouts on both coasts and in Texas. By capacity, solar looks like a coastal-plus-Texas story."
+) {
+    Theme(name: "void")
+    Table states = "capacity_by_state.csv"
+    Space(geom, projection: "albers_usa") {
+        Geo(fill: "#f3f4f6", stroke: "#d1d5db", strokeWidth: 0.25)
+    }
+    Space(long * lat, projection: "albers_usa", data: states) {
+        Scale(fill: capacity_mw, gradient: ["#fee08b", "#f03b20"], label: "Capacity (MW)")
+        Scale(size: capacity_mw, range: [6, 30],
+              breaks: [700, 1500, 2400, 3000, 4200],
+              labels: ["700", "1500", "2400", "3000", "4200"], label: "Capacity (MW)")
+        Point(size: capacity_mw, fill: capacity_mw, alpha: 0.85)
+        Text(label: state, dy: -16, size: 7, fill: "#222222", anchor: "middle")
+    }
+}

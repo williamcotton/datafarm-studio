@@ -95,9 +95,16 @@ a {
 .panel-header,
 .section-heading,
 .segmented-control,
+.topbar-controls,
 .status-text {
   display: flex;
   align-items: center;
+}
+
+.topbar-controls {
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: 0;
 }
 
 .runtime-pills {
@@ -732,6 +739,10 @@ p {
   border-radius: 8px;
 }
 
+.story-switcher {
+  flex: 0 0 auto;
+}
+
 .segmented-control button {
   min-height: 30px;
   padding: 0 12px;
@@ -953,6 +964,11 @@ p {
     align-items: flex-start;
     flex-direction: column;
     padding: 14px 18px;
+  }
+
+  .topbar-controls {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   main {

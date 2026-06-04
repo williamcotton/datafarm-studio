@@ -1,0 +1,11 @@
+// Step 01 - Where we built the panels.
+// Pull installed capacity per state for the bubble overlay; the basemap is the
+// shared county GeoJSON. This is the view an energy board already has.
+
+let states =
+  load "../data/solar_state.csv"
+  | select "state", "long", "lat", "region", "capacity_mw"
+
+states
+  | sort "capacity_mw" desc
+  | save "capacity_by_state.csv"

@@ -1,0 +1,17 @@
+// Step 03 - The turn: rank states by installed capacity, then by output per MW,
+// and reshape long so the bump chart can draw one line per state across the two
+// rankings. The reordering is the whole point.
+
+let states =
+  load "../data/solar_state.csv"
+  | select "state", "region", "capacity_mw", "generation_gwh"
+  | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
+  | mutate
+      "By capacity"      = rank() over (order_by "capacity_mw" desc),
+      "By output per MW" = rank() over (order_by "gen_per_mw" desc)
+
+states
+  | pivot_longer "By capacity", "By output per MW" names_to "metric" values_to "rank"
+  | select "state", "region", "metric", "rank"
+  | sort "state", "metric"
+  | save "capacity_vs_output_rank.csv"

@@ -1,0 +1,21 @@
+Chart(
+    data: "output_per_mw.csv",
+    width: 740,
+    height: 470,
+    marginLeft: 150,
+    marginRight: 70,
+    title: "Where the next megawatt pays off",
+    caption: "States ranked by output per installed MW. The Southwest tops the list; the next panel earns roughly twice as much in New Mexico as in Massachusetts."
+) {
+    Theme(name: "minimal")
+    Scale(fill: region, palette: "accent", label: "Region")
+    Scale(axis: x, domain: [0, 3], breaks: [0, 1, 2, 3], labels: ["0", "1", "2", "3"])
+    Scale(axis: y, domain: ["Massachusetts", "Minnesota", "New York", "North Carolina", "Florida", "Texas", "Colorado", "California", "Nevada", "Arizona", "New Mexico"])
+    Guide(axis: x, label: "Generation per MW (GWh / MW / yr)")
+    Guide(axis: y, label: null)
+    Space(gen_per_mw * state) {
+        Bar(fill: region, layout: "stack", alpha: 0.86,
+            tooltip: [state, region, capacity_mw, generation_gwh, gen_per_mw])
+        Text(label: gen_per_mw, dx: 6, anchor: "start", format: ".2f", size: 10)
+    }
+}

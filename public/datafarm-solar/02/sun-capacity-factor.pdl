@@ -1,0 +1,13 @@
+// Step 02 - A panel's output is set by the sun it stands under.
+// Derive capacity factor (generation per MW of nameplate) and place it against
+// peak sun hours. capacity_factor = generation_gwh / (capacity_mw * 8.76).
+
+let states =
+  load "../data/solar_state.csv"
+  | select "state", "region", "sun_hours", "capacity_mw", "generation_gwh"
+
+states
+  | mutate "capacity_factor" = round("generation_gwh" / ("capacity_mw" * 8.76), 3)
+  | select "state", "region", "sun_hours", "capacity_mw", "capacity_factor"
+  | sort "sun_hours"
+  | save "sun_capacity_factor.csv"
