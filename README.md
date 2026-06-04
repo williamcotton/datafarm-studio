@@ -41,6 +41,10 @@ PDL runs in the browser through `public/wasm/pdl.wasm`. Studio displays the CSV
 produced for the active section and also passes that CSV to Algraf as both
 `prepared.csv` and the section's expected data filename.
 
+Studio v0.2 expects PDL v0.26-compatible syntax and WASM: bare/backtick column
+references, double-quoted strings and paths, and assignment-form aggregate and
+projection stages.
+
 ## 4. Algraf chart
 
 Each section has a `.ag` file backed by Algraf editor services and runtime

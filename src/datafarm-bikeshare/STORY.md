@@ -56,18 +56,18 @@ visitors are a thin one that vanishes on wet days.
 ```pdl
 let cleaned =
   load "trips_raw.csv"
-  | filter lower(trim("status")) == lit("completed")
+  | filter lower(trim(status)) == "completed"
   | select
-      "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
-      "start_station_id", "end_station_id",
-      "duration_min", "distance_km", "fare_usd"
-  | sort "trip_date", "trip_id"
+      trip_id, trip_date, rider_type, pass_type, bike_type,
+      start_station_id, end_station_id,
+      duration_min, distance_km, fare_usd
+  | sort trip_date, trip_id
 
 cleaned
-  | group_by "trip_date", "rider_type"
-  | agg count() as "trips", sum("fare_usd") as "revenue"
-  | mutate "revenue" = round("revenue", 2)
-  | sort "trip_date", "rider_type"
+  | group_by trip_date, rider_type
+  | agg trips = count(), revenue = sum(fare_usd)
+  | mutate revenue = round(revenue, 2)
+  | sort trip_date, rider_type
   | save "daily_rider_trips.csv"
 ```
 
@@ -123,17 +123,17 @@ fare. No join, no aggregation — just the rides. The point cloud splits in two.
 ```pdl
 let cleaned =
   load "trips_raw.csv"
-  | filter lower(trim("status")) == lit("completed")
+  | filter lower(trim(status)) == "completed"
   | select
-      "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
-      "start_station_id", "end_station_id",
-      "duration_min", "distance_km", "fare_usd"
-  | sort "trip_date", "trip_id"
+      trip_id, trip_date, rider_type, pass_type, bike_type,
+      start_station_id, end_station_id,
+      duration_min, distance_km, fare_usd
+  | sort trip_date, trip_id
 
 cleaned
   | select
-      "trip_id", "trip_date", "rider_type", "bike_type",
-      "duration_min", "distance_km", "fare_usd"
+      trip_id, trip_date, rider_type, bike_type,
+      duration_min, distance_km, fare_usd
   | save "valid_trips.csv"
 ```
 
@@ -193,30 +193,30 @@ lines would run flat. They don't.
 ```pdl
 let cleaned =
   load "trips_raw.csv"
-  | filter lower(trim("status")) == lit("completed")
-  | select "rider_type", "fare_usd"
+  | filter lower(trim(status)) == "completed"
+  | select rider_type, fare_usd
 
 let by_rider =
   cleaned
-  | group_by "rider_type"
-  | agg count() as "trips", sum("fare_usd") as "revenue"
-  | mutate "revenue" = round("revenue", 2)
+  | group_by rider_type
+  | agg trips = count(), revenue = sum(fare_usd)
+  | mutate revenue = round(revenue, 2)
 
 let totals =
   by_rider
-  | agg sum("trips") as "total_trips", sum("revenue") as "total_revenue"
-  | mutate "join_key" = lit("all")
+  | agg total_trips = sum(trips), total_revenue = sum(revenue)
+  | mutate join_key = "all"
 
 by_rider
-  | mutate "join_key" = lit("all")
-  | join totals on "join_key"
+  | mutate join_key = "all"
+  | join totals on join_key
   | mutate
-      "Share of rides" = round(100 * "trips" / "total_trips", 2),
-      "Share of revenue" = round(100 * "revenue" / "total_revenue", 2)
-  | pivot_longer "Share of rides", "Share of revenue" names_to "metric" values_to "share"
-  | mutate "value" = if_else("metric" == lit("Share of rides"), "trips", "revenue")
-  | select "rider_type", "metric", "share", "value"
-  | sort "rider_type", "metric" desc
+      `Share of rides` = round(100 * trips / total_trips, 2),
+      `Share of revenue` = round(100 * revenue / total_revenue, 2)
+  | pivot_longer `Share of rides`, `Share of revenue` names_to metric values_to share
+  | mutate value = if_else(metric == "Share of rides", trips, revenue)
+  | select rider_type, metric, share, value
+  | sort rider_type, metric desc
   | save "revenue_inversion.csv"
 ```
 
@@ -277,33 +277,33 @@ populations respond to weather in opposite ways.
 ```pdl
 let cleaned =
   load "trips_raw.csv"
-  | filter lower(trim("status")) == lit("completed")
-  | select "trip_id", "trip_date", "rider_type", "fare_usd"
-  | sort "trip_date", "trip_id"
+  | filter lower(trim(status)) == "completed"
+  | select trip_id, trip_date, rider_type, fare_usd
+  | sort trip_date, trip_id
 
 let weather =
   load "weather_daily.csv"
-  | select "trip_date", "condition"
-  | mutate "weather" = if_else("condition" == lit("rain"), lit("Rain"), lit("Dry"))
-  | select "trip_date", "weather"
+  | select trip_date, condition
+  | mutate weather = if_else(condition == "rain", "Rain", "Dry")
+  | select trip_date, weather
 
 let weather_days =
   weather
-  | group_by "weather"
-  | agg count_distinct("trip_date") as "days"
+  | group_by weather
+  | agg days = count_distinct(trip_date)
 
 let trips_by_weather =
   cleaned
-  | join weather on "trip_date"
-  | group_by "weather", "rider_type"
-  | agg count() as "trips", sum("fare_usd") as "revenue"
-  | mutate "revenue" = round("revenue", 2)
+  | join weather on trip_date
+  | group_by weather, rider_type
+  | agg trips = count(), revenue = sum(fare_usd)
+  | mutate revenue = round(revenue, 2)
 
 trips_by_weather
-  | join weather_days on "weather"
-  | mutate "avg_per_day" = round("trips" / "days", 2)
-  | sort "weather", "rider_type"
-  | select "weather", "rider_type", "days", "trips", "avg_per_day", "revenue"
+  | join weather_days on weather
+  | mutate avg_per_day = round(trips / days, 2)
+  | sort weather, rider_type
+  | select weather, rider_type, days, trips, avg_per_day, revenue
   | save "weather_split.csv"
 ```
 
@@ -360,21 +360,21 @@ little. The exploration becomes an ordered action list.
 ```pdl
 let cleaned =
   load "trips_raw.csv"
-  | filter lower(trim("status")) == lit("completed")
-  | select "trip_id", "start_station_id", "fare_usd"
+  | filter lower(trim(status)) == "completed"
+  | select trip_id, start_station_id, fare_usd
 
 let stations =
   load "stations.csv"
-  | select "station_id", "station_name", "zone", "capacity"
+  | select station_id, station_name, zone, capacity
 
 cleaned
-  | join stations on ("start_station_id", "station_id")
-  | group_by "station_name", "zone", "capacity"
-  | agg count() as "trips", sum("fare_usd") as "revenue"
-  | mutate "revenue" = round("revenue", 2)
-  | mutate "rev_per_dock" = round("revenue" / to_number("capacity"), 2)
-  | sort "rev_per_dock" desc
-  | select "station_name", "zone", "capacity", "trips", "revenue", "rev_per_dock"
+  | join stations on (start_station_id, station_id)
+  | group_by station_name, zone, capacity
+  | agg trips = count(), revenue = sum(fare_usd)
+  | mutate revenue = round(revenue, 2)
+  | mutate rev_per_dock = round(revenue / to_number(capacity), 2)
+  | sort rev_per_dock desc
+  | select station_name, zone, capacity, trips, revenue, rev_per_dock
   | save "dock_priority.csv"
 ```
 
@@ -445,5 +445,5 @@ the right move is defending a handful of small docks, not chasing volume.
 
 This rebuild uses the current PDL surface implemented in this workspace:
 
-- **PDL:** `mutate`, `save`, aggregate items in `function(...) as "column"` form, `round(value, digits)`, `count_distinct`, `pivot_longer`, `if_else`, and tuple join keys such as `join stations on ("start_station_id", "station_id")`. Column-total calculations are expressed through helper bindings and joins rather than aggregate calls inside ordinary row expressions.
+- **PDL:** bare/backtick column references, double-quoted strings and paths, assignment-form `mutate` and `agg`, `save`, `round(value, digits)`, `count_distinct`, `pivot_longer`, `if_else`, and tuple join keys such as `join stations on (start_station_id, station_id)`. Column-total calculations are expressed through helper bindings and joins rather than aggregate calls inside ordinary row expressions.
 - **Algraf:** the chart snippets above use current Algraf syntax: stacked area via `Area(layout: "stack")`, grouped bars via nested algebra, horizontal bars via `Space(value * category)`, terminal labels via `Label(label:, at:, group:)`, chart captions via `caption:`, and numeric labels via `Text(format:)`. Ranking stays in the prepared table; the dock chart preserves that order with an explicit categorical y-domain rather than chart-side data sorting.

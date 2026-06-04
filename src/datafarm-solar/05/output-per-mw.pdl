@@ -3,10 +3,10 @@
 
 let states =
   load "solar_state.csv"
-  | select "state", "region", "capacity_mw", "generation_gwh"
+  | select state, region, capacity_mw, generation_gwh
 
 states
-  | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
-  | sort "gen_per_mw" desc
-  | select "state", "region", "capacity_mw", "generation_gwh", "gen_per_mw"
+  | mutate gen_per_mw = round(generation_gwh / capacity_mw, 3)
+  | sort gen_per_mw desc
+  | select state, region, capacity_mw, generation_gwh, gen_per_mw
   | save "output_per_mw.csv"

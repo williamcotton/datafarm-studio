@@ -4,16 +4,16 @@
 
 let cleaned =
   load "trips_raw.csv"
-  | filter lower(trim("status")) == lit("completed")
+  | filter lower(trim(status)) == "completed"
   | select
-      "trip_id", "trip_date", "rider_type", "pass_type", "bike_type",
-      "start_station_id", "end_station_id",
-      "duration_min", "distance_km", "fare_usd"
-  | sort "trip_date", "trip_id"
+      trip_id, trip_date, rider_type, pass_type, bike_type,
+      start_station_id, end_station_id,
+      duration_min, distance_km, fare_usd
+  | sort trip_date, trip_id
 
 cleaned
-  | group_by "trip_date", "rider_type"
-  | agg count() as "trips", sum("fare_usd") as "revenue"
-  | mutate "revenue" = round("revenue", 2)
-  | sort "trip_date", "rider_type"
+  | group_by trip_date, rider_type
+  | agg trips = count(), revenue = sum(fare_usd)
+  | mutate revenue = round(revenue, 2)
+  | sort trip_date, rider_type
   | save "daily_rider_trips.csv"

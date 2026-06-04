@@ -55,10 +55,10 @@ and shaded by megawatts. This is the slide that goes in the board deck.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select "state", "long", "lat", "region", "capacity_mw"
+  | select state, long, lat, region, capacity_mw
 
 states
-  | sort "capacity_mw" desc
+  | sort capacity_mw desc
   | save "capacity_by_state.csv"
 ```
 
@@ -113,12 +113,12 @@ against peak sun hours. One derived column reframes everything.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select "state", "region", "sun_hours", "capacity_mw", "generation_gwh"
+  | select state, region, sun_hours, capacity_mw, generation_gwh
 
 states
-  | mutate "capacity_factor" = round("generation_gwh" / ("capacity_mw" * 8.76), 3)
-  | select "state", "region", "sun_hours", "capacity_mw", "capacity_factor"
-  | sort "sun_hours"
+  | mutate capacity_factor = round(generation_gwh / (capacity_mw * 8.76), 3)
+  | select state, region, sun_hours, capacity_mw, capacity_factor
+  | sort sun_hours
   | save "sun_capacity_factor.csv"
 ```
 
@@ -172,16 +172,16 @@ don't — they braid.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select "state", "region", "capacity_mw", "generation_gwh"
-  | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
+  | select state, region, capacity_mw, generation_gwh
+  | mutate gen_per_mw = round(generation_gwh / capacity_mw, 3)
   | mutate
-      "By capacity"      = rank() over (order_by "capacity_mw" desc),
-      "By output per MW" = rank() over (order_by "gen_per_mw" desc)
+      `By capacity` = rank() over (order_by capacity_mw desc),
+      `By output per MW` = rank() over (order_by gen_per_mw desc)
 
 states
-  | pivot_longer "By capacity", "By output per MW" names_to "metric" values_to "rank"
-  | select "state", "region", "metric", "rank"
-  | sort "state", "metric"
+  | pivot_longer `By capacity`, `By output per MW` names_to metric values_to rank
+  | select state, region, metric, rank
+  | sort state, metric
   | save "capacity_vs_output_rank.csv"
 ```
 
@@ -238,7 +238,7 @@ pie is the answer.
 ```pdl
 let seasonal =
   load "solar_seasonal.csv"
-  | select "state", "season", "generation_gwh"
+  | select state, season, generation_gwh
 
 seasonal
   | save "seasonal_generation.csv"
@@ -299,12 +299,12 @@ has — and read it as a siting list, coloured by region.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select "state", "region", "capacity_mw", "generation_gwh"
+  | select state, region, capacity_mw, generation_gwh
 
 states
-  | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
-  | sort "gen_per_mw" desc
-  | select "state", "region", "capacity_mw", "generation_gwh", "gen_per_mw"
+  | mutate gen_per_mw = round(generation_gwh / capacity_mw, 3)
+  | sort gen_per_mw desc
+  | select state, region, capacity_mw, generation_gwh, gen_per_mw
   | save "output_per_mw.csv"
 ```
 
@@ -362,13 +362,14 @@ some of its worst places — and the next megawatt belongs in the Southwest.
 
 ## Note on the DSL surface used
 
-Matched to your corrected syntax (`lit`, `agg ... as`, `mutate`, `save`,
+Matched to the v0.26 PDL syntax (bare/backtick column references, double-quoted
+strings and paths, assignment-form `mutate` and `agg`, `save`,
 `pivot_longer ... names_to ... values_to`, `if_else`, `count_distinct`, joins on
-`"k"` / `("l","r")`; Algraf `caption:`/`subtitle:`, `Text(...)` annotations,
+`k` / `(l, r)`; Algraf `caption:`/`subtitle:`, `Text(...)` annotations,
 `layout:"stack"`, `Space(a / b * y)` grouping, `GeoJson(...)` + `Space(geom,
 projection:)` basemaps, `Inset{ Space(count, coords:"polar") }` pies, `Label(at:,
 group:)`). Step 3 uses the supported PDL window syntax
-`rank() over (order_by "column" desc)` to produce a 1-based rank over the whole table.
+`rank() over (order_by column desc)` to produce a 1-based rank over the whole table.
 One chart-side feature goes a step beyond the simpler examples: Step 3 uses
 `Scale(axis: y, domain: [11.5, 0.5])` to put rank 1 at the top. If a descending numeric
 domain is not supported, invert the rank in PDL (`12 - rank`) and relabel.

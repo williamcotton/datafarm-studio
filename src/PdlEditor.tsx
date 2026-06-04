@@ -194,12 +194,14 @@ function setupPdlMonaco(): Promise<void> {
           { open: "[", close: "]" },
           { open: "(", close: ")" },
           { open: '"', close: '"' },
+          { open: "`", close: "`" },
         ],
         surroundingPairs: [
           { open: "{", close: "}" },
           { open: "[", close: "]" },
           { open: "(", close: ")" },
           { open: '"', close: '"' },
+          { open: "`", close: "`" },
         ],
       });
     }
@@ -242,6 +244,7 @@ function definePdlTheme(): void {
       { token: "keyword.control", foreground: "166f5c", fontStyle: "bold" },
       { token: "keyword.operator", foreground: "4f5b63" },
       { token: "support.function.aggregate", foreground: "0f5f8f", fontStyle: "bold" },
+      { token: "variable.other.column", foreground: "355f8c" },
       { token: "punctuation", foreground: "68757d" },
     ],
     colors: {

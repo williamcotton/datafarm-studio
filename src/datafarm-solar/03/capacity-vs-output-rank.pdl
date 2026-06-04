@@ -4,14 +4,14 @@
 
 let states =
   load "solar_state.csv"
-  | select "state", "region", "capacity_mw", "generation_gwh"
-  | mutate "gen_per_mw" = round("generation_gwh" / "capacity_mw", 3)
+  | select state, region, capacity_mw, generation_gwh
+  | mutate gen_per_mw = round(generation_gwh / capacity_mw, 3)
   | mutate
-      "By capacity"      = rank() over (order_by "capacity_mw" desc),
-      "By output per MW" = rank() over (order_by "gen_per_mw" desc)
+      `By capacity` = rank() over (order_by capacity_mw desc),
+      `By output per MW` = rank() over (order_by gen_per_mw desc)
 
 states
-  | pivot_longer "By capacity", "By output per MW" names_to "metric" values_to "rank"
-  | select "state", "region", "metric", "rank"
-  | sort "state", "metric"
+  | pivot_longer `By capacity`, `By output per MW` names_to metric values_to rank
+  | select state, region, metric, rank
+  | sort state, metric
   | save "capacity_vs_output_rank.csv"
