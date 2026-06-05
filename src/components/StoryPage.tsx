@@ -65,7 +65,8 @@ export function StoryPage({
             </a>
           </div>
           <p className="section-copy">
-            PDL editor to Algraf editor to prepared output to rendered chart. Diagnostics now: {totalDiagnostics}.
+            Each section shows the preparation code, generated CSV, chart source, rendered chart, evidence, and
+            conclusion. Diagnostics now: {totalDiagnostics}.
           </p>
         </div>
         <div className="hero-status" aria-label={activeStory.hero.metricsAriaLabel}>

@@ -16,32 +16,30 @@ const DOCS_SECTIONS: DocsSection[] = [
     id: "overview",
     icon: <Route size={18} aria-hidden="true" />,
     title: "Datafarm overview",
-    body:
-      "Datafarm Studio is the browser IDE for the Datafarm workflow: raw files become prepared PDL outputs, and Algraf turns those outputs into auditable charts.",
-    bullets: ["The browser owns files and UI state.", "PDL owns table preparation.", "Algraf owns chart rendering."],
+    body: "Datafarm Studio keeps the path from raw files to prepared tables to charts in one browser workspace.",
+    bullets: ["The browser manages files and UI state.", "PDL prepares tables.", "Algraf renders charts."],
   },
   {
     id: "pdl",
     icon: <Workflow size={18} aria-hidden="true" />,
     title: "PDL basics",
     body:
-      "PDL programs load host-supplied files, transform tables through pipelines, emit named outputs, and save prepared files for later surfaces.",
+      "PDL programs load files, transform tables through pipelines, emit named outputs, and save prepared files for charts and stories.",
     bullets: ["Use `load` for in-memory files.", "Use pipelines for deterministic table steps.", "Use `output` and `save` for reusable artifacts."],
   },
   {
     id: "algraf",
     icon: <Boxes size={18} aria-hidden="true" />,
     title: "Algraf basics",
-    body:
-      "Algraf receives prepared files from Studio and returns inert SVG plus diagnostics and optional sidecar metadata for audited interactivity.",
-    bullets: ["Charts read files by path-like names.", "Scales and marks encode the argument.", "Returned SVG is embedded by Studio."],
+    body: "Algraf reads prepared files and returns SVG charts with diagnostics and optional event metadata.",
+    bullets: ["Charts read files by path-like names.", "Scales and marks encode the visual argument.", "Studio embeds the returned SVG."],
   },
   {
     id: "runtime",
     icon: <BookOpenText size={18} aria-hidden="true" />,
     title: "Browser runtime model",
     body:
-      "Studio loads PDL, Algraf, and SQL.js WASM assets from the public base path, then calls their browser APIs with in-memory file maps.",
+      "Studio loads PDL, Algraf, and SQL.js as browser WASM assets, then passes source and in-memory files to each runtime.",
     bullets: ["No runtime reads local host files directly.", "Runtime errors become diagnostics.", "GitHub Pages serves the same static assets."],
   },
   {
@@ -49,7 +47,7 @@ const DOCS_SECTIONS: DocsSection[] = [
     icon: <MousePointerClick size={18} aria-hidden="true" />,
     title: "Interactivity model",
     body:
-      "React owns controls and selected state. PDL receives those values as context, Algraf emits chart events, and React routes audited events back into state.",
+      "React stores selected values. PDL receives them as context, Algraf reports chart events, and React writes the selection back into state.",
     bullets: ["Context values stay JSON primitives.", "Algraf events come from inert metadata.", "The current demo reruns the workflow on change."],
   },
   {
@@ -110,8 +108,8 @@ function DocsHero({ onNavigate }: { onNavigate: (path: string) => void }): React
         <p className="eyebrow">Docs</p>
         <h1>Build with Datafarm Studio.</h1>
         <p>
-          Start with the system model, then move into PDL, Algraf, browser runtimes, interactivity, SQL, and the live
-          How Built walkthrough.
+          Start with the workflow model, then dig into PDL, Algraf, browser runtimes, interactivity, SQL, and the live
+          How Built example.
         </p>
         <div className="hero-actions">
           <RouteLink className="primary-button" onNavigate={onNavigate} to="/docs/how-built">

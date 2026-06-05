@@ -176,12 +176,12 @@ T1005,2026-04-01,visitor,ebike,53,12.4,17.03
 
 **Conclusion:** Two clusters, no overlap. Members sit low and left — under 6 km,
 under half an hour, small dots. Visitors stretch up and right — long, far, and the
-dots are visibly bigger. This is one service running two products. *Members own the
-count; the big dots belong to visitors. So who owns the revenue?*
+dots are visibly bigger. This is one service running two products. *Members dominate
+the count; the big dots belong to visitors. So where does the revenue land?*
 
 ---
 
-# 03 · The count lies — follow the money
+# 03 · The count misleads — follow the money
 
 **Question:** Where does the revenue actually come from?
 
@@ -227,7 +227,7 @@ Chart(
     width: 680,
     height: 440,
     marginRight: 120,
-    title: "The count lies: a third of rides, most of the money",
+    title: "The count misleads: a third of rides, most of the money",
     caption: "Each line is a rider type. The lines cross: members fall from 66% of rides to 39% of revenue; visitors rise from 34% to 61%."
 ) {
     Theme(name: "minimal")

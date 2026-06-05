@@ -11,10 +11,10 @@ export function CaseStudiesIndexPage({ onNavigate }: { onNavigate: (path: string
       <section className="case-studies-hero">
         <div className="hero-copy">
           <p className="eyebrow">Case studies</p>
-          <h1>Published workflows stay runnable.</h1>
+          <h1>Open the work behind the story.</h1>
           <p>
-            Solar and Bikeshare now live under Case Studies. Each one keeps the same raw data editors, PDL preparation
-            code, prepared CSV output, Algraf source, rendered charts, evidence, and conclusions.
+            Each case study keeps the raw files, preparation code, generated CSVs, chart source, rendered visuals,
+            evidence, and conclusions together so every claim can be inspected and rerun.
           </p>
         </div>
       </section>

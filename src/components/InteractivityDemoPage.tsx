@@ -94,11 +94,11 @@ export function InteractivityDemoPage({
     <div className="interactivity-page">
       <section className="demo-hero">
         <div className="hero-copy">
-          <p className="eyebrow">Reactive runtime demo</p>
-          <h1>PDL context and Algraf events in React</h1>
+          <p className="eyebrow">Reactive chart demo</p>
+          <h1>Chart clicks feed the next data run</h1>
           <p>
-            Host controls update PDL `param` values, Algraf emits a selected zone from sidecar metadata, and Studio
-            feeds that `state` back into the next PDL run.
+            Use controls to set PDL `param` values, click the selector chart to choose a zone, and watch the dependent
+            chart rerender from the new generated tables.
           </p>
         </div>
         <div className="hero-status" aria-label="Interactivity runtime metrics">
@@ -324,7 +324,7 @@ function DemoChartPanel({
           {icon}
           {title}
         </span>
-        <small>{result?.sidecar ? "sidecar" : "svg"}</small>
+        <small>{result?.sidecar ? "events" : "svg"}</small>
       </div>
       <InteractiveAlgrafChart emptyText={emptyText} onEmit={onEmit} result={result} />
     </article>
@@ -430,7 +430,7 @@ function DemoDiagnostics({ runtimeError, snapshot }: { runtimeError: string | nu
       ) : (
         <>
           <CheckCircle2 size={16} aria-hidden="true" />
-          <span>PDL outputs and Algraf charts are in sync.</span>
+          <span>Generated CSVs and charts are ready.</span>
         </>
       )}
     </section>

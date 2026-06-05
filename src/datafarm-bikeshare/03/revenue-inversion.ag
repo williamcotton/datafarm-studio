@@ -3,7 +3,7 @@ Chart(
     width: 680,
     height: 440,
     marginRight: 120,
-    title: "The count lies: a third of rides, most of the money",
+    title: "The count misleads: a third of rides, most of the money",
     caption: "Each line is a rider type. The lines cross: members fall from 66% of rides to 39% of revenue; visitors rise from 34% to 61%."
 ) {
     Theme(name: "minimal")

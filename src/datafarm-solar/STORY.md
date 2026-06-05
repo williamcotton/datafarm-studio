@@ -188,7 +188,7 @@ states
 ### Algraf — `capacity-vs-output-rank.ag`  *(bump / rank-change chart)*
 ```algraf
 Chart(data: "capacity_vs_output_rank.csv", width: 720, height: 520, marginLeft: 140, marginRight: 150,
-      title: "Ranked by panels, then by power: the board scrambles", caption: "...") {
+      title: "Ranked by panels, then by power: the order flips", caption: "...") {
     Theme(name: "minimal")
     Scale(stroke: region, palette: "accent", label: "Region")
     Scale(axis: x, domain: ["By capacity", "By output per MW"])
@@ -217,7 +217,7 @@ California,Sun Belt,By output per MW,4
 ...  (22 rows: 11 states x 2 rankings)
 ```
 
-**Conclusion (the turn):** The board scrambles. New Mexico climbs from **last in
+**Conclusion (the turn):** The ranking flips. New Mexico climbs from **last in
 capacity to first in output per MW**; Arizona 6→2, Nevada 8→3, Colorado 10→5 all
 surge. Going the other way, Massachusetts sinks from 7th to dead last, North Carolina
 2→8, New York 5→9. Every rising line is Sun Belt, every falling line is Snow Belt. We

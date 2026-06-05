@@ -319,18 +319,18 @@ export function App(): React.ReactElement {
 function brandSubtitleForRoute(route: StudioRoute, storySubtitle: string): string {
   switch (route.page) {
     case "landing":
-      return "Browser IDE for PDL to Algraf";
+      return "Browser workspace for data stories";
     case "ide":
-      return "Primary IDE workspace";
+      return "Data prep and chart preview";
     case "case-studies":
-      return "Runnable product stories";
+      return "Inspectable data stories";
     case "case-study":
       return storySubtitle;
     case "docs":
       return "Datafarm docs";
     case "docs-how-built":
-      return "One slider PDL and Algraf walkthrough";
+      return "Slider to chart walkthrough";
     case "labs-interactivity":
-      return "Reactive PDL and Algraf demo";
+      return "Reactive chart demo";
   }
 }

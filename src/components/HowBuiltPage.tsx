@@ -201,8 +201,8 @@ const BUILD_STEPS: BuildStep[] = [
     label: "Imports",
     title: "Import runtimes separately from editor components",
     body: [
-      "`pdl-wasm` and `algraf-wasm` are the execution imports. They load the browser WASM modules and expose the API calls this page uses.",
-      "`pdl-editor` and `algraf-editor` are editor imports. They give React a Monaco-backed editor surface with the language grammar and diagnostic plumbing already attached.",
+      "`pdl-wasm` and `algraf-wasm` load the browser runtimes and expose the calls used for preparation and rendering.",
+      "`pdl-editor` and `algraf-editor` provide Monaco-backed editors with language highlighting and diagnostics already attached.",
     ],
     source: BUILD_IMPORTS_SOURCE,
     height: 240,
@@ -212,8 +212,8 @@ const BUILD_STEPS: BuildStep[] = [
     label: "State",
     title: "Use one React state value and one direct slider event",
     body: [
-      "The chart control has one React value: `visibleDays`. The slider does not call a custom hook or dispatch through an event bus. Its `onChange` handler writes the number directly.",
-      "That number is the only value that crosses into PDL as runtime context. The editable source strings are just controlled editor values, so there is no separate UI store hidden in PDL or Algraf.",
+      "The control has one React value: `visibleDays`. The slider's `onChange` handler writes the number directly.",
+      "That number is the only value that crosses into PDL as runtime context. The editable source strings are controlled editor values, so there is no separate UI store hidden in PDL or Algraf.",
     ],
     source: BUILD_STATE_SOURCE,
     height: 220,
@@ -224,7 +224,7 @@ const BUILD_STEPS: BuildStep[] = [
     title: "Run PDL, merge files, then render Algraf",
     body: [
       "`editorService` asks PDL for editor diagnostics. `run` executes the PDL program with the slider value as context. The saved file map then becomes Algraf's input.",
-      "The important API boundary is simple: PDL receives source and files, then returns files. Algraf receives source and files, then returns SVG.",
+      "The handoff is simple: PDL receives source and files, then returns files. Algraf receives source and files, then returns SVG.",
     ],
     source: BUILD_RUN_SOURCE,
     height: 360,
@@ -234,7 +234,7 @@ const BUILD_STEPS: BuildStep[] = [
     label: "Events",
     title: "Handle Algraf clicks directly in React",
     body: [
-      "The chart click handler is deliberately plain. It is an `onClick` on the rendered SVG host, not a hook and not a separate event abstraction.",
+      "The chart click handler is an `onClick` on the rendered SVG host.",
       "The handler reads Algraf's emitted field and value from the clicked mark. If the mark emitted `day`, React writes that number back to `visibleDays`, so the chart and slider both control the same state.",
     ],
     source: BUILD_EVENT_SOURCE,
@@ -257,7 +257,7 @@ const BUILD_STEPS: BuildStep[] = [
     title: "Render only the returned SVG and saved CSV",
     body: [
       "The visible chart is just the SVG returned by Algraf. The visible table is just the CSV returned by PDL.",
-      "Changing the slider repeats the same straight path: React state changes, PDL reruns with one param, Algraf redraws from PDL's saved file.",
+      "Changing the slider repeats the same loop: React state changes, PDL reruns with one param, Algraf redraws from PDL's saved file.",
     ],
     source: BUILD_VIEW_SOURCE,
     height: 220,
@@ -290,17 +290,15 @@ export function HowBuiltPage({
     <div className="build-page">
       <section className="build-hero">
         <div className="build-hero-copy">
-          <p className="eyebrow">How it is wired</p>
-          <h1>One slider, one PDL param, one Algraf chart</h1>
+          <p className="eyebrow">How Built</p>
+          <h1>A slider controls a prepared chart</h1>
           <p>
-            This page strips the runtime pattern down to the smallest useful React app. One slider owns one chart-control
-            state value. That value enters PDL as `param visible_days`, PDL saves one CSV, and Algraf renders a bar chart
-            from that saved CSV.
+            This walkthrough shows the smallest useful pattern: React stores one value, PDL uses it as
+            `visible_days`, PDL saves a CSV, and Algraf redraws the chart from that file.
           </p>
           <p>
-            The source panels below show the same imports, runtime calls, editor components, and view boundaries used by
-            the live example. There is no component architecture diagram here: just the direct data flow you would write
-            first in a single `App.tsx`.
+            The source panels below show the imports, runtime calls, editor components, event handler, and rendered
+            output used by the live example.
           </p>
         </div>
       </section>
@@ -459,7 +457,7 @@ export function HowBuiltPage({
         ) : (
           <>
             <CheckCircle2 size={16} aria-hidden="true" />
-            <span>Slider state, PDL output, and Algraf chart are in sync.</span>
+            <span>Slider value, PDL output, and Algraf chart match.</span>
           </>
         )}
       </section>

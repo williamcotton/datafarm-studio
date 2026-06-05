@@ -169,7 +169,7 @@ does not exist.
 
 ## Versioning
 
-The current Studio package version is `0.12.0`.
+The current Studio package version is `0.13.0`.
 
 When implementing a numbered plan, update every version stamp that tracks Studio
 itself:

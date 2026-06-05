@@ -52,7 +52,7 @@ export function StorySection({
       <div className="story-section-header">
         <div className="story-number">{step.number}</div>
         <div>
-          <p className="eyebrow">Exploration step</p>
+          <p className="eyebrow">Analysis step</p>
           <h2>{step.title}</h2>
           <p>{step.question}</p>
         </div>

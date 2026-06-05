@@ -85,11 +85,11 @@ export function LandingPage({
     <div className="landing-page">
       <section className="landing-hero">
         <div className="landing-hero-copy">
-          <p className="eyebrow">Browser IDE for analytical projects</p>
+          <p className="eyebrow">Browser workspace for analytical projects</p>
           <h1>Datafarm Studio</h1>
           <p>
-            Build the full path from local data to PDL preparation, Algraf visualization, diagnostics, SQL scratch work,
-            and publishable evidence in one browser workspace.
+            Prepare data with PDL or SQL, render charts with Algraf, inspect the intermediate files, and keep
+            diagnostics close to the work.
           </p>
           <div className="hero-actions">
             <RouteLink className="primary-button" onNavigate={onNavigate} to="/ide">
@@ -208,7 +208,7 @@ export function LandingPage({
               ) : (
                 <>
                   <CheckCircle2 size={16} aria-hidden="true" />
-                  <span>Edit the CSV, PDL, or Algraf source to rerender the saved CSV and SVG.</span>
+                  <span>Edit the CSV, PDL, or Algraf source and the saved CSV and chart update together.</span>
                 </>
               )}
             </div>
@@ -220,27 +220,27 @@ export function LandingPage({
         <RouteLink className="landing-section-card" onNavigate={onNavigate} to="/ide">
           <Workflow size={18} aria-hidden="true" />
           <strong>IDE</strong>
-          <span>Manual data, PDL, Algraf, SQL, output preview, runtime status, and diagnostics.</span>
+          <span>Upload or edit data, prepare it with PDL or SQL, preview CSV output, and chart it with Algraf.</span>
         </RouteLink>
         <RouteLink className="landing-section-card" onNavigate={onNavigate} to="/case-studies">
           <BarChart3 size={18} aria-hidden="true" />
           <strong>Case Studies</strong>
-          <span>Solar and Bikeshare remain editable, runnable, and auditable under one section.</span>
+          <span>Open complete Solar and Bikeshare workflows with editable data, code, charts, and conclusions.</span>
         </RouteLink>
         <RouteLink className="landing-section-card" onNavigate={onNavigate} to="/docs">
           <BookOpenText size={18} aria-hidden="true" />
           <strong>Docs</strong>
-          <span>Datafarm overview, language basics, runtime model, interactivity, SQL, and How Built.</span>
+          <span>Learn the workflow model, language basics, browser runtime, interactivity, SQL, and How Built example.</span>
         </RouteLink>
         <RouteLink className="landing-section-card" onNavigate={onNavigate} to="/labs/interactivity">
           <FlaskConical size={18} aria-hidden="true" />
           <strong>Labs</strong>
-          <span>The reactive PDL context and Algraf event routing demo stays live and editable.</span>
+          <span>Try the reactive PDL context and Algraf event demo with live source panels.</span>
         </RouteLink>
         <div className="landing-section-card landing-section-card-static">
           <Database size={18} aria-hidden="true" />
-          <strong>Runtime Delegation</strong>
-          <span>Studio hosts PDL, Algraf, and SQL.js; it does not reimplement language semantics in TypeScript.</span>
+          <strong>Runtime Model</strong>
+          <span>Studio runs PDL, Algraf, and SQL.js in the browser and keeps their diagnostics visible.</span>
         </div>
       </section>
     </div>

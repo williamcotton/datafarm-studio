@@ -4,7 +4,7 @@ Chart(
     height: 520,
     marginLeft: 140,
     marginRight: 150,
-    title: "Ranked by panels, then by power: the board scrambles",
+    title: "Ranked by panels, then by power: the order flips",
     caption: "Each line is a state, ranked first by installed capacity, then by output per MW. New Mexico climbs from last to first; Massachusetts falls from 7th to last. We built big where the sun is weak."
 ) {
     Theme(name: "minimal")

@@ -116,22 +116,22 @@ const SHARED_METHOD_STEPS: StoryMethodStep[] = [
   {
     icon: "search",
     title: "One question per table",
-    body: "Each section prepares the smallest CSV its chart needs, so the claim can be audited without extra baggage.",
+    body: "Each section prepares only the CSV its chart needs, so the claim stays easy to inspect.",
   },
   {
     icon: "join",
     title: "Context joins late",
-    body: "Supporting data joins only when the story asks for it, after the first view has exposed the misread.",
+    body: "Supporting data joins only when the next question needs it, after the first view exposes what is missing.",
   },
   {
     icon: "workflow",
-    title: "Named outputs drive charts",
-    body: "The default run executes one PDL story program and routes each named output to its matching Algraf file.",
+    title: "Prepared outputs feed charts",
+    body: "One PDL story program creates named CSV outputs, and each chart reads the file for its section.",
   },
   {
     icon: "chart",
-    title: "Chart form carries the argument",
-    body: "Each chart form matches a different step in the decision, from the opening read to the ranked priority list.",
+    title: "Chart form matches the question",
+    body: "Each chart type fits a different step in the decision, from the opening read to the ranked priority list.",
   },
 ];
 
@@ -148,7 +148,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
       eyebrow: "US solar case study",
       headline: "The state with the least solar makes the most power per panel.",
       subhead:
-        "Eleven states, one table and one chart at a time. We start with installed megawatts, then let physics, the seasons, and geography pull the map apart.",
+        "Eleven states, one table and one chart at a time. We start with installed megawatts, then compare that buildout with sunlight, seasons, and geography.",
       metricsAriaLabel: "Solar headline metrics",
       metrics: [
         { label: "States", value: "11" },
@@ -198,7 +198,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
         title: "Where we built the panels",
         question: "Where does US solar live?",
         summary:
-          "Drop state capacity onto the county basemap as proportional bubbles. This is the board-deck view: where installed megawatts already sit.",
+          "Drop state capacity onto the county basemap as proportional bubbles. This is the starting view: where installed megawatts already sit.",
         pdlLabel: "capacity-by-state.pdl",
         algrafLabel: "capacity-bubble-map.ag",
         dataFile: "capacity_by_state.csv",
@@ -256,7 +256,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
           "Every rising line is Sun Belt; the Snow Belt lines fall.",
         ],
         conclusion:
-          "The board scrambles. We poured megawatts into states that convert them poorly, while the highest-yield states are underbuilt.",
+          "The ranking flips. We poured megawatts into states that convert them poorly, while the highest-yield states are underbuilt.",
       },
       {
         id: "seasonal-mix",
@@ -385,13 +385,13 @@ export const STORY_BUNDLES: StoryBundle[] = [
       {
         icon: "join",
         title: "Context joins late",
-        body: "Stations and weather join only when the story asks for them, after trip counts have exposed the first misread.",
+        body: "Stations and weather join only when the next question needs them, after trip counts expose the first misread.",
       },
       SHARED_METHOD_STEPS[2],
       {
         icon: "chart",
-        title: "Chart form carries the argument",
-        body: "Area, scatter, slope, grouped bars, and ranked bars each match a different step in the decision.",
+        title: "Chart form matches the question",
+        body: "Area, scatter, slope, grouped bars, and ranked bars each fit a different step in the decision.",
       },
     ],
     steps: [
@@ -437,12 +437,12 @@ export const STORY_BUNDLES: StoryBundle[] = [
           "Visitor rides stretch up and right, and the larger fare dots sit with that smaller group.",
         ],
         conclusion:
-          "This is one service running two products. Members own the count; the big dots belong to visitors. The next question is who owns the revenue.",
+          "This is one service running two products. Members dominate the count; the big dots belong to visitors. The next question is where the revenue lands.",
       },
       {
         id: "revenue-inversion",
         number: "03",
-        title: "The count lies - follow the money",
+        title: "The count misleads - follow the money",
         question: "Where does the revenue actually come from?",
         summary:
           "Collapse each rider type to share of rides and share of revenue, then draw a line between the two. If volume and value agreed, the lines would run flat.",

@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.12.0
+Status: 0.13.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,13 +12,14 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.12.0. It is a Vite/React application
+The current implementation is version 0.13.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
 client-side IDE surface with PDL and SQL preparation modes, two bundled case
 studies, a dedicated reactive interactivity lab, browser-local SQL.js
 preparation inside the IDE, app-wide PDL saved-CSV artifact routing into
-Algraf file maps, and a Docs section that includes the explanatory How Built
-walkthrough.
+Algraf file maps, a Docs section that includes the explanatory How Built
+walkthrough, and product copy that describes user-visible workflows rather than
+release migrations.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -104,7 +105,7 @@ workflow:
 - Case Studies, the home for two curated workflows.
 - Docs, a documentation section with overview, language, runtime,
   interactivity, SQL, and How Built content.
-- Labs, the retained reactive Interactivity demo.
+- Labs, the reactive Interactivity demo.
 
 Version 0.11.0 keeps that structure and fixes the app-wide saved artifact
 contract: when PDL emits saved CSV files, Studio passes those files to Algraf
@@ -116,12 +117,17 @@ dependencies from local sibling installs to the published npm package surfaces:
 `pdl-wasm@0.30.0`, `pdl-editor@0.30.0`, `algraf-wasm@0.67.0`, and
 `algraf-editor@0.67.0`.
 
+Version 0.13.0 keeps the v0.12 runtime and editor workflow and cleans up the
+visible Studio copy across Landing, IDE, Case Studies, Docs, Docs How Built,
+Labs Interactivity, and case-study metadata. The Case Studies index introduces
+case studies as inspectable workflows rather than migration artifacts.
+
 The current Case Studies section contains:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
 
-The retained Labs and Docs surfaces include:
+The Labs and Docs surfaces include:
 
 - Interactivity, a compact PDL context and Algraf event demonstration with a
   reactive selector and dependent chart.
@@ -564,10 +570,10 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.12.0 consumes `pdl-wasm@0.30.0` and `pdl-editor@0.30.0` from
-published npm packages.
+Version 0.13.0 continues to consume `pdl-wasm@0.30.0` and
+`pdl-editor@0.30.0` from published npm packages.
 
-Version 0.12.0 requires a PDL v0.30-compatible browser package surface and a
+Version 0.13.0 requires a PDL v0.30-compatible browser package surface and a
 v0.30-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -929,13 +935,18 @@ The Docs How Built page has:
 The published Case Studies surface SHOULD remain readable for non-technical
 story readers.
 
+Published, landing, docs, and lab copy SHOULD describe what users can inspect,
+edit, run, or learn. User-facing page copy SHOULD avoid migration wording,
+release-note phrasing, and implementation inventories unless a page is directly
+teaching a runtime or editor boundary.
+
 The IDE surface SHOULD prioritize efficient repeated use by analysts over
 marketing layout. The IDE page SHOULD avoid a hero section, large outer
 margins, and card-like rounded panel styling.
 
 ## 16. Data Science IDE Direction
 
-Version 0.12.0 defines the current IDE surface as a browser-local, ephemeral
+Version 0.13.0 defines the current IDE surface as a browser-local, ephemeral
 workspace. It MUST include:
 
 - local/manual CSV editing;
@@ -1078,7 +1089,7 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.12.0 package validation, Studio uses published npm installs of
+For version 0.13.0 package validation, Studio uses published npm installs of
 `pdl-wasm@0.30.0`, `pdl-editor@0.30.0`, `algraf-wasm@0.67.0`, and
 `algraf-editor@0.67.0`. Runtime loading still uses `public/wasm/pdl.wasm`,
 `public/wasm/algraf.wasm`, and `public/wasm/sql-wasm.wasm`, populated by
@@ -1135,7 +1146,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.12.0 runs a landing page, an initial IDE workspace, small bundled case
+Version 0.13.0 runs a landing page, an initial IDE workspace, small bundled case
 studies, a small reactive demo, and an in-memory SQL.js workflow; it does not
 define strict performance budgets.
 
@@ -1283,6 +1294,9 @@ Studies, and Labs Interactivity while SQL mode remains fixed to
 Version 0.12.0 switches Studio's PDL and Algraf package dependencies to the
 published browser npm packages while preserving the v0.11 runtime and editor
 workflow.
+
+Version 0.13.0 cleans up visible Studio page copy and case-study copy while
+preserving the v0.12 runtime, editor, routing, and workflow behavior.
 
 Future versions should move from fixed case studies toward:
 

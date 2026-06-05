@@ -588,7 +588,7 @@ export function IdePage({
             {diagnosticMessages.length > 0 ? (
               diagnosticMessages.map((message) => <p key={message}>{message}</p>)
             ) : (
-              <p>{activePreparationLabel} output and Algraf chart are in sync.</p>
+              <p>{activePreparationLabel} output matches the Algraf chart input.</p>
             )}
           </div>
         </article>
