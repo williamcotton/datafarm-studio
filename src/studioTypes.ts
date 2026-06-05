@@ -2,7 +2,7 @@ import type { AlgrafDiagnostic, AlgrafRenderResult } from "algraf-wasm";
 import type { PdlEditorDiagnostic, PdlRunResult } from "pdl-wasm";
 
 export type RuntimeState = "loading" | "ready" | "error";
-export type StudioPage = "story" | "interactivity" | "how-built" | "sql";
+export type StudioPage = "landing" | "ide" | "case-studies" | "case-study" | "docs" | "docs-how-built" | "labs-interactivity";
 
 export type SqlValue = string | number | null | Uint8Array;
 

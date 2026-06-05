@@ -63,6 +63,8 @@ jobs:
         run: |
           test -s dist/wasm/algraf.wasm
           test -s dist/wasm/pdl.wasm
+          test -s dist/wasm/sql-wasm.wasm
+          test -s dist/404.html
 
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3

@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.8.0
+Status: 0.9.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,10 +12,11 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.8.0. It is a Vite/React application
-with two bundled case studies, a dedicated reactive interactivity demo, a
-client-side SQLite workspace, and a separate explanatory How Built walkthrough
-page. It is not yet a full IDE.
+The current implementation is version 0.9.0. It is a Vite/React application
+with a Datafarm landing page, route-aware top-level navigation, an initial
+client-side IDE surface, two bundled case studies, a dedicated reactive
+interactivity lab, a client-side SQLite workspace embedded in the IDE, and a
+Docs section that includes the explanatory How Built walkthrough.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -90,17 +91,32 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.8.0 ships two curated workflows, one interactive runtime demo, one
-client-side SQL workspace, and one implementation walkthrough:
+Version 0.9.0 ships a product structure around the PDL to Algraf workflow:
+
+- Landing, a first-view introduction to Datafarm Studio as the browser IDE for
+  the PDL to Algraf workflow.
+- IDE, an ephemeral browser workspace with manual CSV data, PDL editing, Algraf
+  editing, SQL workspace access, output preview, runtime status, and
+  diagnostics.
+- Case Studies, the home for two curated workflows.
+- Docs, a documentation section with overview, language, runtime,
+  interactivity, SQL, and How Built content.
+- Labs, the retained reactive Interactivity demo.
+
+The current Case Studies section contains:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
+
+The retained Labs and Docs surfaces include:
+
 - Interactivity, a compact PDL context and Algraf event demonstration with a
   reactive selector and dependent chart.
 - SQL, a browser-local SQLite workspace powered by SQL.js for CSV import,
-  database upload, schema inspection, query preview, and export.
+  database upload, schema inspection, query preview, and export, embedded in
+  the IDE surface.
 - How Built, a one-slider PDL and Algraf walkthrough showing how the runtime,
-  editor, event, and view boundaries are wired in React.
+  editor, event, and view boundaries are wired in React under Docs.
 
 Each workflow exposes the same section structure:
 
@@ -124,14 +140,18 @@ Studio currently proves these production contracts:
 - SQL.js can load from a Studio-served WASM asset, own an in-memory SQLite
   database, import local CSV files, open uploaded SQLite database files, run
   SQL, inspect schemas, and export results without a server.
-- The How Built page can explain React state ownership, PDL and Algraf API
+- The Docs How Built page can explain React state ownership, PDL and Algraf API
   boundaries, event bridging, data flow, and component organization in the
   visible UI without depending on the full Interactivity demo.
 - GitHub Pages can serve the app with a configurable Vite base path.
+- Browser-history routes can address Landing, IDE, Case Studies, Docs, How
+  Built, and Labs surfaces, with `dist/404.html` mirroring the app shell for
+  GitHub Pages fallback routing.
 
-Future versions will expand this into a data science IDE. The IDE should make
-files, runs, data lineage, diagnostics, previews, outputs, and publish targets
-first-class without reimplementing PDL or Algraf in TypeScript.
+Future versions will expand the initial IDE into a project-oriented data
+science IDE. The IDE should make files, runs, data lineage, diagnostics,
+previews, outputs, and publish targets first-class without reimplementing PDL or
+Algraf in TypeScript.
 
 ## 2. Product Goals
 
@@ -199,6 +219,9 @@ The React entry point is `src/main.tsx`.
 
 The top-level state and runtime orchestration container is `src/App.tsx`.
 
+Client-side route parsing and base-path URL construction live in
+`src/router.ts`.
+
 Reusable shell and workflow UI is split into focused components under
 `src/components/`.
 
@@ -227,6 +250,9 @@ SQL query editing lives in `src/SqlEditor.tsx`.
 
 The SQL workspace page lives in `src/components/SqlWorkspacePage.tsx`.
 
+The Landing, IDE, Case Studies, Docs, and route link components live under
+`src/components/`.
+
 Bundled stories live under `src/datafarm-solar/` and
 `src/datafarm-bikeshare/`.
 
@@ -237,7 +263,8 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.8.0 does not expose a general project workspace model in the UI.
+Version 0.9.0 exposes an initial client-side IDE surface but does not expose a
+general persisted project workspace model.
 
 Internally, Studio maintains editable per-story state:
 
@@ -246,6 +273,8 @@ Internally, Studio maintains editable per-story state:
 - Algraf source by story and section;
 - runtime state for PDL and Algraf;
 - per-section execution snapshots.
+- IDE manual CSV source, IDE PDL source, IDE Algraf source, IDE context value,
+  generated IDE output, chart result, and diagnostics.
 - reactive demo context, source, generated files, chart results, and last Algraf
   event payload.
 - SQL.js runtime state, active in-memory SQLite database, query text, query
@@ -265,7 +294,9 @@ metadata.
 
 ### 5.1 SQL Workspace Model
 
-Version 0.8.0 exposes a top-level SQL workspace page.
+Version 0.9.0 embeds the v0.8 SQL workspace in the IDE surface. The reusable
+SQL workspace component MAY still render as a standalone page for development
+or compatibility, but the product navigation owns it through IDE.
 
 The SQL workspace MUST create and own a browser-local SQL.js database in memory.
 The database MUST NOT require a server, remote API, or filesystem persistence.
@@ -308,7 +339,7 @@ TypeScript implementations of PDL or Algraf behavior.
 
 A story is a curated analytical sequence.
 
-In version 0.8.0, stories are declared as `StoryBundle` values in
+In version 0.9.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -348,9 +379,9 @@ Sections MAY declare supporting files and supporting outputs.
 Story IDs and section IDs SHOULD be stable. They are used as React keys, state
 keys, editor model paths, and output routing identifiers.
 
-## 7. Current Stories
+## 7. Current Case Studies
 
-Version 0.8.0 ships two stories.
+Version 0.9.0 ships two stories under the Case Studies route group.
 
 ### 7.1 Solar
 
@@ -397,7 +428,7 @@ Bikeshare uses a story-level PDL program at
 
 ### 7.3 Interactivity Demo
 
-The Interactivity view is a separate top-level page, not a story section.
+The Interactivity view is a separate Labs page, not a story section.
 
 The demo MUST show:
 
@@ -422,7 +453,7 @@ source change.
 
 ### 7.4 SQL Workspace
 
-The SQL workspace is a separate top-level page, not a story section.
+The SQL workspace is an IDE section, not a story section.
 
 The SQL workspace MUST show:
 
@@ -464,10 +495,10 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.8.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.9.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.8.0 requires a PDL v0.29-compatible browser package surface and a
+Version 0.9.0 requires a PDL v0.29-compatible browser package surface and a
 v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -566,7 +597,7 @@ to the Studio-owned PDL state binding `selected_zone`.
 Studio loads SQL.js from the `sql.js` package and loads SQL.js WASM from
 `public/wasm/sql-wasm.wasm` using the Vite public base path.
 
-Version 0.8.0 targets `sql.js` `^1.13.0`. The current lockfile may resolve any
+Version 0.9.0 targets `sql.js` `^1.13.0`. The current lockfile may resolve any
 compatible SQL.js version in that range.
 
 Studio MUST initialize SQL.js with `initSqlJs({ locateFile })`. The `locateFile`
@@ -574,7 +605,7 @@ function MUST return `publicAssetUrl("wasm/sql-wasm.wasm")` for SQL.js WASM
 requests. This mapping MUST remain stable even when the bundler resolves SQL.js
 to a browser build that asks for `sql-wasm-browser.wasm`.
 
-SQL.js databases MUST remain browser-local and memory-backed in version 0.8.0.
+SQL.js databases MUST remain browser-local and memory-backed in version 0.9.0.
 
 Studio MAY construct an empty database with `new SQL.Database()` and MAY
 construct an uploaded database with `new SQL.Database(new Uint8Array(buffer))`.
@@ -645,7 +676,7 @@ Editor-service failures SHOULD be logged and should not crash the whole app.
 Studio MUST load both PDL and Algraf runtimes before automatic workflow
 execution.
 
-Studio MUST auto-run the active story after both runtimes are ready.
+Studio MUST auto-run the active case study after both runtimes are ready.
 
 Studio MUST allow users to run all sections with a visible command.
 
@@ -666,8 +697,8 @@ Each section snapshot MUST capture:
 - Algraf diagnostics;
 - combined error string.
 
-Switching stories MUST clear runtime errors, snapshots, and running state while
-preserving source edits stored for each story.
+Switching case studies MUST clear runtime errors, snapshots, and running state
+while preserving source edits stored for each story.
 
 The Interactivity page MUST evaluate the demo PDL source with the current
 dashboard context map whenever a context value, demo source, or demo data file
@@ -736,9 +767,20 @@ dynamic runtime code in embedded chart output.
 
 The current UI has these major regions:
 
-- topbar with brand, story switcher, and runtime status;
-- top-level selector for Solar, Bikeshare, Interactivity, SQL, and How Built
-  views;
+- topbar with brand, route-aware navigation, and runtime status;
+- browser-history routes for Landing, IDE, Case Studies, Docs, Docs How Built,
+  and Labs Interactivity;
+- Landing page introducing Datafarm Studio as the browser IDE for PDL to
+  Algraf;
+- IDE page with manual CSV data, PDL editor, Algraf editor, generated CSV
+  preview, rendered chart preview, runtime status, diagnostics, and embedded
+  SQL workspace;
+- Case Studies index and per-story case-study pages;
+- Docs index and Docs-owned How Built walkthrough;
+- Labs-owned Interactivity page.
+
+Each case-study page has:
+
 - hero with story copy, metrics, and run command;
 - method cards;
 - raw data section;
@@ -756,7 +798,7 @@ Each story section has:
 - rendered chart panel;
 - conclusion and evidence list.
 
-The Interactivity page has:
+The Interactivity Labs page has:
 
 - compact hero and runtime metrics;
 - PDL context controls;
@@ -765,7 +807,7 @@ The Interactivity page has:
 - generated CSV output panels;
 - editable raw CSV, PDL source, and Algraf source panels.
 
-The SQL page has:
+The embedded SQL workspace has:
 
 - compact hero and SQL.js workspace metrics;
 - browser-memory status;
@@ -779,7 +821,7 @@ The SQL page has:
 - CSV import history;
 - SQL diagnostics.
 
-The How Built page has:
+The Docs How Built page has:
 
 - a compact hero explaining the one-slider example;
 - a live surface with one React slider state, input CSV, editable PDL source,
@@ -795,14 +837,27 @@ The How Built page has:
   components, view components, PDL and Algraf API boundaries, events, data flow,
   and rerun behavior.
 
-The published surface SHOULD remain readable for non-technical story readers.
+The published Case Studies surface SHOULD remain readable for non-technical
+story readers.
 
-The future IDE surface SHOULD prioritize efficient repeated use by analysts over
+The IDE surface SHOULD prioritize efficient repeated use by analysts over
 marketing layout.
 
 ## 16. Data Science IDE Direction
 
-The future IDE should center on projects instead of fixed case-study pages.
+Version 0.9.0 introduces the first IDE surface as a browser-local, ephemeral
+workspace. It MUST include:
+
+- local/manual CSV editing;
+- PDL source editing;
+- Algraf source editing;
+- generated CSV preview;
+- rendered chart preview;
+- runtime status;
+- diagnostics;
+- access to the SQL workspace and SQL editor.
+
+Future IDE work should center on projects instead of fixed example files.
 
 Planned IDE concepts include:
 
@@ -820,7 +875,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.8.0.
+These broader project concepts remain deferred in version 0.9.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -846,7 +901,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.8.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.9.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -869,10 +924,10 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.8.0 approximates this graph with story-level, per-section, and
-interactivity-demo workflow functions in `src/storyWorkflow.ts` and the
-Interactivity page component. `src/App.tsx` coordinates which workflow runs and
-stores the resulting snapshots.
+Version 0.9.0 approximates this graph with story-level and per-section workflow
+functions in `src/storyWorkflow.ts`, plus focused IDE and Interactivity page
+workflow functions. `src/App.tsx` coordinates which routed surface is active and
+stores the resulting case-study snapshots.
 
 ## 19. Data Preview
 
@@ -931,7 +986,7 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.8.0 local validation, Studio uses filesystem installs of
+For version 0.9.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
 repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
 `0.66.x`. Runtime loading still uses `public/wasm/pdl.wasm`,
@@ -987,8 +1042,8 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.8.0 runs small bundled stories, a small reactive demo, and an
-in-memory SQL.js workspace; it does not
+Version 0.9.0 runs a landing page, an initial IDE workspace, small bundled case
+studies, a small reactive demo, and an in-memory SQL.js workspace; it does not
 define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -1061,17 +1116,25 @@ root.
 
 ## 28. Implementation Milestones
 
-Version 0.7.0 preserves the case-study alpha, consumes shared PDL and Algraf
+Version 0.7.0 preserves the case-study alpha and consumes shared PDL and Algraf
 browser package integrations. Version 0.8.0 keeps reactive orchestration,
 splits the Studio shell into focused components and workflow helpers, adds a
-separate How Built walkthrough page, and adds a client-side SQL workspace:
+separate How Built walkthrough page, and adds a client-side SQL workspace.
+Version 0.9.0 reorganizes Studio around route-addressable product sections and
+adds the initial IDE surface:
 
 - Vite/React shell;
-- story switcher;
+- route-aware top-level navigation;
+- browser-history router with GitHub Pages fallback artifact;
+- Landing page;
+- initial IDE page;
+- Case Studies section;
+- Docs section;
+- Labs Interactivity route;
 - two bundled stories;
 - Interactivity view;
-- SQL workspace view;
-- How Built view;
+- SQL workspace embedded in IDE;
+- How Built view under Docs;
 - editable raw data;
 - SQL.js dependency and served `sql-wasm.wasm` asset;
 - reusable SQL Monaco editor;

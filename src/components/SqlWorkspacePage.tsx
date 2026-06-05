@@ -36,7 +36,7 @@ import { errorMessage, formatBytes } from "../studioUtils";
 
 const RESULT_PREVIEW_LIMIT = 200;
 
-export function SqlWorkspacePage(): React.ReactElement {
+export function SqlWorkspacePage({ embedded = false }: { embedded?: boolean } = {}): React.ReactElement {
   const [sqlRuntimeState, setSqlRuntimeState] = React.useState<RuntimeState>("loading");
   const [sqlModule, setSqlModule] = React.useState<SqlJsStatic | null>(null);
   const [database, setDatabase] = React.useState<SqlJsDatabase | null>(null);
@@ -309,22 +309,24 @@ export function SqlWorkspacePage(): React.ReactElement {
     : "not run";
 
   return (
-    <div className="sql-page">
-      <section className="sql-hero">
-        <div className="hero-copy">
-          <p className="eyebrow">SQLite workspace</p>
-          <h1>Relational scratchpad</h1>
-          <p>
-            Create an in-memory SQLite database, bring local CSV or SQLite files into the browser, inspect schemas, and
-            export the work you want to keep.
-          </p>
-        </div>
-        <div className="hero-status" aria-label="SQL workspace metrics">
-          <Metric label="SQL.js" value={runtimeLabel} />
-          <Metric label="Tables" value={String(tables.length)} />
-          <Metric label="Result" value={resultMeta} />
-        </div>
-      </section>
+    <div className={embedded ? "sql-page sql-page-embedded" : "sql-page"}>
+      {!embedded ? (
+        <section className="sql-hero">
+          <div className="hero-copy">
+            <p className="eyebrow">SQLite workspace</p>
+            <h1>Relational scratchpad</h1>
+            <p>
+              Create an in-memory SQLite database, bring local CSV or SQLite files into the browser, inspect schemas, and
+              export the work you want to keep.
+            </p>
+          </div>
+          <div className="hero-status" aria-label="SQL workspace metrics">
+            <Metric label="SQL.js" value={runtimeLabel} />
+            <Metric label="Tables" value={String(tables.length)} />
+            <Metric label="Result" value={resultMeta} />
+          </div>
+        </section>
+      ) : null}
 
       <section className="control-panel sql-toolbar" aria-label="SQL workspace actions">
         <div className="panel-header">

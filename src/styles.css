@@ -109,6 +109,36 @@ a {
   min-width: 0;
 }
 
+.topnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 4px;
+  border: 1px solid #cbd8d4;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.topnav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 11px;
+  border-radius: 6px;
+  color: #405057;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.topnav a[aria-current="page"] {
+  background: #145f52;
+  color: #ffffff;
+}
+
 .runtime-pills {
   gap: 8px;
 }
@@ -272,6 +302,452 @@ p {
   font-size: 20px;
   line-height: 1.15;
   overflow-wrap: anywhere;
+}
+
+.landing-page,
+.case-studies-page,
+.docs-page,
+.ide-page {
+  display: grid;
+  gap: 18px;
+}
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.58fr) minmax(620px, 1.42fr);
+  gap: 28px;
+  align-items: stretch;
+  padding: 34px 0 18px;
+}
+
+.landing-hero-copy {
+  display: grid;
+  align-content: center;
+  max-width: 820px;
+}
+
+.landing-hero-copy p:not(.eyebrow) {
+  max-width: 720px;
+  font-size: 18px;
+}
+
+.landing-demo-shell {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 12px;
+  border: 1px solid #dce5e2;
+  border-radius: 8px;
+  background: #edf3f1;
+}
+
+.landing-demo-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding: 2px 2px 0;
+}
+
+.landing-demo-header h2 {
+  margin-bottom: 0;
+  font-size: 18px;
+}
+
+.landing-demo-header small {
+  flex: 0 0 auto;
+  color: #52636a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.landing-demo-grid {
+  display: grid;
+  grid-template-columns: minmax(145px, 0.7fr) minmax(260px, 1.3fr) minmax(110px, 0.55fr) minmax(200px, 1fr);
+  grid-template-areas:
+    "data pdl output output"
+    "algraf algraf chart chart"
+    "status status status status";
+  align-items: start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.landing-demo-panel {
+  align-self: start;
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+
+.landing-data-panel {
+  grid-area: data;
+}
+
+.landing-pdl-panel {
+  grid-area: pdl;
+}
+
+.landing-algraf-panel {
+  grid-area: algraf;
+}
+
+.landing-output-panel {
+  grid-area: output;
+}
+
+.landing-chart-panel {
+  grid-area: chart;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: auto;
+}
+
+.landing-data-panel .editor-host,
+.editor-host.landing-editor-host {
+  height: 138px;
+}
+
+.landing-algraf-panel .editor-host.landing-editor-host {
+  height: 252px;
+}
+
+.output-block.landing-output-block {
+  min-height: 138px;
+  max-height: 138px;
+}
+
+.chart-stage.landing-chart-stage {
+  height: 252px;
+  min-height: 0;
+  padding: 8px;
+}
+
+.landing-demo-status {
+  grid-area: status;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 10px 12px;
+  border: 1px solid #b8dacd;
+  border-radius: 8px;
+  background: #eef8f4;
+  color: #145f52;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.landing-demo-status-error {
+  border-color: #f1b8b2;
+  background: #fff5f4;
+  color: #a33d2d;
+}
+
+.landing-section-grid,
+.case-study-card-grid,
+.docs-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.landing-section-grid {
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+}
+
+.landing-section-card,
+.case-study-card,
+.docs-card,
+.docs-subnav,
+.case-study-nav {
+  border: 1px solid #dce5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(34, 48, 54, 0.06);
+}
+
+.landing-section-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 178px;
+  padding: 16px;
+  color: #24343a;
+}
+
+.landing-section-card svg {
+  color: #176c5c;
+}
+
+.landing-section-card strong {
+  color: #142128;
+  font-size: 16px;
+}
+
+.landing-section-card span {
+  color: #53646b;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.landing-section-card-static svg {
+  color: #d46658;
+}
+
+.case-studies-hero,
+.docs-hero,
+.ide-hero {
+  display: grid;
+  gap: 28px;
+  align-items: end;
+  padding: 34px 0 4px;
+}
+
+.case-studies-hero,
+.docs-hero {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.ide-hero {
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+}
+
+.case-study-card-grid {
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+}
+
+.case-study-card {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 18px;
+}
+
+.case-study-card-icon {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 8px;
+  background: #eaf4f1;
+  color: #176c5c;
+}
+
+.case-study-card h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.case-study-card p:not(.eyebrow) {
+  margin: 0;
+  font-size: 14px;
+}
+
+.case-study-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.case-study-card-metrics span {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #e2ebe8;
+  border-radius: 8px;
+  color: #5f6f76;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.case-study-card-metrics strong {
+  overflow-wrap: anywhere;
+  color: #152127;
+  font-size: 15px;
+  text-transform: none;
+}
+
+.case-study-card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #176c5c;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.case-study-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 12px;
+}
+
+.case-study-nav-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #23343b;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.segment-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border-left: 1px solid #cbd8d4;
+  color: #405057;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.segment-link:first-child {
+  border-left: 0;
+}
+
+.segment-link[aria-current="page"] {
+  background: #145f52;
+  color: #ffffff;
+}
+
+.case-study-nav-index {
+  min-height: 32px;
+}
+
+.docs-grid {
+  grid-template-columns: repeat(3, minmax(260px, 1fr));
+}
+
+.docs-card {
+  min-width: 0;
+  padding: 18px;
+}
+
+.docs-card-icon {
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  background: #eaf4f1;
+  color: #176c5c;
+}
+
+.docs-card h2 {
+  font-size: 18px;
+}
+
+.docs-card p,
+.docs-card li {
+  color: #53646b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.docs-card ul {
+  display: grid;
+  gap: 7px;
+  margin: 12px 0 0;
+  padding-left: 18px;
+}
+
+.docs-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+  padding: 16px;
+}
+
+.docs-subnav h1 {
+  margin-bottom: 0;
+  font-size: 34px;
+}
+
+.ide-runtime-panel {
+  overflow: hidden;
+}
+
+.ide-control-grid {
+  grid-template-columns: minmax(220px, 340px);
+}
+
+.ide-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(320px, 1fr));
+  gap: 12px;
+  align-items: stretch;
+}
+
+.ide-data-panel,
+.ide-pdl-panel,
+.ide-algraf-panel,
+.ide-output-panel,
+.ide-chart-panel,
+.ide-diagnostics-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.ide-editor-host {
+  height: 386px;
+}
+
+.ide-output-block {
+  min-height: 386px;
+  max-height: 386px;
+}
+
+.ide-chart-stage {
+  min-height: 386px;
+}
+
+.ide-diagnostics-list {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 386px;
+  padding: 14px;
+  background: #fbfcfc;
+}
+
+.ide-diagnostics-list p {
+  margin: 0;
+  color: #405057;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ide-diagnostics-panel-error .ide-diagnostics-list {
+  background: #fff5f4;
+}
+
+.ide-diagnostics-panel-error .ide-diagnostics-list p {
+  color: #a33d2d;
+  font-weight: 800;
+}
+
+.ide-sql-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.sql-page-embedded {
+  gap: 12px;
 }
 
 .interactivity-page {
@@ -1655,10 +2131,16 @@ p {
 
 @media (max-width: 1180px) {
   .hero,
+  .landing-hero,
+  .ide-hero,
   .demo-hero,
   .sql-hero,
   .build-hero,
   .control-grid,
+  .landing-section-grid,
+  .case-study-card-grid,
+  .docs-grid,
+  .ide-workspace-grid,
   .demo-chart-grid,
   .demo-output-grid,
   .demo-source-grid,
@@ -1674,6 +2156,23 @@ p {
   .conclusion-section,
   .guide-section {
     grid-template-columns: 1fr;
+  }
+
+  .landing-demo-shell {
+    min-height: 320px;
+  }
+
+  .landing-demo-grid {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-template-areas:
+      "data pdl"
+      "output algraf"
+      "chart chart"
+      "status status";
+  }
+
+  .landing-chart-stage {
+    min-height: 360px;
   }
 
   .prepared-output-panel {
@@ -1715,6 +2214,16 @@ p {
   .topbar-controls {
     align-items: flex-start;
     flex-direction: column;
+    width: 100%;
+  }
+
+  .topnav {
+    width: 100%;
+  }
+
+  .topnav a {
+    flex: 1 1 auto;
+    min-width: 92px;
   }
 
   main {
@@ -1727,6 +2236,11 @@ p {
   }
 
   .hero-status,
+  .landing-section-grid,
+  .case-study-card-grid,
+  .case-study-card-metrics,
+  .docs-grid,
+  .ide-workspace-grid,
   .source-grid,
   .case-grid,
   .workspace-grid,
@@ -1736,6 +2250,32 @@ p {
   .audit-metrics,
   .guide-grid {
     grid-template-columns: 1fr;
+  }
+
+  .landing-demo-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "data"
+      "pdl"
+      "output"
+      "algraf"
+      "chart"
+      "status";
+  }
+
+  .case-study-nav,
+  .docs-subnav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .case-study-nav .segmented-control {
+    width: 100%;
+  }
+
+  .segment-link {
+    flex: 1 1 0;
+    justify-content: center;
   }
 
   .section-heading {
@@ -1767,12 +2307,23 @@ p {
 
   .editor-host,
   .raw-panel .editor-host,
+  .ide-editor-host,
+  .landing-data-panel .editor-host,
+  .landing-editor-host,
   .sql-editor-host {
     height: 300px;
   }
 
-  .output-block {
+  .output-block,
+  .ide-output-block,
+  .landing-output-block {
     min-height: 320px;
     max-height: 320px;
+  }
+
+  .ide-diagnostics-list,
+  .ide-chart-stage,
+  .landing-chart-stage {
+    min-height: 320px;
   }
 }

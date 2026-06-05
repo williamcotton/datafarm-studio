@@ -1,6 +1,6 @@
 # Datafarm Studio v0.9.0 Plan
 
-Status: Planned
+Status: Implemented
 Target version: 0.9.0
 Owner: Studio maintainers
 Related spec: [`STUDIO_SPEC.md`](STUDIO_SPEC.md)
@@ -24,68 +24,68 @@ How Built content should become the start of a fuller Docs section.
 
 - Add a Datafarm landing page.
 
-  Status: Planned. Studio MUST add a first-view landing page that introduces
+  Status: Implemented. Studio adds a first-view landing page that introduces
   Datafarm Studio as the browser IDE for the PDL to Algraf workflow. The page
-  MUST be separate from the current case-study page surface.
+  is separate from the current case-study page surface.
 
 - Add top-level navigation.
 
-  Status: Planned. Studio MUST replace the current story-first switcher model
+  Status: Implemented. Studio replaces the current story-first switcher model
   with top-level navigation for Landing, IDE, Case Studies, Docs, and any
   retained demo/lab surface needed for Interactivity.
 
 - Make IDE the primary product surface.
 
-  Status: Planned. Studio MUST add an initial IDE page or tab that brings
+  Status: Implemented. Studio adds an initial IDE page that brings
   together local/manual data, PDL editing, Algraf editing, the v0.8 SQL
   workspace and SQL editor, output preview, runtime status, and diagnostics.
 
 - Move existing stories under Case Studies.
 
-  Status: Planned. Solar and Bikeshare MUST remain functional but move under a
+  Status: Implemented. Solar and Bikeshare remain functional but move under a
   Case Studies section. Their raw data editors, PDL preparation code, prepared
   CSV output, Algraf chart code, rendered charts, evidence, and conclusions
-  MUST keep their existing runtime behavior.
+  keep their existing runtime behavior.
 
 - Move How Built into Docs.
 
-  Status: Planned. The current How Built walkthrough MUST move into a Docs
+  Status: Implemented. The current How Built walkthrough moved into a Docs
   section and remain reachable after navigation changes.
 
 - Expand the Docs section.
 
-  Status: Planned. Docs MUST include at least a Datafarm overview, PDL basics,
+  Status: Implemented. Docs includes a Datafarm overview, PDL basics,
   Algraf basics, browser runtime model, interactivity model, and SQL workspace
   notes from v0.8.
 
 - Preserve the Interactivity demo.
 
-  Status: Planned. The existing Interactivity demo MUST remain reachable either
-  from Docs, IDE, or a Labs/Demos section, and its PDL context controls,
+  Status: Implemented. The existing Interactivity demo remains reachable from a
+  Labs section, and its PDL context controls,
   generated CSV output, selector and dependent Algraf charts, editable sources,
-  diagnostics, and chart click event routing MUST keep their existing behavior.
+  diagnostics, and chart click event routing keep their existing behavior.
 
 - Keep runtime delegation intact.
 
-  Status: Planned. This release MUST NOT add TypeScript implementations of PDL
+  Status: Implemented. This release does not add TypeScript implementations of PDL
   parsing/execution or Algraf parsing/rendering.
 
 ## Should
 
 - Keep the reorganization incremental.
 
-  Status: Planned. The first IDE surface should be client-side and ephemeral,
+  Status: Implemented. The first IDE surface is client-side and ephemeral,
   reusing existing editor/runtime components plus the v0.8 SQL workspace and
   SQL editor rather than introducing persistence or a full project manifest.
 
 - Preserve product content while changing ownership.
 
-  Status: Planned. Case-study copy, evidence, and story assets should remain
+  Status: Implemented. Case-study copy, evidence, and story assets remain
   separate from reusable IDE, docs, runtime, and editor infrastructure.
 
 - Make future project-model work easier.
 
-  Status: Planned. Navigation, page state, and shared panels should be shaped so
+  Status: Implemented. Navigation, page state, and shared panels are shaped so
   a later project model can replace fixed examples without another app rewrite.
 
 ## Validation

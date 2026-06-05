@@ -2,9 +2,12 @@ import React from "react";
 import { loadAlgrafRuntime, type AlgrafRuntime } from "algraf-wasm";
 import { loadPdlRuntime, type PdlRuntime } from "pdl-wasm";
 
+import { CaseStudiesIndexPage, CaseStudyNav } from "./components/CaseStudiesPage";
+import { DocsHeader, DocsPage } from "./components/DocsPage";
 import { HowBuiltPage } from "./components/HowBuiltPage";
+import { IdePage } from "./components/IdePage";
 import { InteractivityDemoPage } from "./components/InteractivityDemoPage";
-import { SqlWorkspacePage } from "./components/SqlWorkspacePage";
+import { LandingPage } from "./components/LandingPage";
 import { StoryPage } from "./components/StoryPage";
 import { Topbar } from "./components/Topbar";
 import {
@@ -16,6 +19,7 @@ import {
   type RawDataFile,
   type StoryId,
 } from "./storyBundles";
+import { hrefForRoutePath, routeFromLocation, routeFromPath, storyRoutePath, type StudioRoute } from "./router";
 import {
   DEFAULT_DASHBOARD_CONTEXT,
   INTERACTIVITY_DATA,
@@ -29,8 +33,7 @@ import type { AlgrafEmitPayload, RuntimeState, StepSnapshots, StudioPage } from 
 import { emptyStepSnapshot, errorMessage, pdlRuntimeDiagnosticsForSnapshot } from "./studioUtils";
 
 export function App(): React.ReactElement {
-  const [page, setPage] = React.useState<StudioPage>("story");
-  const [storyId, setStoryId] = React.useState<StoryId>(DEFAULT_STORY_ID);
+  const [route, setRoute] = React.useState<StudioRoute>(() => routeFromLocation());
   const [pdlRuntime, setPdlRuntime] = React.useState<PdlRuntime | null>(null);
   const [algrafRuntime, setAlgrafRuntime] = React.useState<AlgrafRuntime | null>(null);
   const [pdlState, setPdlState] = React.useState<RuntimeState>("loading");
@@ -54,11 +57,34 @@ export function App(): React.ReactElement {
   const [running, setRunning] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<StepSnapshots>({});
 
+  const activePage: StudioPage = route.page;
+  const storyId = route.storyId ?? DEFAULT_STORY_ID;
   const activeStory = React.useMemo(() => getStoryBundle(storyId), [storyId]);
   const rawSources = rawDataByStory[activeStory.id] ?? {};
   const pdlSources = pdlSourcesByStory[activeStory.id] ?? {};
   const algrafSources = algrafSourcesByStory[activeStory.id] ?? {};
   const files = React.useMemo(() => createStoryFiles(activeStory, rawSources), [activeStory, rawSources]);
+
+  React.useEffect(() => {
+    const handlePopState = () => setRoute(routeFromLocation());
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  React.useEffect(() => {
+    const canonicalPath = hrefForRoutePath(route.path);
+    if (window.location.pathname !== new URL(canonicalPath, window.location.origin).pathname) {
+      window.history.replaceState(null, "", canonicalPath);
+    }
+  }, [route.path]);
+
+  const navigate = React.useCallback((path: string) => {
+    const nextRoute = routeFromPath(path);
+    const href = hrefForRoutePath(nextRoute.path);
+    window.history.pushState(null, "", href);
+    setRoute(nextRoute);
+    window.scrollTo({ top: 0, left: 0 });
+  }, []);
 
   React.useEffect(() => {
     let cancelled = false;
@@ -98,10 +124,10 @@ export function App(): React.ReactElement {
     setRuntimeError(null);
     setSnapshots({});
     setRunning(false);
-  }, [activeStory.id, page]);
+  }, [activePage, activeStory.id]);
 
   const runWorkflow = React.useCallback(() => {
-    if (page !== "story") {
+    if (activePage !== "case-study") {
       return;
     }
     if (!pdlRuntime || !algrafRuntime) {
@@ -122,10 +148,10 @@ export function App(): React.ReactElement {
         setRunning(false);
       }
     }, 0);
-  }, [activeStory, algrafRuntime, algrafSources, files, page, pdlRuntime, pdlSources]);
+  }, [activePage, activeStory, algrafRuntime, algrafSources, files, pdlRuntime, pdlSources]);
 
   React.useEffect(() => {
-    if (page !== "story") {
+    if (activePage !== "case-study") {
       return;
     }
     if (pdlState !== "ready" || algrafState !== "ready") {
@@ -134,12 +160,11 @@ export function App(): React.ReactElement {
 
     const timer = window.setTimeout(runWorkflow, 280);
     return () => window.clearTimeout(timer);
-  }, [algrafState, page, pdlState, runWorkflow]);
+  }, [activePage, algrafState, pdlState, runWorkflow]);
 
   const handleStoryChange = React.useCallback((nextStoryId: StoryId) => {
-    setStoryId(nextStoryId);
-    setPage("story");
-  }, []);
+    navigate(storyRoutePath(nextStoryId));
+  }, [navigate]);
 
   const handleRawDataChange = React.useCallback(
     (rawFile: RawDataFile, value: string) => {
@@ -198,43 +223,52 @@ export function App(): React.ReactElement {
       (snapshot.error ? 1 : 0)
     );
   }, 0);
-  const homeHref = import.meta.env.BASE_URL;
-  const brandSubtitle =
-    page === "sql"
-      ? "SQLite scratchpad"
-      : page === "interactivity"
-        ? "Reactive PDL and Algraf demo"
-        : page === "how-built"
-          ? "One slider PDL and Algraf walkthrough"
-          : activeStory.brandSubtitle;
+  const brandSubtitle = brandSubtitleForRoute(route, activeStory.brandSubtitle);
 
   return (
     <div className="studio-shell">
       <Topbar
-        activePage={page}
-        activeStoryId={activeStory.id}
+        activePage={activePage}
         algrafState={algrafState}
         brandSubtitle={brandSubtitle}
-        homeHref={homeHref}
-        onBuildSelect={() => setPage("how-built")}
-        onDemoSelect={() => setPage("interactivity")}
-        onSqlSelect={() => setPage("sql")}
-        onStoryChange={handleStoryChange}
+        onNavigate={navigate}
         pdlState={pdlState}
       />
 
       <main>
-        {page === "sql" ? (
-          <SqlWorkspacePage />
-        ) : page === "how-built" ? (
-          <HowBuiltPage
+        {activePage === "landing" ? (
+          <LandingPage
+            algrafRuntime={algrafRuntime}
+            algrafState={algrafState}
+            onNavigate={navigate}
+            pdlRuntime={pdlRuntime}
+            pdlState={pdlState}
+            runtimeError={runtimeError}
+          />
+        ) : activePage === "ide" ? (
+          <IdePage
             algrafRuntime={algrafRuntime}
             algrafState={algrafState}
             pdlRuntime={pdlRuntime}
             pdlState={pdlState}
             runtimeError={runtimeError}
           />
-        ) : page === "interactivity" ? (
+        ) : activePage === "case-studies" ? (
+          <CaseStudiesIndexPage onNavigate={navigate} />
+        ) : activePage === "docs" ? (
+          <DocsPage onNavigate={navigate} />
+        ) : activePage === "docs-how-built" ? (
+          <>
+            <DocsHeader onNavigate={navigate} />
+            <HowBuiltPage
+              algrafRuntime={algrafRuntime}
+              algrafState={algrafState}
+              pdlRuntime={pdlRuntime}
+              pdlState={pdlState}
+              runtimeError={runtimeError}
+            />
+          </>
+        ) : activePage === "labs-interactivity" ? (
           <InteractivityDemoPage
             algrafRuntime={algrafRuntime}
             algrafState={algrafState}
@@ -255,26 +289,48 @@ export function App(): React.ReactElement {
             source={interactivityPdlSource}
           />
         ) : (
-          <StoryPage
-            activeStory={activeStory}
-            algrafRuntime={algrafRuntime}
-            algrafSources={algrafSources}
-            files={files}
-            onAlgrafSourceChange={handleAlgrafSourceChange}
-            onPdlSourceChange={handlePdlSourceChange}
-            onRawDataChange={handleRawDataChange}
-            onRunWorkflow={runWorkflow}
-            pdlRuntime={pdlRuntime}
-            pdlSources={pdlSources}
-            rawSources={rawSources}
-            runtimeError={runtimeError}
-            runtimeReady={runtimeReady}
-            running={running}
-            snapshots={snapshots}
-            totalDiagnostics={totalDiagnostics}
-          />
+          <>
+            <CaseStudyNav activeStoryId={activeStory.id} onNavigate={navigate} />
+            <StoryPage
+              activeStory={activeStory}
+              algrafRuntime={algrafRuntime}
+              algrafSources={algrafSources}
+              files={files}
+              onAlgrafSourceChange={handleAlgrafSourceChange}
+              onPdlSourceChange={handlePdlSourceChange}
+              onRawDataChange={handleRawDataChange}
+              onRunWorkflow={runWorkflow}
+              pdlRuntime={pdlRuntime}
+              pdlSources={pdlSources}
+              rawSources={rawSources}
+              runtimeError={runtimeError}
+              runtimeReady={runtimeReady}
+              running={running}
+              snapshots={snapshots}
+              totalDiagnostics={totalDiagnostics}
+            />
+          </>
         )}
       </main>
     </div>
   );
+}
+
+function brandSubtitleForRoute(route: StudioRoute, storySubtitle: string): string {
+  switch (route.page) {
+    case "landing":
+      return "Browser IDE for PDL to Algraf";
+    case "ide":
+      return "Primary IDE workspace";
+    case "case-studies":
+      return "Runnable product stories";
+    case "case-study":
+      return storySubtitle;
+    case "docs":
+      return "Datafarm docs";
+    case "docs-how-built":
+      return "One slider PDL and Algraf walkthrough";
+    case "labs-interactivity":
+      return "Reactive PDL and Algraf demo";
+  }
 }
