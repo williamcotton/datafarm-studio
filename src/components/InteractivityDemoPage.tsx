@@ -1,7 +1,16 @@
 import React from "react";
 import { AlgrafEditor } from "algraf-editor";
 import type { AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
-import { AlertCircle, BarChart3, CheckCircle2, MousePointerClick, Rows3, SlidersHorizontal, Table2, Workflow } from "lucide-react";
+import {
+  AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  MousePointerClick,
+  Rows3,
+  SlidersHorizontal,
+  Table2,
+  Workflow,
+} from "lucide-react";
 import { PdlEditor } from "pdl-editor";
 import type { PdlContextValue, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
@@ -284,6 +293,7 @@ export function InteractivityDemoPage({
           </div>
         </article>
       </section>
+
     </div>
   );
 }

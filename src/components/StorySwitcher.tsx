@@ -6,11 +6,13 @@ import type { StudioPage } from "../studioTypes";
 export function StorySwitcher({
   activePage,
   activeStoryId,
+  onBuildSelect,
   onDemoSelect,
   onStoryChange,
 }: {
   activePage: StudioPage;
   activeStoryId: StoryId;
+  onBuildSelect: () => void;
   onDemoSelect: () => void;
   onStoryChange: (storyId: StoryId) => void;
 }): React.ReactElement {
@@ -28,6 +30,9 @@ export function StorySwitcher({
       ))}
       <button aria-pressed={activePage === "interactivity"} onClick={onDemoSelect} type="button">
         Interactivity
+      </button>
+      <button aria-pressed={activePage === "how-built"} onClick={onBuildSelect} type="button">
+        How Built
       </button>
     </div>
   );

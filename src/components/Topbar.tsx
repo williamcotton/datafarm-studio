@@ -11,6 +11,7 @@ export function Topbar({
   algrafState,
   brandSubtitle,
   homeHref,
+  onBuildSelect,
   onDemoSelect,
   onStoryChange,
   pdlState,
@@ -20,6 +21,7 @@ export function Topbar({
   algrafState: RuntimeState;
   brandSubtitle: string;
   homeHref: string;
+  onBuildSelect: () => void;
   onDemoSelect: () => void;
   onStoryChange: (storyId: StoryId) => void;
   pdlState: RuntimeState;
@@ -37,6 +39,7 @@ export function Topbar({
         <StorySwitcher
           activePage={activePage}
           activeStoryId={activeStoryId}
+          onBuildSelect={onBuildSelect}
           onDemoSelect={onDemoSelect}
           onStoryChange={onStoryChange}
         />

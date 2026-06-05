@@ -2,6 +2,7 @@ import React from "react";
 import { loadAlgrafRuntime, type AlgrafRuntime } from "algraf-wasm";
 import { loadPdlRuntime, type PdlRuntime } from "pdl-wasm";
 
+import { HowBuiltPage } from "./components/HowBuiltPage";
 import { InteractivityDemoPage } from "./components/InteractivityDemoPage";
 import { StoryPage } from "./components/StoryPage";
 import { Topbar } from "./components/Topbar";
@@ -197,7 +198,12 @@ export function App(): React.ReactElement {
     );
   }, 0);
   const homeHref = import.meta.env.BASE_URL;
-  const brandSubtitle = page === "interactivity" ? "Reactive PDL and Algraf demo" : activeStory.brandSubtitle;
+  const brandSubtitle =
+    page === "interactivity"
+      ? "Reactive PDL and Algraf demo"
+      : page === "how-built"
+        ? "One slider PDL and Algraf walkthrough"
+        : activeStory.brandSubtitle;
 
   return (
     <div className="studio-shell">
@@ -207,13 +213,22 @@ export function App(): React.ReactElement {
         algrafState={algrafState}
         brandSubtitle={brandSubtitle}
         homeHref={homeHref}
+        onBuildSelect={() => setPage("how-built")}
         onDemoSelect={() => setPage("interactivity")}
         onStoryChange={handleStoryChange}
         pdlState={pdlState}
       />
 
       <main>
-        {page === "interactivity" ? (
+        {page === "how-built" ? (
+          <HowBuiltPage
+            algrafRuntime={algrafRuntime}
+            algrafState={algrafState}
+            pdlRuntime={pdlRuntime}
+            pdlState={pdlState}
+            runtimeError={runtimeError}
+          />
+        ) : page === "interactivity" ? (
           <InteractivityDemoPage
             algrafRuntime={algrafRuntime}
             algrafState={algrafState}

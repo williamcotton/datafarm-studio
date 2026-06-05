@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.5.0
+Status: 0.6.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,9 +12,9 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.5.0. It is a Vite/React application with
-two bundled case studies and a dedicated reactive interactivity demo. It is not
-yet a full IDE.
+The current implementation is version 0.6.0. It is a Vite/React application
+with two bundled case studies, a dedicated reactive interactivity demo, and a
+separate explanatory How Built walkthrough page. It is not yet a full IDE.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -89,11 +89,15 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.5.0 ships two curated workflows and one interactive runtime demo:
+Version 0.6.0 ships two curated workflows, one interactive runtime demo, and
+one implementation walkthrough:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
-- Interactivity, a compact PDL context and Algraf event demonstration.
+- Interactivity, a compact PDL context and Algraf event demonstration with a
+  reactive selector and dependent chart.
+- How Built, a one-slider PDL and Algraf walkthrough showing how the runtime,
+  editor, event, and view boundaries are wired in React.
 
 Each workflow exposes the same section structure:
 
@@ -114,6 +118,9 @@ Studio currently proves these production contracts:
 - A host-owned PDL context map can drive browser re-evaluation.
 - Algraf charts can render from host-supplied in-memory files.
 - Algraf sidecar and inert SVG event metadata can be routed through React state.
+- The How Built page can explain React state ownership, PDL and Algraf API
+  boundaries, event bridging, data flow, and component organization in the
+  visible UI without depending on the full Interactivity demo.
 - GitHub Pages can serve the app with a configurable Vite base path.
 
 Future versions will expand this into a data science IDE. The IDE should make
@@ -217,7 +224,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.5.0 does not expose a general workspace model in the UI.
+Version 0.6.0 does not expose a general workspace model in the UI.
 
 Internally, Studio maintains editable per-story state:
 
@@ -244,7 +251,7 @@ metadata.
 
 A story is a curated analytical sequence.
 
-In version 0.5.0, stories are declared as `StoryBundle` values in
+In version 0.6.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -286,7 +293,7 @@ keys, editor model paths, and output routing identifiers.
 
 ## 7. Current Stories
 
-Version 0.5.0 ships two stories.
+Version 0.6.0 ships two stories.
 
 ### 7.1 Solar
 
@@ -384,10 +391,10 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.5.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.6.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.5.0 requires a PDL v0.29-compatible browser package surface and a
+Version 0.6.0 requires a PDL v0.29-compatible browser package surface and a
 v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -616,7 +623,7 @@ dynamic runtime code in embedded chart output.
 The current UI has these major regions:
 
 - topbar with brand, story switcher, and runtime status;
-- top-level selector for Solar, Bikeshare, and Interactivity views;
+- top-level selector for Solar, Bikeshare, Interactivity, and How Built views;
 - hero with story copy, metrics, and run command;
 - method cards;
 - raw data section;
@@ -643,6 +650,22 @@ The Interactivity page has:
 - generated CSV output panels;
 - editable raw CSV, PDL source, and Algraf source panels.
 
+The How Built page has:
+
+- a compact hero explaining the one-slider example;
+- a live surface with one React slider state, input CSV, editable PDL source,
+  editable Algraf source, generated CSV output, and rendered Algraf chart;
+- an Algraf bar chart whose numeric `day` column is positioned with
+  `Scale(axis: x, type: "categorical")` and whose `fill` channel is driven by
+  `value`;
+- a direct chart click handler that reads Algraf event metadata and writes back
+  to the same slider state;
+- Monaco-highlighted TypeScript snippets in a linear single-`App.tsx` style
+  wiring map;
+- explanatory copy covering package imports, WASM setup, React state, editor
+  components, view components, PDL and Algraf API boundaries, events, data flow,
+  and rerun behavior.
+
 The published surface SHOULD remain readable for non-technical story readers.
 
 The future IDE surface SHOULD prioritize efficient repeated use by analysts over
@@ -668,7 +691,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.5.0.
+These concepts are deferred in version 0.6.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -694,7 +717,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.5.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.6.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -717,7 +740,7 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.5.0 approximates this graph with story-level, per-section, and
+Version 0.6.0 approximates this graph with story-level, per-section, and
 interactivity-demo workflow functions in `src/storyWorkflow.ts` and the
 Interactivity page component. `src/App.tsx` coordinates which workflow runs and
 stores the resulting snapshots.
@@ -779,7 +802,7 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.5.0 local validation, Studio uses filesystem installs of
+For version 0.6.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
 repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
 `0.64.x`. Runtime loading still uses `public/wasm/pdl.wasm` and
@@ -829,7 +852,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.5.0 runs small bundled stories and a small reactive demo; it does not
+Version 0.6.0 runs small bundled stories and a small reactive demo; it does not
 define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -902,14 +925,16 @@ root.
 
 ## 28. Implementation Milestones
 
-Version 0.5.0 preserves the case-study alpha, consumes shared PDL and Algraf
-browser package integrations, keeps reactive orchestration, and splits the
-Studio shell into focused components and workflow helpers:
+Version 0.6.0 preserves the case-study alpha, consumes shared PDL and Algraf
+browser package integrations, keeps reactive orchestration, splits the Studio
+shell into focused components and workflow helpers, and adds a separate How
+Built walkthrough page:
 
 - Vite/React shell;
 - story switcher;
 - two bundled stories;
 - Interactivity view;
+- How Built view;
 - editable raw data;
 - PDL Monaco editor from `pdl-editor`;
 - Algraf Monaco editor from `algraf-editor`;
@@ -923,6 +948,10 @@ Studio shell into focused components and workflow helpers:
   column references;
 - Algraf sidecar/SVG event routing;
 - dependent chart re-rendering from generated files;
+- How Built walkthrough covering React state ownership, package imports, WASM
+  setup, editable PDL and Algraf editor components, PDL and Algraf API
+  boundaries, direct chart event bridging, data flow, component organization,
+  and rerun behavior;
 - prepared CSV display;
 - SVG chart display;
 - GitHub Pages workflow;

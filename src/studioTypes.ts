@@ -2,7 +2,7 @@ import type { AlgrafDiagnostic, AlgrafRenderResult } from "algraf-wasm";
 import type { PdlEditorDiagnostic, PdlRunResult } from "pdl-wasm";
 
 export type RuntimeState = "loading" | "ready" | "error";
-export type StudioPage = "story" | "interactivity";
+export type StudioPage = "story" | "interactivity" | "how-built";
 
 export interface DashboardContext {
   time_cutoff: number;
