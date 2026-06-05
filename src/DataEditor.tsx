@@ -3,7 +3,7 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import "monaco-editor/min/vs/editor/editor.main.css";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 
-const THEME_NAME = "datafarm-data";
+import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "./editorTheme";
 
 let setupDone = false;
 
@@ -52,7 +52,7 @@ export function DataEditor({ value, language, onChange, modelUri }: DataEditorPr
       model = monaco.editor.createModel(value, language, resolvedModelUri);
       editor = monaco.editor.create(hostRef.current, {
         model,
-        theme: THEME_NAME,
+        theme: DATAFARM_EDITOR_THEME_NAME,
         automaticLayout: true,
         fontFamily: '"SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace',
         fontSize: 12,
@@ -104,23 +104,8 @@ function setupMonaco(): void {
     return;
   }
 
-  monaco.editor.defineTheme(THEME_NAME, {
-    base: "vs",
-    inherit: true,
-    rules: [
-      { token: "number", foreground: "b23b2a" },
-      { token: "string", foreground: "7a4a10" },
-    ],
-    colors: {
-      "editor.background": "#fbfcfc",
-      "editor.foreground": "#162127",
-      "editor.lineHighlightBackground": "#f0f5f3",
-      "editorLineNumber.foreground": "#9aa6ac",
-      "editorLineNumber.activeForeground": "#21695d",
-      "editorCursor.foreground": "#1f6f62",
-      "editor.selectionBackground": "#cfe8df",
-      "editor.inactiveSelectionBackground": "#e8f2ee",
-    },
-  });
+  // Monaco standalone themes are global; keep data editors on the same theme as
+  // PDL and Algraf editors so remount order cannot recolor language tokens.
+  monaco.editor.defineTheme(DATAFARM_EDITOR_THEME_NAME, DATAFARM_EDITOR_THEME);
   setupDone = true;
 }

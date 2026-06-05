@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.6.0
+Status: 0.7.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.6.0. It is a Vite/React application
+The current implementation is version 0.7.0. It is a Vite/React application
 with two bundled case studies, a dedicated reactive interactivity demo, and a
 separate explanatory How Built walkthrough page. It is not yet a full IDE.
 
@@ -89,7 +89,7 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.6.0 ships two curated workflows, one interactive runtime demo, and
+Version 0.7.0 ships two curated workflows, one interactive runtime demo, and
 one implementation walkthrough:
 
 - Solar, a state-level solar capacity and output story.
@@ -224,7 +224,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.6.0 does not expose a general workspace model in the UI.
+Version 0.7.0 does not expose a general workspace model in the UI.
 
 Internally, Studio maintains editable per-story state:
 
@@ -251,7 +251,7 @@ metadata.
 
 A story is a curated analytical sequence.
 
-In version 0.6.0, stories are declared as `StoryBundle` values in
+In version 0.7.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -293,7 +293,7 @@ keys, editor model paths, and output routing identifiers.
 
 ## 7. Current Stories
 
-Version 0.6.0 ships two stories.
+Version 0.7.0 ships two stories.
 
 ### 7.1 Solar
 
@@ -391,10 +391,10 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.6.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.7.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.6.0 requires a PDL v0.29-compatible browser package surface and a
+Version 0.7.0 requires a PDL v0.29-compatible browser package surface and a
 v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -494,6 +494,10 @@ Studio uses Monaco for PDL, Algraf, CSV, and JSON editing.
 
 PDL and Algraf editors MUST register language IDs, language configuration,
 themes, TextMate grammars, markers, and editor-service-backed providers.
+
+CSV and JSON data editors MUST use the shared Datafarm Monaco editor theme from
+`src/editorTheme.ts`, matching the PDL and Algraf editor surfaces. Data editors
+MUST NOT define a duplicate local Monaco theme.
 
 The PDL editor SHOULD expose:
 
@@ -691,7 +695,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.6.0.
+These concepts are deferred in version 0.7.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -717,7 +721,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.6.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.7.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -740,7 +744,7 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.6.0 approximates this graph with story-level, per-section, and
+Version 0.7.0 approximates this graph with story-level, per-section, and
 interactivity-demo workflow functions in `src/storyWorkflow.ts` and the
 Interactivity page component. `src/App.tsx` coordinates which workflow runs and
 stores the resulting snapshots.
@@ -802,7 +806,7 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.6.0 local validation, Studio uses filesystem installs of
+For version 0.7.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
 repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
 `0.64.x`. Runtime loading still uses `public/wasm/pdl.wasm` and
@@ -852,7 +856,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.6.0 runs small bundled stories and a small reactive demo; it does not
+Version 0.7.0 runs small bundled stories and a small reactive demo; it does not
 define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -925,7 +929,7 @@ root.
 
 ## 28. Implementation Milestones
 
-Version 0.6.0 preserves the case-study alpha, consumes shared PDL and Algraf
+Version 0.7.0 preserves the case-study alpha, consumes shared PDL and Algraf
 browser package integrations, keeps reactive orchestration, splits the Studio
 shell into focused components and workflow helpers, and adds a separate How
 Built walkthrough page:
@@ -955,7 +959,8 @@ Built walkthrough page:
 - prepared CSV display;
 - SVG chart display;
 - GitHub Pages workflow;
-- v0.29-compatible PDL and v0.64-compatible Algraf browser surfaces.
+- v0.29-compatible PDL and v0.64-compatible Algraf browser surfaces;
+- shared Datafarm Monaco theme usage for CSV and JSON data editors.
 
 Future versions should move from fixed case studies toward:
 
