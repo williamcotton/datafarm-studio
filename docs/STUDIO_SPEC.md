@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.9.0
+Status: 0.10.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,11 +12,12 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.9.0. It is a Vite/React application
+The current implementation is version 0.10.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
-client-side IDE surface, two bundled case studies, a dedicated reactive
-interactivity lab, a client-side SQLite workspace embedded in the IDE, and a
-Docs section that includes the explanatory How Built walkthrough.
+client-side IDE surface with PDL and SQL preparation modes, two bundled case
+studies, a dedicated reactive interactivity lab, browser-local SQL.js
+preparation inside the IDE, and a Docs section that includes the explanatory
+How Built walkthrough.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -91,13 +92,13 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.9.0 ships a product structure around the PDL to Algraf workflow:
+Version 0.10.0 ships a product structure around the PDL to Algraf workflow:
 
 - Landing, a first-view introduction to Datafarm Studio as the browser IDE for
   the PDL to Algraf workflow.
-- IDE, an ephemeral browser workspace with manual CSV data, PDL editing, Algraf
-  editing, SQL workspace access, output preview, runtime status, and
-  diagnostics.
+- IDE, an ephemeral browser workspace with one active source file, a PDL or SQL
+  preparation mode, a named prepared CSV artifact, Algraf editing, chart
+  preview, runtime status, diagnostics, and SQL-only SQLite database upload.
 - Case Studies, the home for two curated workflows.
 - Docs, a documentation section with overview, language, runtime,
   interactivity, SQL, and How Built content.
@@ -112,9 +113,10 @@ The retained Labs and Docs surfaces include:
 
 - Interactivity, a compact PDL context and Algraf event demonstration with a
   reactive selector and dependent chart.
-- SQL, a browser-local SQLite workspace powered by SQL.js for CSV import,
-  database upload, schema inspection, query preview, and export, embedded in
-  the IDE surface.
+- SQL preparation, a browser-local SQL.js path inside the IDE that imports the
+  active IDE CSV source or opens an uploaded SQLite database, runs SQL,
+  serializes tabular query results as a named CSV artifact, and passes that
+  artifact to Algraf through the in-memory file map.
 - How Built, a one-slider PDL and Algraf walkthrough showing how the runtime,
   editor, event, and view boundaries are wired in React under Docs.
 
@@ -138,8 +140,10 @@ Studio currently proves these production contracts:
 - Algraf charts can render from host-supplied in-memory files.
 - Algraf sidecar and inert SVG event metadata can be routed through React state.
 - SQL.js can load from a Studio-served WASM asset, own an in-memory SQLite
-  database, import local CSV files, open uploaded SQLite database files, run
-  SQL, inspect schemas, and export results without a server.
+  database, import the active IDE CSV source, open user-selected SQLite
+  database files, run SQL, and expose tabular query results without a server.
+- Studio can serialize a SQL query result as an in-memory CSV file for Algraf
+  without routing SQL through PDL or teaching Algraf SQL semantics.
 - The Docs How Built page can explain React state ownership, PDL and Algraf API
   boundaries, event bridging, data flow, and component organization in the
   visible UI without depending on the full Interactivity demo.
@@ -232,7 +236,7 @@ Shared Studio types live in `src/studioTypes.ts`.
 Formatting, diagnostic, and snapshot helpers live in `src/studioUtils.ts`.
 
 SQL workspace helpers for CSV import, table/schema inspection, query result
-normalization, and result CSV export live in `src/sqlWorkspace.ts`.
+normalization, and result CSV serialization live in `src/sqlWorkspace.ts`.
 
 Reactive demo constants live in `src/interactivityDemoData.ts`.
 
@@ -248,7 +252,9 @@ Raw data editing lives in `src/DataEditor.tsx`.
 
 SQL query editing lives in `src/SqlEditor.tsx`.
 
-The SQL workspace page lives in `src/components/SqlWorkspacePage.tsx`.
+The reusable SQL workspace page lives in `src/components/SqlWorkspacePage.tsx`
+for compatibility and development, while the product IDE owns its SQL
+preparation workflow directly.
 
 The Landing, IDE, Case Studies, Docs, and route link components live under
 `src/components/`.
@@ -263,7 +269,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.9.0 exposes an initial client-side IDE surface but does not expose a
+Version 0.10.0 exposes an initial client-side IDE surface but does not expose a
 general persisted project workspace model.
 
 Internally, Studio maintains editable per-story state:
@@ -273,13 +279,14 @@ Internally, Studio maintains editable per-story state:
 - Algraf source by story and section;
 - runtime state for PDL and Algraf;
 - per-section execution snapshots.
-- IDE manual CSV source, IDE PDL source, IDE Algraf source, IDE context value,
-  generated IDE output, chart result, and diagnostics.
+- IDE active source file, uploaded source file name, source language, active
+  preparation mode, IDE PDL source, IDE SQL source, IDE Algraf source,
+  generated IDE prepared CSV artifact, chart result, and diagnostics.
 - reactive demo context, source, generated files, chart results, and last Algraf
   event payload.
-- SQL.js runtime state, active in-memory SQLite database, query text, query
-  result preview, imported CSV metadata, available table schemas, selected
-  table, and SQL diagnostic state.
+- SQL.js runtime state, active IDE in-memory SQLite database, SQL database
+  source, SQL query text, query result, imported source metadata, materialized
+  SQL CSV artifact, and SQL diagnostic state.
 
 The in-memory workspace MUST be the only source supplied to the browser WASM
 runtimes. The runtimes do not read host files directly.
@@ -292,22 +299,32 @@ Future project work SHOULD formalize this state into a reusable project model
 with files, outputs, settings, run history, editor models, and publication
 metadata.
 
-### 5.1 SQL Workspace Model
+### 5.1 IDE SQL Preparation Model
 
-Version 0.9.0 embeds the v0.8 SQL workspace in the IDE surface. The reusable
-SQL workspace component MAY still render as a standalone page for development
-or compatibility, but the product navigation owns it through IDE.
+Version 0.10.0 makes SQL an IDE preparation mode over the active IDE source
+when it is CSV, or over an uploaded SQLite database. The reusable SQL workspace
+component MAY still render as a standalone page for development or
+compatibility, but the product IDE workflow owns SQL preparation directly.
 
-The SQL workspace MUST create and own a browser-local SQL.js database in memory.
-The database MUST NOT require a server, remote API, or filesystem persistence.
+The IDE SQL preparation mode MUST create and own a browser-local SQL.js
+database in memory. The database MUST NOT require a server, remote API, or
+filesystem persistence.
 
-The SQL workspace MUST initialize SQL.js with a `locateFile` function that
-resolves `sql-wasm.wasm` through Studio's public asset base path.
+The IDE SQL preparation mode MUST initialize SQL.js with a `locateFile`
+function that resolves `sql-wasm.wasm` through Studio's public asset base path.
 
-The SQL workspace MUST let users create a fresh in-memory database.
+The IDE MUST let users choose local CSV, JSON, and LJSON files as the active
+source data file outside SQL-specific controls. Version 0.10.0 MAY keep one
+active source file for the starter workflow.
 
-The SQL workspace MUST let users choose local CSV files in the browser and
-import them into SQLite tables in the active database.
+The IDE SQL preparation mode MUST import or refresh a SQL table from the active
+IDE source when that source is CSV. The default starter source path is
+`manual_series.csv`, and the default SQL table name is `manual_series`.
+
+The IDE SQL preparation mode MUST let users choose `.sqlite`, `.sqlite3`, or
+`.db` files when SQL mode is active and open the uploaded bytes as the active
+SQL.js database. This control MUST NOT be shown as a PDL-mode source-data
+control.
 
 CSV import MUST parse quoted commas, escaped quotes, CRLF, LF, and UTF-8 BOM.
 The first CSV row MUST become column names. Empty, duplicate, or SQL-unsafe
@@ -315,25 +332,26 @@ column names MUST be normalized into stable SQLite identifiers.
 
 Imported CSV values MAY be stored as SQLite `TEXT` columns in the first release.
 
-The SQL workspace MUST let users choose `.sqlite`, `.sqlite3`, or `.db` files
-and open the uploaded bytes as the active SQL.js database.
+JSON and LJSON source files MUST be visible as IDE source files and supplied to
+PDL through the runtime file map. Version 0.10.0 does not automatically import
+JSON or LJSON source files into SQL tables.
 
-The SQL workspace MUST list user tables and expose selected-table schema
-details from SQLite metadata.
+The IDE SQL preparation mode MUST execute user-entered SQL against the active
+IDE SQL.js database and surface SQL errors without crashing Studio.
 
-The SQL workspace MUST execute user-entered SQL against the active database,
-display result columns and rows when the statement returns a tabular result, and
-surface SQL errors without crashing Studio.
+A successful SQL query that returns columns MUST be serializable into the IDE
+prepared CSV artifact. The v0.10 starter artifact path is
+`prepared_series.csv`.
 
-The SQL workspace MUST export the displayed query result as CSV when the result
-has columns. The SQL workspace SHOULD export the current database as a
-downloadable SQLite file generated from `db.export()`.
+SQL statements that do not return a tabular result MUST NOT silently replace the
+last successful prepared CSV artifact.
 
-The SQL workspace SHOULD surface that SQL.js databases are memory-backed in
-this release and that large uploads are constrained by browser memory.
+The IDE SQL preparation mode SHOULD surface that SQL.js databases are
+memory-backed in this release and that large uploads are constrained by browser
+memory.
 
-The SQL workspace MUST NOT add SQL semantics to PDL, SQL sources to Algraf, or
-TypeScript implementations of PDL or Algraf behavior.
+The IDE SQL preparation mode MUST NOT add SQL semantics to PDL, pass SQL source
+to Algraf, or add TypeScript implementations of PDL or Algraf behavior.
 
 ## 6. Story Model
 
@@ -451,27 +469,33 @@ The demo dashboard context MUST include:
 The first implementation MAY re-run the full demo workflow on every context or
 source change.
 
-### 7.4 SQL Workspace
+### 7.4 IDE SQL Preparation
 
-The SQL workspace is an IDE section, not a story section.
+SQL preparation is an IDE mode, not a story section.
 
-The SQL workspace MUST show:
+The IDE SQL preparation mode MUST show:
 
 - SQL.js load status;
-- active database name;
-- actions for creating a memory database, uploading CSV, opening SQLite, and
-  exporting the active database;
+- the active source table derived from the IDE source CSV when available;
+- uploaded SQLite database status when a SQLite database is open;
 - Monaco-backed SQL query editor;
-- SQL result preview;
-- table list and selected-table schema;
-- CSV import history for the active database;
-- SQL diagnostics and browser-memory persistence status.
+- a run command;
+- prepared artifact status;
+- SQL diagnostics;
+- the generated prepared CSV artifact in the shared IDE output panel.
 
 ## 8. File Map Semantics
 
 Studio MUST supply files to runtimes as in-memory maps.
 
 The PDL runtime file map for a section MUST include the active story raw files.
+
+The IDE PDL preparation mode MUST supply the active IDE source file in the PDL
+runtime file map. Uploaded CSV source data MAY use the stable starter path
+`manual_series.csv`.
+
+The IDE SQL preparation mode MUST materialize a successful tabular query result
+as a CSV string at `prepared_series.csv` in the IDE runtime file map.
 
 The Algraf runtime file map for a section MUST include:
 
@@ -489,16 +513,21 @@ is present, Studio MAY serialize the named output table to CSV.
 CSV serialization MUST quote cells containing comma, quote, CR, or LF. Quotes
 inside cells MUST be doubled.
 
+The IDE Algraf runtime file map MUST include the active IDE source file and the
+active prepared CSV artifact. In PDL mode, the prepared artifact MUST come from
+PDL saved files. In SQL mode, the prepared artifact MUST come from Studio's
+SQL-result CSV serialization.
+
 Future project work SHOULD replace ad hoc story file maps with a project file
 graph that records which runtime produced each generated file.
 
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.9.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.10.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.9.0 requires a PDL v0.29-compatible browser package surface and a
+Version 0.10.0 requires a PDL v0.29-compatible browser package surface and a
 v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -597,7 +626,7 @@ to the Studio-owned PDL state binding `selected_zone`.
 Studio loads SQL.js from the `sql.js` package and loads SQL.js WASM from
 `public/wasm/sql-wasm.wasm` using the Vite public base path.
 
-Version 0.9.0 targets `sql.js` `^1.13.0`. The current lockfile may resolve any
+Version 0.10.0 targets `sql.js` `^1.13.0`. The current lockfile may resolve any
 compatible SQL.js version in that range.
 
 Studio MUST initialize SQL.js with `initSqlJs({ locateFile })`. The `locateFile`
@@ -605,7 +634,7 @@ function MUST return `publicAssetUrl("wasm/sql-wasm.wasm")` for SQL.js WASM
 requests. This mapping MUST remain stable even when the bundler resolves SQL.js
 to a browser build that asks for `sql-wasm-browser.wasm`.
 
-SQL.js databases MUST remain browser-local and memory-backed in version 0.9.0.
+SQL.js databases MUST remain browser-local and memory-backed in version 0.10.0.
 
 Studio MAY construct an empty database with `new SQL.Database()` and MAY
 construct an uploaded database with `new SQL.Database(new Uint8Array(buffer))`.
@@ -615,7 +644,9 @@ the returned bytes as a SQLite file.
 
 Studio MUST close replaced or unmounted SQL.js database instances.
 
-Studio MUST NOT route SQL execution through PDL or Algraf.
+Studio MUST NOT route SQL execution through PDL or Algraf. Studio MAY serialize
+SQL query results as CSV and place them in the in-memory file map supplied to
+Algraf.
 
 ## 11. Editor Integration
 
@@ -714,9 +745,30 @@ PDL `selected_zone` state value.
 The Interactivity page MAY use full workflow re-execution rather than
 fine-grained invalidation.
 
-SQL query execution MUST occur only against the active browser-local SQL.js
-database. Query execution MUST refresh table and schema metadata after a
-statement runs because SQL statements may create, alter, or drop tables.
+The IDE MUST let users choose between PDL and SQL preparation modes. Switching
+modes MUST preserve each mode's source text and MUST make the active source of
+the prepared artifact clear.
+
+The IDE PDL preparation mode MUST run the IDE PDL source through the PDL
+runtime with the active source file in the file map. The v0.10 starter PDL
+source MUST NOT require a run-context slider or `visible_days` parameter.
+
+The IDE SQL preparation mode MUST execute SQL only against the active
+browser-local SQL.js database seeded from the active IDE CSV source or opened
+from an uploaded SQLite database.
+
+When an IDE SQL query returns columns, Studio MUST serialize the result as CSV
+and materialize it at `prepared_series.csv` in the active IDE file map. SQL
+query results are not filesystem saves unless a future product design adds
+export controls.
+
+When an IDE SQL query fails or does not return columns, Studio MUST surface a
+diagnostic and MUST NOT silently replace the last successful SQL prepared
+artifact.
+
+The IDE MUST render the Algraf chart from the active prepared artifact. Algraf
+MUST receive only source text and the in-memory file map; it MUST NOT receive a
+SQL database handle or SQL source as data.
 
 ## 13. Diagnostics And Errors
 
@@ -726,7 +778,8 @@ Studio MUST surface PDL editor diagnostics in PDL Monaco markers.
 
 Studio MUST surface Algraf diagnostics in Algraf Monaco markers.
 
-Studio MUST surface SQL.js load and query errors in the SQL workspace UI.
+Studio MUST surface SQL.js load, CSV import, and query errors in the IDE SQL
+preparation UI.
 
 Studio SHOULD surface PDL runtime diagnostics in the section status or output
 area.
@@ -772,9 +825,9 @@ The current UI has these major regions:
   and Labs Interactivity;
 - Landing page introducing Datafarm Studio as the browser IDE for PDL to
   Algraf;
-- IDE page with manual CSV data, PDL editor, Algraf editor, generated CSV
-  preview, rendered chart preview, runtime status, diagnostics, and embedded
-  SQL workspace;
+- IDE page with sidebar preparation controls, CSV/JSON/LJSON source upload, PDL
+  or SQL preparation editor, Algraf editor, generated CSV artifact preview,
+  rendered chart preview, runtime status, and diagnostics;
 - Case Studies index and per-story case-study pages;
 - Docs index and Docs-owned How Built walkthrough;
 - Labs-owned Interactivity page.
@@ -807,19 +860,15 @@ The Interactivity Labs page has:
 - generated CSV output panels;
 - editable raw CSV, PDL source, and Algraf source panels.
 
-The embedded SQL workspace has:
+The IDE SQL preparation mode has:
 
-- compact hero and SQL.js workspace metrics;
-- browser-memory status;
-- actions for new database, CSV upload, SQLite upload, and database export;
+- SQL.js browser-memory status;
+- a SQL table derived from the active IDE source CSV when available;
+- SQL-only SQLite database upload;
 - Monaco-backed SQL editor;
 - run command;
-- table list;
-- selected-table schema view;
-- result preview table;
-- query-result CSV export;
-- CSV import history;
-- SQL diagnostics.
+- query result materialization into `prepared_series.csv`;
+- SQL diagnostics and import metadata.
 
 The Docs How Built page has:
 
@@ -841,21 +890,23 @@ The published Case Studies surface SHOULD remain readable for non-technical
 story readers.
 
 The IDE surface SHOULD prioritize efficient repeated use by analysts over
-marketing layout.
+marketing layout. The IDE page SHOULD avoid a hero section, large outer
+margins, and card-like rounded panel styling.
 
 ## 16. Data Science IDE Direction
 
-Version 0.9.0 introduces the first IDE surface as a browser-local, ephemeral
+Version 0.10.0 defines the first IDE surface as a browser-local, ephemeral
 workspace. It MUST include:
 
 - local/manual CSV editing;
-- PDL source editing;
+- general CSV, JSON, and LJSON source upload;
+- PDL preparation mode;
+- SQL preparation mode backed by SQL.js;
 - Algraf source editing;
-- generated CSV preview;
+- generated prepared CSV artifact preview;
 - rendered chart preview;
 - runtime status;
-- diagnostics;
-- access to the SQL workspace and SQL editor.
+- diagnostics.
 
 Future IDE work should center on projects instead of fixed example files.
 
@@ -875,7 +926,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These broader project concepts remain deferred in version 0.9.0.
+These broader project concepts remain deferred in version 0.10.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -901,7 +952,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.9.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.10.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -924,10 +975,10 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.9.0 approximates this graph with story-level and per-section workflow
-functions in `src/storyWorkflow.ts`, plus focused IDE and Interactivity page
-workflow functions. `src/App.tsx` coordinates which routed surface is active and
-stores the resulting case-study snapshots.
+Version 0.10.0 approximates this graph with story-level and per-section
+workflow functions in `src/storyWorkflow.ts`, plus focused IDE and Interactivity
+page workflow functions. `src/App.tsx` coordinates which routed surface is
+active and stores the resulting case-study snapshots.
 
 ## 19. Data Preview
 
@@ -986,7 +1037,7 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.9.0 local validation, Studio uses filesystem installs of
+For version 0.10.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
 repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
 `0.66.x`. Runtime loading still uses `public/wasm/pdl.wasm`,
@@ -1028,7 +1079,8 @@ Studio MUST NOT grant WASM runtimes arbitrary filesystem access.
 Studio MUST NOT fetch arbitrary project files from remote URLs without an
 explicit product design, permission model, and validation path.
 
-User-selected CSV and SQLite files in the SQL workspace MUST remain local to the
+User-selected CSV, JSON, and LJSON files in the IDE and user-selected CSV or
+SQLite files in compatibility SQL workspace surfaces MUST remain local to the
 browser runtime unless a future product design explicitly adds persistence or
 remote upload.
 
@@ -1042,8 +1094,8 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.9.0 runs a landing page, an initial IDE workspace, small bundled case
-studies, a small reactive demo, and an in-memory SQL.js workspace; it does not
+Version 0.10.0 runs a landing page, an initial IDE workspace, small bundled case
+studies, a small reactive demo, and an in-memory SQL.js workflow; it does not
 define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -1166,6 +1218,21 @@ adds the initial IDE surface:
 - GitHub Pages workflow;
 - v0.29-compatible PDL and v0.66-compatible Algraf browser surfaces;
 - shared Datafarm Monaco theme usage for CSV, JSON, and SQL editors.
+
+Version 0.10.0 defines the IDE starter workflow:
+
+- compact IDE surface without a hero section;
+- edge-to-edge IDE workspace layout;
+- one active IDE source file;
+- general IDE CSV, JSON, and LJSON upload outside SQL-specific controls;
+- SQL-only SQLite database upload;
+- PDL and SQL preparation mode switch;
+- simplified starter PDL source without `param visible_days`;
+- SQL.js database seeded from the active IDE source CSV or uploaded SQLite
+  database;
+- SQL query result materialization as `prepared_series.csv`;
+- Algraf chart rendering from the active prepared CSV artifact;
+- mode-aware IDE diagnostics.
 
 Future versions should move from fixed case studies toward:
 

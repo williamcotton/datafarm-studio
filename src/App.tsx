@@ -235,7 +235,7 @@ export function App(): React.ReactElement {
         pdlState={pdlState}
       />
 
-      <main>
+      <main className={activePage === "ide" ? "studio-main studio-main-ide" : "studio-main"}>
         {activePage === "landing" ? (
           <LandingPage
             algrafRuntime={algrafRuntime}
