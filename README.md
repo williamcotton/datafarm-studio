@@ -41,10 +41,10 @@ PDL runs in the browser through `public/wasm/pdl.wasm`. Studio displays the CSV
 produced for the active section and also passes that CSV to Algraf as both
 `prepared.csv` and the section's expected data filename.
 
-Studio v0.3 consumes local filesystem installs of `pdl-wasm` and `pdl-editor`
-from `../pdl`. It expects PDL v0.27 package APIs with v0.26-compatible syntax
-and WASM: bare/backtick column references, double-quoted strings and paths, and
-assignment-form aggregate and projection stages.
+Studio consumes the published `pdl-wasm@0.30.0` and `pdl-editor@0.30.0` npm
+packages. Runtime WASM still loads from `public/wasm/pdl.wasm`, populated by
+`npm run build` for release builds or `npm run copy:wasm` for coordinated local
+runtime validation.
 
 ## 4. Algraf chart
 
@@ -52,9 +52,10 @@ Each section has a `.ag` file backed by Algraf editor services and runtime
 rendering. Algraf runs in the browser through `public/wasm/algraf.wasm`, reads
 the in-memory files supplied by Studio, and returns deterministic SVG.
 
-In this working tree, Studio also consumes local filesystem installs of
-`algraf-wasm` and `algraf-editor` from `../algraf`. Use `npm run copy:wasm`
-after building sibling WASM artifacts for coordinated local validation.
+Studio consumes the published `algraf-wasm@0.67.0` and
+`algraf-editor@0.67.0` npm packages. Use `npm run copy:wasm` after building
+sibling WASM artifacts only when coordinated local runtime validation needs
+local `../algraf` or `../pdl` WASM files.
 
 ## 5. Story evidence
 

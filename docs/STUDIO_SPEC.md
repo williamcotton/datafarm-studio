@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.11.0
+Status: 0.12.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.11.0. It is a Vite/React application
+The current implementation is version 0.12.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
 client-side IDE surface with PDL and SQL preparation modes, two bundled case
 studies, a dedicated reactive interactivity lab, browser-local SQL.js
@@ -110,6 +110,11 @@ Version 0.11.0 keeps that structure and fixes the app-wide saved artifact
 contract: when PDL emits saved CSV files, Studio passes those files to Algraf
 and single-preview surfaces can select an active prepared artifact from those
 saved files instead of requiring the starter filename.
+
+Version 0.12.0 keeps the v0.11 browser workflow and switches Studio package
+dependencies from local sibling installs to the published npm package surfaces:
+`pdl-wasm@0.30.0`, `pdl-editor@0.30.0`, `algraf-wasm@0.67.0`, and
+`algraf-editor@0.67.0`.
 
 The current Case Studies section contains:
 
@@ -252,11 +257,11 @@ Reactive demo constants live in `src/interactivityDemoData.ts`.
 
 Story metadata and bundled source imports live in `src/storyBundles.ts`.
 
-PDL editor and runtime integration are consumed from the sibling `pdl-editor`
-and `pdl-wasm` packages.
+PDL editor and runtime integration are consumed from the published
+`pdl-editor@0.30.0` and `pdl-wasm@0.30.0` packages.
 
-Algraf editor and runtime integration are consumed from the sibling
-`algraf-editor` and `algraf-wasm` packages.
+Algraf editor and runtime integration are consumed from the published
+`algraf-editor@0.67.0` and `algraf-wasm@0.67.0` packages.
 
 Raw data editing lives in `src/DataEditor.tsx`.
 
@@ -559,15 +564,15 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.10.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
-repository with filesystem package installs during local development.
+Version 0.12.0 consumes `pdl-wasm@0.30.0` and `pdl-editor@0.30.0` from
+published npm packages.
 
-Version 0.10.0 requires a PDL v0.29-compatible browser package surface and a
-v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
+Version 0.12.0 requires a PDL v0.30-compatible browser package surface and a
+v0.30-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
 a CSV column named `state` MUST use a backtick-escaped column reference such as
-`` `state` ``. The interactivity demo MAY use v0.29 reactive `param` and
+`` `state` ``. The interactivity demo MAY use v0.30 reactive `param` and
 `state` declarations and dynamic column indirection through `col(...)`.
 
 The PDL WASM module MUST expose:
@@ -930,7 +935,7 @@ margins, and card-like rounded panel styling.
 
 ## 16. Data Science IDE Direction
 
-Version 0.11.0 defines the current IDE surface as a browser-local, ephemeral
+Version 0.12.0 defines the current IDE surface as a browser-local, ephemeral
 workspace. It MUST include:
 
 - local/manual CSV editing;
@@ -1073,13 +1078,13 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.10.0 local validation, Studio uses filesystem installs of
-`pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
-repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
-`0.66.x`. Runtime loading still uses `public/wasm/pdl.wasm`,
+For version 0.12.0 package validation, Studio uses published npm installs of
+`pdl-wasm@0.30.0`, `pdl-editor@0.30.0`, `algraf-wasm@0.67.0`, and
+`algraf-editor@0.67.0`. Runtime loading still uses `public/wasm/pdl.wasm`,
 `public/wasm/algraf.wasm`, and `public/wasm/sql-wasm.wasm`, populated by
-`npm run copy:wasm` for coordinated local builds or by `npm run build:wasm` for
-downloaded release assets plus the packaged SQL.js WASM asset.
+`npm run copy:wasm` for coordinated local runtime validation or by
+`npm run build:wasm` for downloaded release assets plus the packaged SQL.js
+WASM asset.
 
 ## 22. Build And Deployment
 
@@ -1130,7 +1135,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.11.0 runs a landing page, an initial IDE workspace, small bundled case
+Version 0.12.0 runs a landing page, an initial IDE workspace, small bundled case
 studies, a small reactive demo, and an in-memory SQL.js workflow; it does not
 define strict performance budgets.
 
@@ -1252,7 +1257,7 @@ adds the initial IDE surface:
 - prepared CSV display;
 - SVG chart display;
 - GitHub Pages workflow;
-- v0.29-compatible PDL and v0.66-compatible Algraf browser surfaces;
+- v0.30-compatible PDL and v0.67-compatible Algraf browser surfaces;
 - shared Datafarm Monaco theme usage for CSV, JSON, and SQL editors.
 
 Version 0.10.0 defines the IDE starter workflow:
@@ -1274,6 +1279,10 @@ Version 0.11.0 refines the starter workflow so PDL-mode prepared artifacts can
 follow renamed PDL saved CSV files across Landing, IDE, Docs How Built, Case
 Studies, and Labs Interactivity while SQL mode remains fixed to
 `prepared_series.csv`.
+
+Version 0.12.0 switches Studio's PDL and Algraf package dependencies to the
+published browser npm packages while preserving the v0.11 runtime and editor
+workflow.
 
 Future versions should move from fixed case studies toward:
 
