@@ -8,12 +8,14 @@ export function StorySwitcher({
   activeStoryId,
   onBuildSelect,
   onDemoSelect,
+  onSqlSelect,
   onStoryChange,
 }: {
   activePage: StudioPage;
   activeStoryId: StoryId;
   onBuildSelect: () => void;
   onDemoSelect: () => void;
+  onSqlSelect: () => void;
   onStoryChange: (storyId: StoryId) => void;
 }): React.ReactElement {
   return (
@@ -30,6 +32,9 @@ export function StorySwitcher({
       ))}
       <button aria-pressed={activePage === "interactivity"} onClick={onDemoSelect} type="button">
         Interactivity
+      </button>
+      <button aria-pressed={activePage === "sql"} onClick={onSqlSelect} type="button">
+        SQL
       </button>
       <button aria-pressed={activePage === "how-built"} onClick={onBuildSelect} type="button">
         How Built

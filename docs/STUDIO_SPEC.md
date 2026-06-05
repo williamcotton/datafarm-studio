@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.7.0
+Status: 0.8.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,9 +12,10 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.7.0. It is a Vite/React application
-with two bundled case studies, a dedicated reactive interactivity demo, and a
-separate explanatory How Built walkthrough page. It is not yet a full IDE.
+The current implementation is version 0.8.0. It is a Vite/React application
+with two bundled case studies, a dedicated reactive interactivity demo, a
+client-side SQLite workspace, and a separate explanatory How Built walkthrough
+page. It is not yet a full IDE.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -89,13 +90,15 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.7.0 ships two curated workflows, one interactive runtime demo, and
-one implementation walkthrough:
+Version 0.8.0 ships two curated workflows, one interactive runtime demo, one
+client-side SQL workspace, and one implementation walkthrough:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
 - Interactivity, a compact PDL context and Algraf event demonstration with a
   reactive selector and dependent chart.
+- SQL, a browser-local SQLite workspace powered by SQL.js for CSV import,
+  database upload, schema inspection, query preview, and export.
 - How Built, a one-slider PDL and Algraf walkthrough showing how the runtime,
   editor, event, and view boundaries are wired in React.
 
@@ -118,6 +121,9 @@ Studio currently proves these production contracts:
 - A host-owned PDL context map can drive browser re-evaluation.
 - Algraf charts can render from host-supplied in-memory files.
 - Algraf sidecar and inert SVG event metadata can be routed through React state.
+- SQL.js can load from a Studio-served WASM asset, own an in-memory SQLite
+  database, import local CSV files, open uploaded SQLite database files, run
+  SQL, inspect schemas, and export results without a server.
 - The How Built page can explain React state ownership, PDL and Algraf API
   boundaries, event bridging, data flow, and component organization in the
   visible UI without depending on the full Interactivity demo.
@@ -202,6 +208,9 @@ Shared Studio types live in `src/studioTypes.ts`.
 
 Formatting, diagnostic, and snapshot helpers live in `src/studioUtils.ts`.
 
+SQL workspace helpers for CSV import, table/schema inspection, query result
+normalization, and result CSV export live in `src/sqlWorkspace.ts`.
+
 Reactive demo constants live in `src/interactivityDemoData.ts`.
 
 Story metadata and bundled source imports live in `src/storyBundles.ts`.
@@ -214,6 +223,10 @@ Algraf editor and runtime integration are consumed from the sibling
 
 Raw data editing lives in `src/DataEditor.tsx`.
 
+SQL query editing lives in `src/SqlEditor.tsx`.
+
+The SQL workspace page lives in `src/components/SqlWorkspacePage.tsx`.
+
 Bundled stories live under `src/datafarm-solar/` and
 `src/datafarm-bikeshare/`.
 
@@ -224,7 +237,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.7.0 does not expose a general workspace model in the UI.
+Version 0.8.0 does not expose a general project workspace model in the UI.
 
 Internally, Studio maintains editable per-story state:
 
@@ -235,6 +248,9 @@ Internally, Studio maintains editable per-story state:
 - per-section execution snapshots.
 - reactive demo context, source, generated files, chart results, and last Algraf
   event payload.
+- SQL.js runtime state, active in-memory SQLite database, query text, query
+  result preview, imported CSV metadata, available table schemas, selected
+  table, and SQL diagnostic state.
 
 The in-memory workspace MUST be the only source supplied to the browser WASM
 runtimes. The runtimes do not read host files directly.
@@ -247,11 +263,52 @@ Future project work SHOULD formalize this state into a reusable project model
 with files, outputs, settings, run history, editor models, and publication
 metadata.
 
+### 5.1 SQL Workspace Model
+
+Version 0.8.0 exposes a top-level SQL workspace page.
+
+The SQL workspace MUST create and own a browser-local SQL.js database in memory.
+The database MUST NOT require a server, remote API, or filesystem persistence.
+
+The SQL workspace MUST initialize SQL.js with a `locateFile` function that
+resolves `sql-wasm.wasm` through Studio's public asset base path.
+
+The SQL workspace MUST let users create a fresh in-memory database.
+
+The SQL workspace MUST let users choose local CSV files in the browser and
+import them into SQLite tables in the active database.
+
+CSV import MUST parse quoted commas, escaped quotes, CRLF, LF, and UTF-8 BOM.
+The first CSV row MUST become column names. Empty, duplicate, or SQL-unsafe
+column names MUST be normalized into stable SQLite identifiers.
+
+Imported CSV values MAY be stored as SQLite `TEXT` columns in the first release.
+
+The SQL workspace MUST let users choose `.sqlite`, `.sqlite3`, or `.db` files
+and open the uploaded bytes as the active SQL.js database.
+
+The SQL workspace MUST list user tables and expose selected-table schema
+details from SQLite metadata.
+
+The SQL workspace MUST execute user-entered SQL against the active database,
+display result columns and rows when the statement returns a tabular result, and
+surface SQL errors without crashing Studio.
+
+The SQL workspace MUST export the displayed query result as CSV when the result
+has columns. The SQL workspace SHOULD export the current database as a
+downloadable SQLite file generated from `db.export()`.
+
+The SQL workspace SHOULD surface that SQL.js databases are memory-backed in
+this release and that large uploads are constrained by browser memory.
+
+The SQL workspace MUST NOT add SQL semantics to PDL, SQL sources to Algraf, or
+TypeScript implementations of PDL or Algraf behavior.
+
 ## 6. Story Model
 
 A story is a curated analytical sequence.
 
-In version 0.7.0, stories are declared as `StoryBundle` values in
+In version 0.8.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -293,7 +350,7 @@ keys, editor model paths, and output routing identifiers.
 
 ## 7. Current Stories
 
-Version 0.7.0 ships two stories.
+Version 0.8.0 ships two stories.
 
 ### 7.1 Solar
 
@@ -363,6 +420,22 @@ The demo dashboard context MUST include:
 The first implementation MAY re-run the full demo workflow on every context or
 source change.
 
+### 7.4 SQL Workspace
+
+The SQL workspace is a separate top-level page, not a story section.
+
+The SQL workspace MUST show:
+
+- SQL.js load status;
+- active database name;
+- actions for creating a memory database, uploading CSV, opening SQLite, and
+  exporting the active database;
+- Monaco-backed SQL query editor;
+- SQL result preview;
+- table list and selected-table schema;
+- CSV import history for the active database;
+- SQL diagnostics and browser-memory persistence status.
+
 ## 8. File Map Semantics
 
 Studio MUST supply files to runtimes as in-memory maps.
@@ -391,10 +464,10 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.7.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.8.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.7.0 requires a PDL v0.29-compatible browser package surface and a
+Version 0.8.0 requires a PDL v0.29-compatible browser package surface and a
 v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -488,9 +561,34 @@ Studio MUST NOT implement Algraf chart semantics or rendering in TypeScript.
 The Interactivity page MUST route Algraf click emissions whose field is `zone`
 to the Studio-owned PDL state binding `selected_zone`.
 
+### 10.1 SQL.js Runtime Integration
+
+Studio loads SQL.js from the `sql.js` package and loads SQL.js WASM from
+`public/wasm/sql-wasm.wasm` using the Vite public base path.
+
+Version 0.8.0 targets `sql.js` `^1.13.0`. The current lockfile may resolve any
+compatible SQL.js version in that range.
+
+Studio MUST initialize SQL.js with `initSqlJs({ locateFile })`. The `locateFile`
+function MUST return `publicAssetUrl("wasm/sql-wasm.wasm")` for SQL.js WASM
+requests. This mapping MUST remain stable even when the bundler resolves SQL.js
+to a browser build that asks for `sql-wasm-browser.wasm`.
+
+SQL.js databases MUST remain browser-local and memory-backed in version 0.8.0.
+
+Studio MAY construct an empty database with `new SQL.Database()` and MAY
+construct an uploaded database with `new SQL.Database(new Uint8Array(buffer))`.
+
+Studio MAY export the active database by calling `db.export()` and downloading
+the returned bytes as a SQLite file.
+
+Studio MUST close replaced or unmounted SQL.js database instances.
+
+Studio MUST NOT route SQL execution through PDL or Algraf.
+
 ## 11. Editor Integration
 
-Studio uses Monaco for PDL, Algraf, CSV, and JSON editing.
+Studio uses Monaco for PDL, Algraf, CSV, JSON, and SQL editing.
 
 PDL and Algraf editors MUST register language IDs, language configuration,
 themes, TextMate grammars, markers, and editor-service-backed providers.
@@ -498,6 +596,12 @@ themes, TextMate grammars, markers, and editor-service-backed providers.
 CSV and JSON data editors MUST use the shared Datafarm Monaco editor theme from
 `src/editorTheme.ts`, matching the PDL and Algraf editor surfaces. Data editors
 MUST NOT define a duplicate local Monaco theme.
+
+The SQL editor MUST use Monaco's built-in `sql` language mode and the shared
+Datafarm Monaco editor theme from `src/editorTheme.ts`. The SQL editor MUST
+support controlled query text, stable model URIs, change callbacks, disposal
+cleanup, and the same basic sizing and typography behavior as existing data
+editor surfaces.
 
 The PDL editor SHOULD expose:
 
@@ -579,6 +683,10 @@ PDL `selected_zone` state value.
 The Interactivity page MAY use full workflow re-execution rather than
 fine-grained invalidation.
 
+SQL query execution MUST occur only against the active browser-local SQL.js
+database. Query execution MUST refresh table and schema metadata after a
+statement runs because SQL statements may create, alter, or drop tables.
+
 ## 13. Diagnostics And Errors
 
 Studio MUST surface runtime load errors.
@@ -586,6 +694,8 @@ Studio MUST surface runtime load errors.
 Studio MUST surface PDL editor diagnostics in PDL Monaco markers.
 
 Studio MUST surface Algraf diagnostics in Algraf Monaco markers.
+
+Studio MUST surface SQL.js load and query errors in the SQL workspace UI.
 
 Studio SHOULD surface PDL runtime diagnostics in the section status or output
 area.
@@ -627,7 +737,8 @@ dynamic runtime code in embedded chart output.
 The current UI has these major regions:
 
 - topbar with brand, story switcher, and runtime status;
-- top-level selector for Solar, Bikeshare, Interactivity, and How Built views;
+- top-level selector for Solar, Bikeshare, Interactivity, SQL, and How Built
+  views;
 - hero with story copy, metrics, and run command;
 - method cards;
 - raw data section;
@@ -653,6 +764,20 @@ The Interactivity page has:
 - selector and dependent chart panels;
 - generated CSV output panels;
 - editable raw CSV, PDL source, and Algraf source panels.
+
+The SQL page has:
+
+- compact hero and SQL.js workspace metrics;
+- browser-memory status;
+- actions for new database, CSV upload, SQLite upload, and database export;
+- Monaco-backed SQL editor;
+- run command;
+- table list;
+- selected-table schema view;
+- result preview table;
+- query-result CSV export;
+- CSV import history;
+- SQL diagnostics.
 
 The How Built page has:
 
@@ -695,7 +820,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.7.0.
+These concepts are deferred in version 0.8.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -721,7 +846,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.7.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.8.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -744,7 +869,7 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.7.0 approximates this graph with story-level, per-section, and
+Version 0.8.0 approximates this graph with story-level, per-section, and
 interactivity-demo workflow functions in `src/storyWorkflow.ts` and the
 Interactivity page component. `src/App.tsx` coordinates which workflow runs and
 stores the resulting snapshots.
@@ -806,12 +931,13 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.7.0 local validation, Studio uses filesystem installs of
+For version 0.8.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
 repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
-`0.64.x`. Runtime loading still uses `public/wasm/pdl.wasm` and
-`public/wasm/algraf.wasm`, populated by `npm run copy:wasm` for coordinated
-local builds or by `npm run build:wasm` for downloaded release assets.
+`0.66.x`. Runtime loading still uses `public/wasm/pdl.wasm`,
+`public/wasm/algraf.wasm`, and `public/wasm/sql-wasm.wasm`, populated by
+`npm run copy:wasm` for coordinated local builds or by `npm run build:wasm` for
+downloaded release assets plus the packaged SQL.js WASM asset.
 
 ## 22. Build And Deployment
 
@@ -819,11 +945,12 @@ local builds or by `npm run build:wasm` for downloaded release assets.
 
 `npm run check` MUST run TypeScript with `tsc --noEmit`.
 
-`npm run build:wasm` MUST place production PDL and Algraf WASM assets in
-`public/wasm/`.
+`npm run build:wasm` MUST place production PDL, Algraf, and SQL.js WASM assets
+in `public/wasm/`.
 
 `npm run copy:wasm` MUST copy locally built sibling WASM artifacts from
-`../pdl` and `../algraf` into `public/wasm/`.
+`../pdl` and `../algraf` into `public/wasm/` and copy SQL.js WASM from
+`node_modules/sql.js/dist/sql-wasm.wasm`.
 
 `npm run build` MUST prepare WASM assets, type-check, and build `dist/`.
 
@@ -832,8 +959,8 @@ local builds or by `npm run build:wasm` for downloaded release assets.
 GitHub Pages deployment MUST compute a Vite base path appropriate for the
 repository name and owner.
 
-The built `dist/` output MUST contain non-empty `wasm/algraf.wasm` and
-`wasm/pdl.wasm` assets.
+The built `dist/` output MUST contain non-empty `wasm/algraf.wasm`,
+`wasm/pdl.wasm`, and `wasm/sql-wasm.wasm` assets.
 
 ## 23. Security
 
@@ -846,6 +973,10 @@ Studio MUST NOT grant WASM runtimes arbitrary filesystem access.
 Studio MUST NOT fetch arbitrary project files from remote URLs without an
 explicit product design, permission model, and validation path.
 
+User-selected CSV and SQLite files in the SQL workspace MUST remain local to the
+browser runtime unless a future product design explicitly adds persistence or
+remote upload.
+
 Studio MUST treat embedded render output as trusted only when it comes from the
 audited Algraf runtime.
 
@@ -856,7 +987,8 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.7.0 runs small bundled stories and a small reactive demo; it does not
+Version 0.8.0 runs small bundled stories, a small reactive demo, and an
+in-memory SQL.js workspace; it does not
 define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -930,16 +1062,26 @@ root.
 ## 28. Implementation Milestones
 
 Version 0.7.0 preserves the case-study alpha, consumes shared PDL and Algraf
-browser package integrations, keeps reactive orchestration, splits the Studio
-shell into focused components and workflow helpers, and adds a separate How
-Built walkthrough page:
+browser package integrations. Version 0.8.0 keeps reactive orchestration,
+splits the Studio shell into focused components and workflow helpers, adds a
+separate How Built walkthrough page, and adds a client-side SQL workspace:
 
 - Vite/React shell;
 - story switcher;
 - two bundled stories;
 - Interactivity view;
+- SQL workspace view;
 - How Built view;
 - editable raw data;
+- SQL.js dependency and served `sql-wasm.wasm` asset;
+- reusable SQL Monaco editor;
+- browser-local in-memory SQLite database creation;
+- CSV import into SQLite tables;
+- SQLite database upload;
+- SQL query execution and result preview;
+- table and schema inspection;
+- query result CSV export;
+- current database export through SQL.js `db.export()`;
 - PDL Monaco editor from `pdl-editor`;
 - Algraf Monaco editor from `algraf-editor`;
 - PDL WASM runtime adapter from `pdl-wasm`;
@@ -959,8 +1101,8 @@ Built walkthrough page:
 - prepared CSV display;
 - SVG chart display;
 - GitHub Pages workflow;
-- v0.29-compatible PDL and v0.64-compatible Algraf browser surfaces;
-- shared Datafarm Monaco theme usage for CSV and JSON data editors.
+- v0.29-compatible PDL and v0.66-compatible Algraf browser surfaces;
+- shared Datafarm Monaco theme usage for CSV, JSON, and SQL editors.
 
 Future versions should move from fixed case studies toward:
 

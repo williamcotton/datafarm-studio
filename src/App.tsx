@@ -4,6 +4,7 @@ import { loadPdlRuntime, type PdlRuntime } from "pdl-wasm";
 
 import { HowBuiltPage } from "./components/HowBuiltPage";
 import { InteractivityDemoPage } from "./components/InteractivityDemoPage";
+import { SqlWorkspacePage } from "./components/SqlWorkspacePage";
 import { StoryPage } from "./components/StoryPage";
 import { Topbar } from "./components/Topbar";
 import {
@@ -199,11 +200,13 @@ export function App(): React.ReactElement {
   }, 0);
   const homeHref = import.meta.env.BASE_URL;
   const brandSubtitle =
-    page === "interactivity"
-      ? "Reactive PDL and Algraf demo"
-      : page === "how-built"
-        ? "One slider PDL and Algraf walkthrough"
-        : activeStory.brandSubtitle;
+    page === "sql"
+      ? "SQLite scratchpad"
+      : page === "interactivity"
+        ? "Reactive PDL and Algraf demo"
+        : page === "how-built"
+          ? "One slider PDL and Algraf walkthrough"
+          : activeStory.brandSubtitle;
 
   return (
     <div className="studio-shell">
@@ -215,12 +218,15 @@ export function App(): React.ReactElement {
         homeHref={homeHref}
         onBuildSelect={() => setPage("how-built")}
         onDemoSelect={() => setPage("interactivity")}
+        onSqlSelect={() => setPage("sql")}
         onStoryChange={handleStoryChange}
         pdlState={pdlState}
       />
 
       <main>
-        {page === "how-built" ? (
+        {page === "sql" ? (
+          <SqlWorkspacePage />
+        ) : page === "how-built" ? (
           <HowBuiltPage
             algrafRuntime={algrafRuntime}
             algrafState={algrafState}

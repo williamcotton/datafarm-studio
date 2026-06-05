@@ -1,6 +1,6 @@
 # Datafarm Studio v0.8.0 Plan
 
-Status: Planned
+Status: Implemented
 Target version: 0.8.0
 Owner: Studio maintainers
 Related spec: [`STUDIO_SPEC.md`](STUDIO_SPEC.md)
@@ -23,38 +23,38 @@ export results without any server dependency.
 
 - Add the SQL.js dependency and browser WASM asset.
 
-  Status: Planned. Studio MUST add `sql.js` targeting `^1.13.0`, make
+  Status: Implemented. Studio MUST add `sql.js` targeting `^1.13.0`, make
   `sql-wasm.wasm` available as a served static asset, and initialize SQL.js
   with a `locateFile` function that resolves the WASM URL through Studio's
   public asset path.
 
 - Create an in-memory SQLite workspace.
 
-  Status: Planned. Studio MUST expose a SQL workspace surface that creates and
+  Status: Implemented. Studio MUST expose a SQL workspace surface that creates and
   owns a browser-local SQLite database in memory. The database MUST NOT require
   a server, remote API, or filesystem persistence.
 
 - Support manual CSV upload into SQLite tables.
 
-  Status: Planned. Users MUST be able to choose local CSV files in the browser,
+  Status: Implemented. Users MUST be able to choose local CSV files in the browser,
   import them into SQLite tables, inspect table names and schemas, and query
   the imported data.
 
 - Support SQLite database upload.
 
-  Status: Planned. Users MUST be able to choose an existing `.sqlite`,
+  Status: Implemented. Users MUST be able to choose an existing `.sqlite`,
   `.sqlite3`, or `.db` file in the browser and open it as the active SQL.js
   database.
 
 - Support SQL query execution and result preview.
 
-  Status: Planned. The SQL workspace MUST provide a Monaco-backed SQL editor,
+  Status: Implemented. The SQL workspace MUST provide a Monaco-backed SQL editor,
   execute user queries against the active in-memory database, display result
   columns and rows, and surface SQL errors in the UI.
 
 - Add a reusable SQL editor component.
 
-  Status: Planned. Studio MUST add a reusable SQL editor surface that uses
+  Status: Implemented. Studio MUST add a reusable SQL editor surface that uses
   Monaco's built-in `sql` language mode and the shared Datafarm editor theme.
   The editor MUST support controlled query text, stable model URIs, change
   callbacks, disposal cleanup, and the same basic sizing/typography behavior as
@@ -62,37 +62,37 @@ export results without any server dependency.
 
 - Support table and schema inspection.
 
-  Status: Planned. The SQL workspace MUST list available tables and expose a
+  Status: Implemented. The SQL workspace MUST list available tables and expose a
   schema view for selected tables.
 
 - Support client-side export.
 
-  Status: Planned. Users MUST be able to export query results as CSV. Users
+  Status: Implemented. Users MUST be able to export query results as CSV. Users
   SHOULD also be able to export the current database as a downloadable SQLite
   file generated from `db.export()`.
 
 - Keep PDL and Algraf separate.
 
-  Status: Planned. This release MUST NOT add SQL semantics to PDL, SQL sources
+  Status: Implemented. This release MUST NOT add SQL semantics to PDL, SQL sources
   to Algraf, or TypeScript implementations of PDL or Algraf behavior.
 
 ## Should
 
 - Keep the first SQL surface focused.
 
-  Status: Planned. The first release should prioritize database creation,
+  Status: Implemented. The first release should prioritize database creation,
   CSV/database upload, query execution, result preview, schema inspection, and
   export over broader IDE features.
 
 - Handle browser-only constraints explicitly.
 
-  Status: Planned. The UI should explain or surface that SQL.js databases are
+  Status: Implemented. The UI should explain or surface that SQL.js databases are
   memory-backed in this release and that large uploads may be limited by
   browser memory.
 
 - Keep SQL state easy to move into the future IDE.
 
-  Status: Planned. SQL runtime state, query text, query results,
+  Status: Implemented. SQL runtime state, query text, query results,
   imported-table metadata, SQL diagnostics, and the SQL editor component should
   use small typed Studio interfaces that can later be hosted inside the v0.9
   IDE surface.

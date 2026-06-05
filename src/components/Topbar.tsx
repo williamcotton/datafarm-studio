@@ -13,6 +13,7 @@ export function Topbar({
   homeHref,
   onBuildSelect,
   onDemoSelect,
+  onSqlSelect,
   onStoryChange,
   pdlState,
 }: {
@@ -23,6 +24,7 @@ export function Topbar({
   homeHref: string;
   onBuildSelect: () => void;
   onDemoSelect: () => void;
+  onSqlSelect: () => void;
   onStoryChange: (storyId: StoryId) => void;
   pdlState: RuntimeState;
 }): React.ReactElement {
@@ -41,6 +43,7 @@ export function Topbar({
           activeStoryId={activeStoryId}
           onBuildSelect={onBuildSelect}
           onDemoSelect={onDemoSelect}
+          onSqlSelect={onSqlSelect}
           onStoryChange={onStoryChange}
         />
         <div className="runtime-pills" aria-label="Runtime status">

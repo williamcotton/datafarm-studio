@@ -2,7 +2,45 @@ import type { AlgrafDiagnostic, AlgrafRenderResult } from "algraf-wasm";
 import type { PdlEditorDiagnostic, PdlRunResult } from "pdl-wasm";
 
 export type RuntimeState = "loading" | "ready" | "error";
-export type StudioPage = "story" | "interactivity" | "how-built";
+export type StudioPage = "story" | "interactivity" | "how-built" | "sql";
+
+export type SqlValue = string | number | null | Uint8Array;
+
+export interface SqlColumnSchema {
+  name: string;
+  type: string;
+  nullable: boolean;
+  defaultValue: string | null;
+  primaryKey: boolean;
+}
+
+export interface SqlTableSchema {
+  name: string;
+  rowCount: number | null;
+  columns: SqlColumnSchema[];
+}
+
+export interface SqlQueryResult {
+  columns: string[];
+  rows: SqlValue[][];
+  statementCount: number;
+  executedAt: number;
+  query: string;
+}
+
+export interface SqlImportMetadata {
+  sourceName: string;
+  tableName: string;
+  rowCount: number;
+  columnCount: number;
+  importedAt: string;
+}
+
+export interface SqlDiagnostic {
+  severity: "info" | "success" | "error";
+  message: string;
+  detail?: string;
+}
 
 export interface DashboardContext {
   time_cutoff: number;

@@ -1,13 +1,15 @@
 {
   "name": "datafarm-studio",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "npm run copy:sql-wasm",
     "dev": "vite --host 0.0.0.0",
     "build": "npm run build:wasm && npm run check && vite build",
-    "build:wasm": "mkdir -p public/wasm && curl -L -o public/wasm/algraf.wasm https://github.com/williamcotton/algraf/releases/latest/download/algraf-wasm-latest.wasm && curl -L -o public/wasm/pdl.wasm https://github.com/williamcotton/pdl/releases/latest/download/pdl-wasm-latest.wasm",
-    "copy:wasm": "mkdir -p public/wasm && cp ../algraf/target/wasm32-unknown-unknown/release/algraf_wasm.wasm public/wasm/algraf.wasm && cp ../pdl/target/wasm32-unknown-unknown/release/pdl_wasm.wasm public/wasm/pdl.wasm",
+    "build:wasm": "mkdir -p public/wasm && curl -L -o public/wasm/algraf.wasm https://github.com/williamcotton/algraf/releases/latest/download/algraf-wasm-latest.wasm && curl -L -o public/wasm/pdl.wasm https://github.com/williamcotton/pdl/releases/latest/download/pdl-wasm-latest.wasm && cp node_modules/sql.js/dist/sql-wasm.wasm public/wasm/sql-wasm.wasm",
+    "copy:wasm": "mkdir -p public/wasm && cp ../algraf/target/wasm32-unknown-unknown/release/algraf_wasm.wasm public/wasm/algraf.wasm && cp ../pdl/target/wasm32-unknown-unknown/release/pdl_wasm.wasm public/wasm/pdl.wasm && cp node_modules/sql.js/dist/sql-wasm.wasm public/wasm/sql-wasm.wasm",
+    "copy:sql-wasm": "mkdir -p public/wasm && cp node_modules/sql.js/dist/sql-wasm.wasm public/wasm/sql-wasm.wasm",
     "check": "tsc --noEmit",
     "preview": "vite preview --host 0.0.0.0"
   },
@@ -22,7 +24,8 @@
     "pdl-editor": "file:../pdl/editors/monaco",
     "pdl-wasm": "file:../pdl/packages/wasm",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "sql.js": "^1.13.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.7",
