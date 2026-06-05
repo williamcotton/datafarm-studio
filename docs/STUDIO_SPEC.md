@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.3.0
+Status: 0.4.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,8 +12,9 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.3.0. It is a Vite/React application with
-two bundled case studies. It is not yet a full IDE.
+The current implementation is version 0.4.0. It is a Vite/React application with
+two bundled case studies and a dedicated reactive interactivity demo. It is not
+yet a full IDE.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -88,10 +89,11 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.3.0 ships two curated workflows:
+Version 0.4.0 ships two curated workflows and one interactive runtime demo:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
+- Interactivity, a compact PDL context and Algraf event demonstration.
 
 Each workflow exposes the same section structure:
 
@@ -109,7 +111,9 @@ Studio currently proves these production contracts:
 - Editor services can be driven from the same WASM runtimes used for execution.
 - A single PDL story program can emit named outputs for multiple chart sections.
 - Per-section edits can override the story program path.
+- A host-owned PDL context map can drive browser re-evaluation.
 - Algraf charts can render from host-supplied in-memory files.
+- Algraf sidecar and inert SVG event metadata can be routed through React state.
 - GitHub Pages can serve the app with a configurable Vite base path.
 
 Future versions will expand this into a data science IDE. The IDE should make
@@ -184,15 +188,13 @@ The main shell is `src/App.tsx`.
 
 Story metadata and bundled source imports live in `src/storyBundles.ts`.
 
-PDL editor integration lives in `src/PdlEditor.tsx`,
-`src/pdlEditorProviders.ts`, and `src/pdlRuntime.ts`.
+PDL editor and runtime integration are consumed from the sibling `pdl-editor`
+and `pdl-wasm` packages.
 
-Algraf editor integration lives in `src/AlgrafEditor.tsx`,
-`src/algrafEditorProviders.ts`, and `src/algrafRuntime.ts`.
+Algraf editor and runtime integration are consumed from the sibling
+`algraf-editor` and `algraf-wasm` packages.
 
 Raw data editing lives in `src/DataEditor.tsx`.
-
-TextMate grammars live in `src/grammars/`.
 
 Bundled stories live under `src/datafarm-solar/` and
 `src/datafarm-bikeshare/`.
@@ -204,7 +206,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.3.0 does not expose a general workspace model in the UI.
+Version 0.4.0 does not expose a general workspace model in the UI.
 
 Internally, Studio maintains editable per-story state:
 
@@ -213,6 +215,8 @@ Internally, Studio maintains editable per-story state:
 - Algraf source by story and section;
 - runtime state for PDL and Algraf;
 - per-section execution snapshots.
+- reactive demo context, source, generated files, chart results, and last Algraf
+  event payload.
 
 The in-memory workspace MUST be the only source supplied to the browser WASM
 runtimes. The runtimes do not read host files directly.
@@ -229,7 +233,7 @@ metadata.
 
 A story is a curated analytical sequence.
 
-In version 0.3.0, stories are declared as `StoryBundle` values in
+In version 0.4.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -271,7 +275,7 @@ keys, editor model paths, and output routing identifiers.
 
 ## 7. Current Stories
 
-Version 0.3.0 ships two stories.
+Version 0.4.0 ships two stories.
 
 ### 7.1 Solar
 
@@ -316,6 +320,31 @@ Bikeshare sections are:
 Bikeshare uses a story-level PDL program at
 `memory/datafarm-bikeshare/story.pdl`.
 
+### 7.3 Interactivity Demo
+
+The Interactivity view is a separate top-level page, not a story section.
+
+The demo MUST show:
+
+- host-owned controls for PDL context values;
+- generated `zone_summary.csv` and `active_rankings.csv` files;
+- a selector Algraf chart with `On(event: "click", emit: zone)`;
+- a dependent Algraf chart that re-renders from the selected PDL output;
+- editable raw CSV, PDL, and Algraf sources.
+
+The demo dashboard context MUST include:
+
+- `time_cutoff`, a numeric PDL parameter controlled by a range input;
+- `active_fleet`, a string PDL parameter controlled by a segmented control;
+- `metric_column`, a string PDL parameter controlled by a select box and used by
+  PDL dynamic column indirection;
+- `priority_only`, a boolean PDL parameter controlled by a checkbox;
+- `selected_zone`, a string PDL state value controlled by both a select box and
+  Algraf chart events.
+
+The first implementation MAY re-run the full demo workflow on every context or
+source change.
+
 ## 8. File Map Semantics
 
 Studio MUST supply files to runtimes as in-memory maps.
@@ -344,15 +373,14 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.3.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.4.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.3.0 requires a PDL v0.27-compatible browser package surface and a
-v0.26-compatible PDL source/WASM runtime. Bundled PDL story sources MUST use
-bare column references, backtick-escaped column references when needed,
-double-quoted string and path literals, and assignment-form column-producing
-stages. Studio MUST NOT ship active story sources that rely on v0.25
-quoted-column references, `as` aliases, `col(...)`, or `lit(...)`.
+Version 0.4.0 requires a PDL v0.29-compatible browser package surface and a
+v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
+remain compatible with the current story workflow. The interactivity demo MAY
+use v0.29 reactive `param` and `state` declarations and dynamic column
+indirection through `col(...)`.
 
 The PDL WASM module MUST expose:
 
@@ -374,6 +402,12 @@ PDL runtime calls MUST use JSON payloads encoded into WASM memory.
 
 `pdl_run_json` payloads MAY include `stdout_format`.
 
+`pdl_run_json` payloads MAY include `context`, a JSON object keyed by declared
+PDL context name. Context values supplied by Studio MUST be null, boolean,
+number, or string. Studio MUST NOT validate PDL context declarations or coerce
+context values beyond preserving these JSON primitives; PDL owns those
+semantics and diagnostics.
+
 PDL run results MUST be interpreted as:
 
 - `stdout`;
@@ -387,6 +421,9 @@ If `outputs` is absent, Studio MUST treat it as an empty list.
 The PDL adapter MUST deallocate input and output buffers.
 
 Studio MUST NOT implement PDL pipeline semantics in TypeScript.
+
+The Interactivity page MUST pass the current dashboard context map to PDL on
+each run and MUST surface PDL runtime diagnostics returned from that run.
 
 ## 10. Algraf Runtime Integration
 
@@ -417,12 +454,19 @@ Algraf render results MUST be interpreted as:
 - `diagnostics`;
 - `error`.
 
+When `sidecar` is present, Studio MAY parse it as inert host metadata for
+tooltip, highlight, and event routing behavior. Studio MUST NOT infer Algraf
+event bindings from Algraf source text.
+
 The Algraf adapter MUST provide host shims required by the current wasm-bindgen
 and projection dependencies.
 
 The Algraf adapter MUST deallocate input and output buffers.
 
 Studio MUST NOT implement Algraf chart semantics or rendering in TypeScript.
+
+The Interactivity page MUST route Algraf click emissions whose field is `zone`
+to the Studio-owned PDL state binding `selected_zone`.
 
 ## 11. Editor Integration
 
@@ -497,6 +541,20 @@ Each section snapshot MUST capture:
 Switching stories MUST clear runtime errors, snapshots, and running state while
 preserving source edits stored for each story.
 
+The Interactivity page MUST evaluate the demo PDL source with the current
+dashboard context map whenever a context value, demo source, or demo data file
+changes.
+
+The Interactivity page MUST pass generated PDL saved files to both Algraf chart
+renders after each successful PDL run.
+
+The Interactivity page MUST capture Algraf event payloads in the form
+`{ type, field, value }` and route a click payload with `field: "zone"` to the
+PDL `selected_zone` state value.
+
+The Interactivity page MAY use full workflow re-execution rather than
+fine-grained invalidation.
+
 ## 13. Diagnostics And Errors
 
 Studio MUST surface runtime load errors.
@@ -531,15 +589,21 @@ Studio SHOULD preserve the SVG's intrinsic viewBox and layout behavior.
 
 Studio SHOULD display a clear empty or error state when no chart is available.
 
-Future interactive chart support MUST be audited before allowing script,
-foreignObject, event handler attributes, or dynamic runtime code in embedded
-output.
+Interactive chart support MUST remain limited to audited inert metadata returned
+by Algraf. Studio MAY read `data-algraf-event`, `data-algraf-emit-field`, and
+`data-algraf-emit-value` attributes on trusted Algraf SVG marks, and MAY fall
+back to nearest-mark sidecar hit testing. The current sidecar nearest-mark snap
+radius is implementation-defined as 44 SVG pixels.
+
+Studio MUST NOT allow script, `foreignObject`, event handler attributes, or
+dynamic runtime code in embedded chart output.
 
 ## 15. UI Surface
 
 The current UI has these major regions:
 
 - topbar with brand, story switcher, and runtime status;
+- top-level selector for Solar, Bikeshare, and Interactivity views;
 - hero with story copy, metrics, and run command;
 - method cards;
 - raw data section;
@@ -556,6 +620,15 @@ Each story section has:
 - prepared output panel;
 - rendered chart panel;
 - conclusion and evidence list.
+
+The Interactivity page has:
+
+- compact hero and runtime metrics;
+- PDL context controls;
+- event/diagnostic status;
+- selector and dependent chart panels;
+- generated CSV output panels;
+- editable raw CSV, PDL source, and Algraf source panels.
 
 The published surface SHOULD remain readable for non-technical story readers.
 
@@ -582,7 +655,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.3.0.
+These concepts are deferred in version 0.4.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -608,7 +681,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.3.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.4.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -631,8 +704,8 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.3.0 approximates this graph with story-level and per-section workflow
-functions in `src/App.tsx`.
+Version 0.4.0 approximates this graph with story-level, per-section, and
+interactivity-demo workflow functions in `src/App.tsx`.
 
 ## 19. Data Preview
 
@@ -691,9 +764,10 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.3.0 local validation, Studio uses filesystem installs of
+For version 0.4.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
-repositories. Runtime loading still uses `public/wasm/pdl.wasm` and
+repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
+`0.64.x`. Runtime loading still uses `public/wasm/pdl.wasm` and
 `public/wasm/algraf.wasm`, populated by `npm run copy:wasm` for coordinated
 local builds or by `npm run build:wasm` for downloaded release assets.
 
@@ -740,8 +814,8 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.3.0 runs small bundled stories and does not define strict performance
-budgets.
+Version 0.4.0 runs small bundled stories and a small reactive demo; it does not
+define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
 
@@ -813,12 +887,13 @@ root.
 
 ## 28. Implementation Milestones
 
-Version 0.3.0 preserves the case-study alpha and consumes shared PDL and Algraf
-browser package integrations:
+Version 0.4.0 preserves the case-study alpha, consumes shared PDL and Algraf
+browser package integrations, and adds reactive orchestration:
 
 - Vite/React shell;
 - story switcher;
 - two bundled stories;
+- Interactivity view;
 - editable raw data;
 - PDL Monaco editor from `pdl-editor`;
 - Algraf Monaco editor from `algraf-editor`;
@@ -826,10 +901,14 @@ browser package integrations:
 - Algraf WASM runtime adapter from `algraf-wasm`;
 - story-level named output routing;
 - per-section fallback runs after edits;
+- PDL context map execution;
+- host-owned PDL parameter/state controls;
+- Algraf sidecar/SVG event routing;
+- dependent chart re-rendering from generated files;
 - prepared CSV display;
 - SVG chart display;
 - GitHub Pages workflow;
-- v0.26-compatible PDL story syntax and shared upstream editor highlighting.
+- v0.29-compatible PDL and v0.64-compatible Algraf browser surfaces.
 
 Future versions should move from fixed case studies toward:
 

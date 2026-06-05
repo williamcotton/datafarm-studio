@@ -25,6 +25,8 @@ body {
 }
 
 button,
+input,
+select,
 textarea {
   font: inherit;
 }
@@ -272,6 +274,161 @@ p {
   overflow-wrap: anywhere;
 }
 
+.interactivity-page {
+  display: grid;
+  gap: 18px;
+}
+
+.demo-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+  gap: 28px;
+  align-items: end;
+  padding: 34px 0 4px;
+}
+
+.demo-controls-section {
+  margin-top: 8px;
+}
+
+.control-panel {
+  overflow: hidden;
+}
+
+.control-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) minmax(240px, 1.2fr) minmax(180px, 0.8fr) minmax(190px, 0.9fr) minmax(180px, 0.8fr);
+  gap: 14px;
+  align-items: end;
+  padding: 16px;
+}
+
+.control-field,
+.toggle-field {
+  min-width: 0;
+}
+
+.control-field {
+  display: grid;
+  gap: 8px;
+}
+
+.control-field span,
+.toggle-field span {
+  color: #506168;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.control-field strong {
+  min-height: 22px;
+  color: #162127;
+  font-size: 18px;
+  line-height: 1.2;
+}
+
+.control-field input[type="range"] {
+  width: 100%;
+  accent-color: #145f52;
+}
+
+.control-field select {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid #cbd8d4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #203036;
+  font-weight: 800;
+}
+
+.demo-segmented {
+  width: 100%;
+}
+
+.demo-segmented button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 8px;
+}
+
+.toggle-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid #d7e0dd;
+  border-radius: 8px;
+  background: #fbfcfc;
+}
+
+.toggle-field input {
+  width: 16px;
+  height: 16px;
+  accent-color: #145f52;
+}
+
+.demo-diagnostics {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #b8dacd;
+  border-radius: 8px;
+  background: #eef8f4;
+  color: #145f52;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.demo-diagnostics-error {
+  border-color: #f1b8b2;
+  background: #fff5f4;
+  color: #a33d2d;
+}
+
+.demo-chart-grid,
+.demo-output-grid,
+.demo-source-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(420px, 1fr));
+  gap: 12px;
+}
+
+.demo-chart-panel {
+  overflow: hidden;
+}
+
+.demo-chart-stage {
+  min-height: 430px;
+}
+
+.interactive-chart-host svg [data-algraf-event] {
+  cursor: pointer;
+}
+
+.interactive-chart-host svg [data-algraf-event]:hover {
+  filter: brightness(0.94);
+}
+
+.demo-output-block {
+  min-height: 250px;
+  max-height: 250px;
+}
+
+.demo-source-panel {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.demo-editor-host {
+  height: 360px;
+}
+
 .step-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -281,6 +438,7 @@ p {
 
 .step-card,
 .question-card,
+.control-panel,
 .editor-panel,
 .result-panel,
 .story-section,
@@ -810,6 +968,19 @@ p {
   box-shadow: 0 10px 24px rgba(25, 35, 40, 0.08);
 }
 
+.editor-host.demo-editor-host {
+  height: 360px;
+}
+
+.output-block.demo-output-block {
+  min-height: 250px;
+  max-height: 250px;
+}
+
+.chart-stage.demo-chart-stage {
+  min-height: 430px;
+}
+
 .empty-chart {
   display: grid;
   gap: 10px;
@@ -931,6 +1102,11 @@ p {
 
 @media (max-width: 1180px) {
   .hero,
+  .demo-hero,
+  .control-grid,
+  .demo-chart-grid,
+  .demo-output-grid,
+  .demo-source-grid,
   .results-grid,
   .exploration-output-body,
   .output-conclusion,
