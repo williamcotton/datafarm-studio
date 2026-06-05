@@ -65,11 +65,16 @@ three rather than picking one.
 ## Project layout
 
 Application code lives in `src/`, with React entry points in `src/main.tsx` and
-`src/App.tsx`.
+the top-level state container in `src/App.tsx`.
 
 | Path | Responsibility |
 | --- | --- |
-| `src/App.tsx` | Main shell, story switching, workflow execution, panels |
+| `src/App.tsx` | Main shell state, story switching, runtime loading |
+| `src/components/` | Shell controls, story panels, story sections, interactivity page |
+| `src/storyWorkflow.ts` | Story-level and per-section workflow execution helpers |
+| `src/studioTypes.ts` | Shared Studio runtime, snapshot, and interactivity types |
+| `src/studioUtils.ts` | Shared diagnostics, CSV, formatting, and snapshot helpers |
+| `src/interactivityDemoData.ts` | Reactive demo defaults, sources, and constants |
 | `src/storyBundles.ts` | Story metadata, default sources, raw data file maps |
 | `src/PdlEditor.tsx` | Monaco host for PDL |
 | `src/pdlEditorProviders.ts` | PDL Monaco providers backed by PDL editor services |
@@ -164,7 +169,7 @@ does not exist.
 
 ## Versioning
 
-The current Studio package version is `0.1.0`.
+The current Studio package version is `0.5.0`.
 
 When implementing a numbered plan, update every version stamp that tracks Studio
 itself:

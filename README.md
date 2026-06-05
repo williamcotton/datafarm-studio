@@ -118,7 +118,12 @@ The host is responsible for:
 
 | Path | Responsibility |
 | --- | --- |
-| `src/App.tsx` | Main Studio shell, story switching, workflow execution, panels |
+| `src/App.tsx` | Main Studio state container, story switching, runtime loading |
+| `src/components/` | Shell controls, story panels, story sections, interactivity page |
+| `src/storyWorkflow.ts` | Story-level and per-section workflow execution helpers |
+| `src/studioTypes.ts` | Shared Studio runtime, snapshot, and interactivity types |
+| `src/studioUtils.ts` | Shared diagnostics, CSV, formatting, and snapshot helpers |
+| `src/interactivityDemoData.ts` | Reactive demo defaults, sources, and constants |
 | `src/storyBundles.ts` | Solar and Bikeshare story metadata, default source maps, raw files |
 | `src/PdlEditor.tsx` | Monaco editor host for PDL |
 | `src/pdlEditorProviders.ts` | Monaco provider adapters backed by PDL editor services |

@@ -4,7 +4,7 @@
 
 let states =
   load "solar_state.csv"
-  | select state, long, lat, region, capacity_mw
+  | select `state`, long, lat, region, capacity_mw
 
 states
   | sort capacity_mw desc

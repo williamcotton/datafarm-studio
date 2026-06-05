@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.4.0
+Status: 0.5.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.4.0. It is a Vite/React application with
+The current implementation is version 0.5.0. It is a Vite/React application with
 two bundled case studies and a dedicated reactive interactivity demo. It is not
 yet a full IDE.
 
@@ -89,7 +89,7 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.4.0 ships two curated workflows and one interactive runtime demo:
+Version 0.5.0 ships two curated workflows and one interactive runtime demo:
 
 - Solar, a state-level solar capacity and output story.
 - Bikeshare, an urban bike-share revenue and operations story.
@@ -184,7 +184,18 @@ Application code lives in `src/`.
 
 The React entry point is `src/main.tsx`.
 
-The main shell is `src/App.tsx`.
+The top-level state and runtime orchestration container is `src/App.tsx`.
+
+Reusable shell and workflow UI is split into focused components under
+`src/components/`.
+
+Story workflow execution helpers live in `src/storyWorkflow.ts`.
+
+Shared Studio types live in `src/studioTypes.ts`.
+
+Formatting, diagnostic, and snapshot helpers live in `src/studioUtils.ts`.
+
+Reactive demo constants live in `src/interactivityDemoData.ts`.
 
 Story metadata and bundled source imports live in `src/storyBundles.ts`.
 
@@ -206,7 +217,7 @@ GitHub Pages deployment is defined in
 
 ## 5. Workspace Model
 
-Version 0.4.0 does not expose a general workspace model in the UI.
+Version 0.5.0 does not expose a general workspace model in the UI.
 
 Internally, Studio maintains editable per-story state:
 
@@ -233,7 +244,7 @@ metadata.
 
 A story is a curated analytical sequence.
 
-In version 0.4.0, stories are declared as `StoryBundle` values in
+In version 0.5.0, stories are declared as `StoryBundle` values in
 `src/storyBundles.ts`.
 
 Each story MUST have:
@@ -275,7 +286,7 @@ keys, editor model paths, and output routing identifiers.
 
 ## 7. Current Stories
 
-Version 0.4.0 ships two stories.
+Version 0.5.0 ships two stories.
 
 ### 7.1 Solar
 
@@ -373,14 +384,16 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.4.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
+Version 0.5.0 consumes `pdl-wasm` and `pdl-editor` from the sibling PDL
 repository with filesystem package installs during local development.
 
-Version 0.4.0 requires a PDL v0.29-compatible browser package surface and a
+Version 0.5.0 requires a PDL v0.29-compatible browser package surface and a
 v0.29-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
-remain compatible with the current story workflow. The interactivity demo MAY
-use v0.29 reactive `param` and `state` declarations and dynamic column
-indirection through `col(...)`.
+remain compatible with the current story workflow. Because `state` is a PDL
+declaration keyword in this runtime surface, bundled PDL sources that reference
+a CSV column named `state` MUST use a backtick-escaped column reference such as
+`` `state` ``. The interactivity demo MAY use v0.29 reactive `param` and
+`state` declarations and dynamic column indirection through `col(...)`.
 
 The PDL WASM module MUST expose:
 
@@ -655,7 +668,7 @@ Planned IDE concepts include:
 - publishing workflow;
 - project settings.
 
-These concepts are deferred in version 0.4.0.
+These concepts are deferred in version 0.5.0.
 
 When promoted, they SHOULD be implemented as reusable product primitives that
 can also power the current story pages.
@@ -681,7 +694,7 @@ Generated files SHOULD be separated from source files in the project model even
 when they are displayed together.
 
 The current story bundles encode source and generated CSV files directly in
-TypeScript imports. That is acceptable for version 0.4.0 but SHOULD NOT be the
+TypeScript imports. That is acceptable for version 0.5.0 but SHOULD NOT be the
 long-term project storage model.
 
 ## 18. Execution Graph
@@ -704,8 +717,10 @@ dependencies.
 
 The graph SHOULD support partial re-runs when only a subset of files changes.
 
-Version 0.4.0 approximates this graph with story-level, per-section, and
-interactivity-demo workflow functions in `src/App.tsx`.
+Version 0.5.0 approximates this graph with story-level, per-section, and
+interactivity-demo workflow functions in `src/storyWorkflow.ts` and the
+Interactivity page component. `src/App.tsx` coordinates which workflow runs and
+stores the resulting snapshots.
 
 ## 19. Data Preview
 
@@ -764,7 +779,7 @@ PDL and Algraf runtime versions are external dependencies. Studio plans and pull
 requests SHOULD document whether they use latest release WASM assets or locally
 built sibling artifacts.
 
-For version 0.4.0 local validation, Studio uses filesystem installs of
+For version 0.5.0 local validation, Studio uses filesystem installs of
 `pdl-wasm`, `pdl-editor`, `algraf-wasm`, and `algraf-editor` from sibling
 repositories. The intended sibling package surfaces are PDL `0.29.x` and Algraf
 `0.64.x`. Runtime loading still uses `public/wasm/pdl.wasm` and
@@ -814,7 +829,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.4.0 runs small bundled stories and a small reactive demo; it does not
+Version 0.5.0 runs small bundled stories and a small reactive demo; it does not
 define strict performance budgets.
 
 Future IDE releases SHOULD define budgets for:
@@ -887,8 +902,9 @@ root.
 
 ## 28. Implementation Milestones
 
-Version 0.4.0 preserves the case-study alpha, consumes shared PDL and Algraf
-browser package integrations, and adds reactive orchestration:
+Version 0.5.0 preserves the case-study alpha, consumes shared PDL and Algraf
+browser package integrations, keeps reactive orchestration, and splits the
+Studio shell into focused components and workflow helpers:
 
 - Vite/React shell;
 - story switcher;
@@ -903,6 +919,8 @@ browser package integrations, and adds reactive orchestration:
 - per-section fallback runs after edits;
 - PDL context map execution;
 - host-owned PDL parameter/state controls;
+- Solar PDL compatibility with the `state` keyword through backtick-escaped
+  column references;
 - Algraf sidecar/SVG event routing;
 - dependent chart re-rendering from generated files;
 - prepared CSV display;

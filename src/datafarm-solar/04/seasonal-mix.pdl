@@ -3,7 +3,7 @@
 
 let seasonal =
   load "solar_seasonal.csv"
-  | select state, season, generation_gwh
+  | select `state`, season, generation_gwh
 
 seasonal
   | save "seasonal_generation.csv"

@@ -55,7 +55,7 @@ and shaded by megawatts. This is the slide that goes in the board deck.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select state, long, lat, region, capacity_mw
+  | select `state`, long, lat, region, capacity_mw
 
 states
   | sort capacity_mw desc
@@ -113,11 +113,11 @@ against peak sun hours. One derived column reframes everything.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select state, region, sun_hours, capacity_mw, generation_gwh
+  | select `state`, region, sun_hours, capacity_mw, generation_gwh
 
 states
   | mutate capacity_factor = round(generation_gwh / (capacity_mw * 8.76), 3)
-  | select state, region, sun_hours, capacity_mw, capacity_factor
+  | select `state`, region, sun_hours, capacity_mw, capacity_factor
   | sort sun_hours
   | save "sun_capacity_factor.csv"
 ```
@@ -172,7 +172,7 @@ don't — they braid.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select state, region, capacity_mw, generation_gwh
+  | select `state`, region, capacity_mw, generation_gwh
   | mutate gen_per_mw = round(generation_gwh / capacity_mw, 3)
   | mutate
       `By capacity` = rank() over (order_by capacity_mw desc),
@@ -180,8 +180,8 @@ let states =
 
 states
   | pivot_longer `By capacity`, `By output per MW` names_to metric values_to rank
-  | select state, region, metric, rank
-  | sort state, metric
+  | select `state`, region, metric, rank
+  | sort `state`, metric
   | save "capacity_vs_output_rank.csv"
 ```
 
@@ -238,7 +238,7 @@ pie is the answer.
 ```pdl
 let seasonal =
   load "solar_seasonal.csv"
-  | select state, season, generation_gwh
+  | select `state`, season, generation_gwh
 
 seasonal
   | save "seasonal_generation.csv"
@@ -299,12 +299,12 @@ has — and read it as a siting list, coloured by region.
 ```pdl
 let states =
   load "solar_state.csv"
-  | select state, region, capacity_mw, generation_gwh
+  | select `state`, region, capacity_mw, generation_gwh
 
 states
   | mutate gen_per_mw = round(generation_gwh / capacity_mw, 3)
   | sort gen_per_mw desc
-  | select state, region, capacity_mw, generation_gwh, gen_per_mw
+  | select `state`, region, capacity_mw, generation_gwh, gen_per_mw
   | save "output_per_mw.csv"
 ```
 
