@@ -119,7 +119,9 @@ export function StoryPage({
           const preparedCsv = snapshot.pdlCsv?.stdout ?? "";
           const pdlSource = pdlSources[step.id] ?? step.pdlSource;
           const algrafSource = algrafSources[step.id] ?? step.algrafSource;
-          const algrafFiles = preparedCsv ? filesWithPreparedOutput(files, step, preparedCsv) : filesWithSupportingFiles(files, step);
+          const algrafFiles = preparedCsv
+            ? filesWithPreparedOutput(files, step, preparedCsv, undefined, snapshot.pdlCsv?.files)
+            : filesWithSupportingFiles(files, step);
 
           return (
             <StorySection

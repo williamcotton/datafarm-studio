@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.10.0
+Status: 0.11.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,12 +12,13 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.10.0. It is a Vite/React application
+The current implementation is version 0.11.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
 client-side IDE surface with PDL and SQL preparation modes, two bundled case
 studies, a dedicated reactive interactivity lab, browser-local SQL.js
-preparation inside the IDE, and a Docs section that includes the explanatory
-How Built walkthrough.
+preparation inside the IDE, app-wide PDL saved-CSV artifact routing into
+Algraf file maps, and a Docs section that includes the explanatory How Built
+walkthrough.
 
 The current case studies are product content and workflow demonstrations. They
 MUST be treated as a marketing and publishing surface as the broader IDE grows.
@@ -92,7 +93,8 @@ Algraf renders deterministic data visualizations.
 
 Studio owns the browser workspace around those runtimes.
 
-Version 0.10.0 ships a product structure around the PDL to Algraf workflow:
+Version 0.10.0 introduced a product structure around the PDL to Algraf
+workflow:
 
 - Landing, a first-view introduction to Datafarm Studio as the browser IDE for
   the PDL to Algraf workflow.
@@ -103,6 +105,11 @@ Version 0.10.0 ships a product structure around the PDL to Algraf workflow:
 - Docs, a documentation section with overview, language, runtime,
   interactivity, SQL, and How Built content.
 - Labs, the retained reactive Interactivity demo.
+
+Version 0.11.0 keeps that structure and fixes the app-wide saved artifact
+contract: when PDL emits saved CSV files, Studio passes those files to Algraf
+and single-preview surfaces can select an active prepared artifact from those
+saved files instead of requiring the starter filename.
 
 The current Case Studies section contains:
 
@@ -138,6 +145,9 @@ Studio currently proves these production contracts:
 - Per-section edits can override the story program path.
 - A host-owned PDL context map can drive browser re-evaluation.
 - Algraf charts can render from host-supplied in-memory files.
+- PDL saved CSV files are passed through to Algraf on live editable surfaces,
+  including renamed saved files when the edited Algraf source references the
+  same path.
 - Algraf sidecar and inert SVG event metadata can be routed through React state.
 - SQL.js can load from a Studio-served WASM asset, own an in-memory SQLite
   database, import the active IDE CSV source, open user-selected SQLite
@@ -497,6 +507,22 @@ runtime file map. Uploaded CSV source data MAY use the stable starter path
 The IDE SQL preparation mode MUST materialize a successful tabular query result
 as a CSV string at `prepared_series.csv` in the IDE runtime file map.
 
+Every live PDL-to-Algraf surface MUST include saved files emitted by the current
+PDL run in the Algraf runtime file map. Studio MUST NOT require edited PDL
+sources to save to starter filenames when an edited Algraf source references a
+different saved CSV filename emitted by the same run.
+
+Single-preview surfaces with one prepared-output panel, such as Landing, IDE
+PDL mode, and Docs How Built, MUST select an active prepared artifact from PDL
+saved CSV files. They MUST prefer the surface's starter path when that file was
+emitted; otherwise they MUST choose the first emitted `.csv` path in stable
+lexical order. The selected artifact path and row count SHOULD be visible
+beside the prepared-output preview.
+
+When PDL emits a saved CSV but Algraf references a different missing path,
+Studio MUST let Algraf render diagnostics explain the mismatch. Studio MUST NOT
+silently substitute a starter artifact path for the path requested by Algraf.
+
 The Algraf runtime file map for a section MUST include:
 
 - the active story raw files;
@@ -517,6 +543,15 @@ The IDE Algraf runtime file map MUST include the active IDE source file and the
 active prepared CSV artifact. In PDL mode, the prepared artifact MUST come from
 PDL saved files. In SQL mode, the prepared artifact MUST come from Studio's
 SQL-result CSV serialization.
+
+In SQL mode, `prepared_series.csv` remains the v0.11 materialization path.
+Dynamic SQL output artifact names, SQL-to-PDL chaining, PDL-to-SQL translation,
+and direct Algraf SQL data sources are out of scope for version 0.11.0.
+
+Labs Interactivity MAY keep its explicit `zone_summary.csv` and
+`active_rankings.csv` two-chart contract. It MUST still include all PDL saved
+files in the Algraf file map, and missing expected reactive output paths MUST
+surface as diagnostics rather than falling back to stale default files.
 
 Future project work SHOULD replace ad hoc story file maps with a project file
 graph that records which runtime produced each generated file.
@@ -895,7 +930,7 @@ margins, and card-like rounded panel styling.
 
 ## 16. Data Science IDE Direction
 
-Version 0.10.0 defines the first IDE surface as a browser-local, ephemeral
+Version 0.11.0 defines the current IDE surface as a browser-local, ephemeral
 workspace. It MUST include:
 
 - local/manual CSV editing;
@@ -903,7 +938,8 @@ workspace. It MUST include:
 - PDL preparation mode;
 - SQL preparation mode backed by SQL.js;
 - Algraf source editing;
-- generated prepared CSV artifact preview;
+- generated prepared CSV artifact preview that follows the active PDL saved CSV
+  path in PDL mode and `prepared_series.csv` in SQL mode;
 - rendered chart preview;
 - runtime status;
 - diagnostics.
@@ -1094,7 +1130,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.10.0 runs a landing page, an initial IDE workspace, small bundled case
+Version 0.11.0 runs a landing page, an initial IDE workspace, small bundled case
 studies, a small reactive demo, and an in-memory SQL.js workflow; it does not
 define strict performance budgets.
 
@@ -1233,6 +1269,11 @@ Version 0.10.0 defines the IDE starter workflow:
 - SQL query result materialization as `prepared_series.csv`;
 - Algraf chart rendering from the active prepared CSV artifact;
 - mode-aware IDE diagnostics.
+
+Version 0.11.0 refines the starter workflow so PDL-mode prepared artifacts can
+follow renamed PDL saved CSV files across Landing, IDE, Docs How Built, Case
+Studies, and Labs Interactivity while SQL mode remains fixed to
+`prepared_series.csv`.
 
 Future versions should move from fixed case studies toward:
 

@@ -9,7 +9,7 @@ import { DataPanel } from "./DataPanel";
 import { RouteLink } from "./RouteLink";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import type { RuntimeState } from "../studioTypes";
-import { countDataRows, diagnosticsForAlgrafEditor, errorMessage } from "../studioUtils";
+import { countDataRows, diagnosticsForAlgrafEditor, errorMessage, selectSavedCsvArtifact, type SavedCsvArtifact } from "../studioUtils";
 
 const LANDING_DATA_PATH = "day_value.csv";
 const LANDING_PDL_PATH = "memory/landing/sort-days.pdl";
@@ -47,6 +47,7 @@ interface LandingSnapshot {
   algrafResult: AlgrafRenderResult | null;
   algrafDiagnostics: AlgrafDiagnostic[];
   runtimeFiles: Record<string, string>;
+  preparedArtifact: SavedCsvArtifact | null;
   error: string | null;
 }
 
@@ -75,7 +76,9 @@ export function LandingPage({
     }
     return runLandingDemo(pdlRuntime, algrafRuntime, dataSource, pdlSource, algrafSource);
   }, [algrafRuntime, algrafSource, dataSource, pdlRuntime, pdlSource, runtimeReady]);
-  const outputCsv = snapshot.pdlResult?.files?.[LANDING_OUTPUT_PATH] ?? "";
+  const outputArtifact = snapshot.preparedArtifact;
+  const outputPath = outputArtifact?.path ?? LANDING_OUTPUT_PATH;
+  const outputCsv = outputArtifact?.csv ?? "";
   const diagnostics = landingDiagnostics(snapshot, runtimeError);
 
   return (
@@ -169,7 +172,7 @@ export function LandingPage({
               <div className="panel-header">
                 <span>
                   <Rows3 size={16} aria-hidden="true" />
-                  {LANDING_OUTPUT_PATH}
+                  {outputPath}
                 </span>
                 <small>{countDataRows(outputCsv)} rows</small>
               </div>
@@ -265,7 +268,8 @@ function runLandingDemo(
       ...files,
       ...(pdlResult.files ?? {}),
     };
-    const algrafResult = runtimeFiles[LANDING_OUTPUT_PATH] ? algrafRuntime.render(algrafSource, runtimeFiles) : null;
+    const preparedArtifact = selectSavedCsvArtifact(pdlResult.files, LANDING_OUTPUT_PATH);
+    const algrafResult = preparedArtifact ? algrafRuntime.render(algrafSource, runtimeFiles) : null;
 
     return {
       pdlResult,
@@ -273,6 +277,7 @@ function runLandingDemo(
       algrafResult,
       algrafDiagnostics: algrafResult?.diagnostics ?? [],
       runtimeFiles,
+      preparedArtifact,
       error: pdlEditorResponse.error ?? pdlResult.error ?? algrafResult?.error ?? null,
     };
   } catch (error: unknown) {
@@ -290,6 +295,7 @@ function emptyLandingSnapshot(dataSource: string): LandingSnapshot {
     algrafResult: null,
     algrafDiagnostics: [],
     runtimeFiles: { [LANDING_DATA_PATH]: dataSource },
+    preparedArtifact: null,
     error: null,
   };
 }

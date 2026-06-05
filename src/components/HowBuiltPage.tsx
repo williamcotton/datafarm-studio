@@ -10,7 +10,13 @@ import type { PdlContextValue, PdlEditorDiagnostic, PdlEditorServiceResult, PdlR
 
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import type { RuntimeState } from "../studioTypes";
-import { countDataRows, errorMessage } from "../studioUtils";
+import {
+  countDataRows,
+  diagnosticsForAlgrafEditor,
+  errorMessage,
+  selectSavedCsvArtifact,
+  type SavedCsvArtifact,
+} from "../studioUtils";
 
 const SIMPLE_SERIES_PATH = "simple_series.csv";
 const SIMPLE_PDL_PATH = "memory/how-built/simple-slider.pdl";
@@ -176,6 +182,7 @@ interface BuildExampleSnapshot {
   algrafResult: AlgrafRenderResult | null;
   algrafDiagnostics: AlgrafDiagnostic[];
   runtimeFiles: Record<string, string>;
+  preparedArtifact: SavedCsvArtifact | null;
   error: string | null;
 }
 
@@ -270,7 +277,9 @@ export function HowBuiltPage({
   const [lastClickedDay, setLastClickedDay] = React.useState<number | null>(null);
   const runtimeReady = pdlState === "ready" && algrafState === "ready" && pdlRuntime != null && algrafRuntime != null;
   const snapshot = runtimeReady ? runBuildExample(pdlRuntime, algrafRuntime, visibleDays, pdlSource, algrafSource) : emptyBuildExampleSnapshot();
-  const outputCsv = snapshot.pdlResult?.files?.[SIMPLE_OUTPUT_PATH] ?? "";
+  const outputArtifact = snapshot.preparedArtifact;
+  const outputPath = outputArtifact?.path ?? SIMPLE_OUTPUT_PATH;
+  const outputCsv = outputArtifact?.csv ?? "";
   const diagnosticsCount =
     snapshot.pdlDiagnostics.length +
     (snapshot.pdlResult?.diagnostics.length ?? 0) +
@@ -342,7 +351,7 @@ export function HowBuiltPage({
               <div className="panel-header">
                 <span>
                   <Rows3 size={16} aria-hidden="true" />
-                  {SIMPLE_OUTPUT_PATH}
+                  {outputPath}
                 </span>
                 <small>{countDataRows(outputCsv)} rows</small>
               </div>
@@ -424,7 +433,7 @@ export function HowBuiltPage({
             </div>
             <div className="build-demo-source-editor build-demo-source-editor-ag">
               <AlgrafEditor
-                diagnostics={snapshot.algrafDiagnostics}
+                diagnostics={diagnosticsForAlgrafEditor(snapshot.algrafDiagnostics, snapshot.algrafResult?.error ?? null)}
                 files={snapshot.runtimeFiles}
                 modelUri="inmemory://datafarm/how-built/live-simple-slider.ag"
                 onChange={setAlgrafSource}
@@ -696,7 +705,8 @@ function runBuildExample(
       ...files,
       ...(pdlResult.files ?? {}),
     };
-    const algrafResult = runtimeFiles[SIMPLE_OUTPUT_PATH] ? algrafRuntime.render(algrafSource, runtimeFiles) : null;
+    const preparedArtifact = selectSavedCsvArtifact(pdlResult.files, SIMPLE_OUTPUT_PATH);
+    const algrafResult = preparedArtifact ? algrafRuntime.render(algrafSource, runtimeFiles) : null;
 
     return {
       pdlResult,
@@ -704,6 +714,7 @@ function runBuildExample(
       algrafResult,
       algrafDiagnostics: algrafResult?.diagnostics ?? [],
       runtimeFiles,
+      preparedArtifact,
       error: pdlEditorResponse.error ?? pdlResult.error ?? algrafResult?.error ?? null,
     };
   } catch (error: unknown) {
@@ -721,6 +732,7 @@ function emptyBuildExampleSnapshot(): BuildExampleSnapshot {
     algrafResult: null,
     algrafDiagnostics: [],
     runtimeFiles: { [SIMPLE_SERIES_PATH]: SIMPLE_SERIES_CSV },
+    preparedArtifact: null,
     error: null,
   };
 }

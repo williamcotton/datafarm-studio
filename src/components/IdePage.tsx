@@ -12,7 +12,7 @@ import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorThem
 import { publicAssetUrl } from "../publicAssets";
 import { csvFromSqlResult, importCsvIntoDatabase, runSqlQuery } from "../sqlWorkspace";
 import type { RuntimeState, SqlDiagnostic, SqlImportMetadata, SqlQueryResult } from "../studioTypes";
-import { countDataRows, diagnosticsForAlgrafEditor, errorMessage } from "../studioUtils";
+import { countDataRows, diagnosticsForAlgrafEditor, errorMessage, selectSavedCsvArtifact, type SavedCsvArtifact } from "../studioUtils";
 
 const IDE_DATA_PATH = "manual_series.csv";
 const IDE_PDL_PATH = "memory/ide/workspace.pdl";
@@ -76,6 +76,7 @@ interface PdlPreparationSnapshot {
   pdlResult: PdlRunResult | null;
   pdlDiagnostics: PdlEditorDiagnostic[];
   preparedCsv: string;
+  preparedArtifact: SavedCsvArtifact | null;
   runtimeFiles: Record<string, string>;
   error: string | null;
 }
@@ -261,6 +262,8 @@ export function IdePage({
   }, [pdlReady, pdlRuntime, pdlSource, preparationMode, sourceFiles]);
 
   const activePreparedCsv = preparationMode === "pdl" ? pdlPreparation.preparedCsv : sqlPreparedCsv;
+  const activePreparedPath =
+    preparationMode === "pdl" ? pdlPreparation.preparedArtifact?.path ?? IDE_OUTPUT_PATH : IDE_OUTPUT_PATH;
   const activeRuntimeFiles = React.useMemo(() => {
     if (preparationMode === "pdl") {
       return pdlPreparation.runtimeFiles;
@@ -455,7 +458,7 @@ export function IdePage({
               </span>
               <span>
                 <strong>Artifact</strong>
-                {IDE_OUTPUT_PATH}
+                {activePreparedPath}
               </span>
               <span>
                 <strong>Rows</strong>
@@ -544,7 +547,7 @@ export function IdePage({
           <div className="panel-header">
             <span>
               <Rows3 size={16} aria-hidden="true" />
-              {IDE_OUTPUT_PATH}
+              {activePreparedPath}
             </span>
             <small>{preparedMeta}</small>
           </div>
@@ -617,11 +620,13 @@ function runPdlPreparation(
       ...sourceFiles,
       ...(pdlResult.files ?? {}),
     };
+    const preparedArtifact = selectSavedCsvArtifact(pdlResult.files, IDE_OUTPUT_PATH);
 
     return {
       pdlResult,
       pdlDiagnostics: pdlEditorResponse.diagnostics,
-      preparedCsv: runtimeFiles[IDE_OUTPUT_PATH] ?? "",
+      preparedCsv: preparedArtifact?.csv ?? "",
+      preparedArtifact,
       runtimeFiles,
       error: pdlEditorResponse.error ?? pdlResult.error ?? null,
     };
@@ -679,6 +684,7 @@ function emptyPdlPreparationSnapshot(sourceFiles: Record<string, string>): PdlPr
     pdlResult: null,
     pdlDiagnostics: [],
     preparedCsv: "",
+    preparedArtifact: null,
     runtimeFiles: sourceFiles,
     error: null,
   };

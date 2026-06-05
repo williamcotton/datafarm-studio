@@ -28,7 +28,13 @@ import {
   ZONE_SUMMARY_PATH,
 } from "../interactivityDemoData";
 import type { AlgrafEmitPayload, DashboardContext, InteractivitySnapshot, RuntimeState } from "../studioTypes";
-import { countDataRows, diagnosticsForAlgrafEditor, emptyInteractivitySnapshot, errorMessage } from "../studioUtils";
+import {
+  countDataRows,
+  diagnosticsForAlgrafEditor,
+  emptyInteractivitySnapshot,
+  errorMessage,
+  hasSavedCsvArtifact,
+} from "../studioUtils";
 
 export function InteractivityDemoPage({
   algrafRuntime,
@@ -454,8 +460,9 @@ function runInteractivityDemo(
       programPath: INTERACTIVITY_PDL_PATH,
     });
     const runtimeFiles = interactivityRuntimeFiles(rawCsv, pdlResult);
-    const selectorResult = runtimeFiles[ZONE_SUMMARY_PATH] ? algrafRuntime.render(selectorAlgrafSource, runtimeFiles) : null;
-    const receiverResult = runtimeFiles[ACTIVE_RANKINGS_PATH] ? algrafRuntime.render(receiverAlgrafSource, runtimeFiles) : null;
+    const hasPreparedCsv = hasSavedCsvArtifact(pdlResult.files);
+    const selectorResult = hasPreparedCsv ? algrafRuntime.render(selectorAlgrafSource, runtimeFiles) : null;
+    const receiverResult = hasPreparedCsv ? algrafRuntime.render(receiverAlgrafSource, runtimeFiles) : null;
 
     return {
       pdlResult,

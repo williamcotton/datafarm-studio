@@ -3,6 +3,11 @@ import type { PdlEditorServiceResult, PdlNamedOutput, PdlRuntimeDiagnostic } fro
 
 import type { InteractivitySnapshot, StepSnapshot } from "./studioTypes";
 
+export interface SavedCsvArtifact {
+  path: string;
+  csv: string;
+}
+
 export function pdlRuntimeDiagnosticsForSnapshot(snapshot: StepSnapshot): PdlRuntimeDiagnostic[] {
   return snapshot.pdlDisplay?.diagnostics ?? [];
 }
@@ -64,6 +69,27 @@ export function csvCell(value: string): string {
 export function countDataRows(csv: string): number {
   const lines = csv.trim().split(/\r?\n/).filter(Boolean);
   return Math.max(0, lines.length - 1);
+}
+
+export function selectSavedCsvArtifact(
+  savedFiles: Record<string, string> | undefined,
+  preferredPath: string,
+): SavedCsvArtifact | null {
+  const entries = savedCsvEntries(savedFiles);
+  const preferred = entries.find(([path]) => path === preferredPath);
+  const selected = preferred ?? entries[0] ?? null;
+
+  return selected ? { path: selected[0], csv: selected[1] } : null;
+}
+
+export function hasSavedCsvArtifact(savedFiles: Record<string, string> | undefined): boolean {
+  return savedCsvEntries(savedFiles).length > 0;
+}
+
+function savedCsvEntries(savedFiles: Record<string, string> | undefined): Array<[string, string]> {
+  return Object.entries(savedFiles ?? {})
+    .filter(([path, value]) => path.toLowerCase().endsWith(".csv") && value.length > 0)
+    .sort(([left], [right]) => left.localeCompare(right));
 }
 
 export function formatBytes(length: number): string {
