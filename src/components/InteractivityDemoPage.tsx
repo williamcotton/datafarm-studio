@@ -1,5 +1,4 @@
 import React from "react";
-import { AlgrafEditor } from "algraf-editor";
 import type { AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
 import {
   AlertCircle,
@@ -16,6 +15,7 @@ import type { PdlContextValue, PdlEditorServiceResult, PdlRunResult, PdlRuntime 
 
 import { DataPanel } from "./DataPanel";
 import { Metric } from "./Metric";
+import { AlgrafEditor } from "../AlgrafEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import {
   ACTIVE_RANKINGS_PATH,

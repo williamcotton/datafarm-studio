@@ -1,5 +1,4 @@
 import React from "react";
-import { AlgrafEditor } from "algraf-editor";
 import type { AlgrafDiagnostic, AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import "monaco-editor/min/vs/editor/editor.main.css";
@@ -8,6 +7,7 @@ import { AlertCircle, BarChart3, CheckCircle2, Rows3, SlidersHorizontal, Table2 
 import { PdlEditor } from "pdl-editor";
 import type { PdlContextValue, PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
+import { AlgrafEditor } from "../AlgrafEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import type { RuntimeState } from "../studioTypes";
 import {
