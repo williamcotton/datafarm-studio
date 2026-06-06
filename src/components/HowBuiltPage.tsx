@@ -1,5 +1,4 @@
 import React from "react";
-import { AlgrafEditor } from "algraf-editor";
 import type { AlgrafDiagnostic, AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
 import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import "monaco-editor/min/vs/editor/editor.main.css";
@@ -8,6 +7,7 @@ import { AlertCircle, BarChart3, CheckCircle2, Rows3, SlidersHorizontal, Table2 
 import { PdlEditor } from "pdl-editor";
 import type { PdlContextValue, PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
+import { AlgrafEditor } from "../AlgrafEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import type { RuntimeState } from "../studioTypes";
 import {
@@ -68,10 +68,17 @@ import { loadAlgrafRuntime, type AlgrafRuntime } from "algraf-wasm";
 
 import { PdlEditor } from "pdl-editor";
 import { AlgrafEditor } from "algraf-editor";
+import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
+import onigasmWasmUrl from "onigasm/lib/onigasm.wasm?url";
 import { publicAssetUrl } from "./publicAssets";
 
 loadPdlRuntime({ wasmUrl: publicAssetUrl("wasm/pdl.wasm") });
-loadAlgrafRuntime({ wasmUrl: publicAssetUrl("wasm/algraf.wasm") });`;
+loadAlgrafRuntime({ wasmUrl: publicAssetUrl("wasm/algraf.wasm") });
+
+const algrafSetupOptions = {
+  createEditorWorker: () => new EditorWorker(),
+  onigasmWasmUrl,
+};`;
 
 const BUILD_STATE_SOURCE = `const [visibleDays, setVisibleDays] = React.useState(4);
 
@@ -135,6 +142,7 @@ const BUILD_EDITOR_SOURCE = `<PdlEditor
   runtime={algrafRuntime}
   files={runtimeFiles}
   diagnostics={chart.diagnostics}
+  setupOptions={algrafSetupOptions}
 />`;
 
 const BUILD_VIEW_SOURCE = `<div
@@ -246,7 +254,7 @@ const BUILD_STEPS: BuildStep[] = [
     title: "Render the language editors as controlled React components",
     body: [
       "The editor components are normal React inputs over host-owned strings. The live PDL and Algraf editors above are editable, so each keystroke updates the same source string the runtimes consume.",
-      "The host passes `value`, `runtime`, `files`, and diagnostics. The editor packages handle Monaco setup and language services.",
+      "The host passes `value`, `runtime`, `files`, diagnostics, and Algraf's worker and Onigasm setup assets. The editor packages handle Monaco registration and language services.",
     ],
     source: BUILD_EDITOR_SOURCE,
     height: 300,

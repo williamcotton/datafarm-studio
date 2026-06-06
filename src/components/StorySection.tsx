@@ -1,10 +1,10 @@
 import type React from "react";
-import { AlgrafEditor } from "algraf-editor";
 import type { AlgrafDiagnostic, AlgrafRuntime } from "algraf-wasm";
 import { AlertCircle, BarChart3, CheckCircle2, LoaderCircle, Rows3, Workflow } from "lucide-react";
 import { PdlEditor } from "pdl-editor";
 import type { PdlEditorDiagnostic, PdlRuntime } from "pdl-wasm";
 
+import { AlgrafEditor } from "../AlgrafEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import { modelUriForProgramPath } from "../storyWorkflow";
 import type { StoryBundle, StoryStep } from "../storyBundles";

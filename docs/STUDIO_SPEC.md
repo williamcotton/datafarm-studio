@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.13.0
+Status: 0.14.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.13.0. It is a Vite/React application
+The current implementation is version 0.14.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
 client-side IDE surface with PDL and SQL preparation modes, two bundled case
 studies, a dedicated reactive interactivity lab, browser-local SQL.js
@@ -121,6 +121,12 @@ Version 0.13.0 keeps the v0.12 runtime and editor workflow and cleans up the
 visible Studio copy across Landing, IDE, Case Studies, Docs, Docs How Built,
 Labs Interactivity, and case-study metadata. The Case Studies index introduces
 case studies as inspectable workflows rather than migration artifacts.
+
+Version 0.14.0 updates the Algraf browser package surface to
+`algraf-wasm@0.68.5` and `algraf-editor@0.68.5`, supplies the host-owned
+Onigasm and Monaco worker assets required by the Algraf editor package, and
+changes the default WASM sync path so `npm run dev` and `npm run build` serve
+the WASM files shipped by the installed browser runtime packages.
 
 The current Case Studies section contains:
 
@@ -267,7 +273,7 @@ PDL editor and runtime integration are consumed from the published
 `pdl-editor@0.30.0` and `pdl-wasm@0.30.0` packages.
 
 Algraf editor and runtime integration are consumed from the published
-`algraf-editor@0.67.0` and `algraf-wasm@0.67.0` packages.
+`algraf-editor@0.68.5` and `algraf-wasm@0.68.5` packages.
 
 Raw data editing lives in `src/DataEditor.tsx`.
 
@@ -283,7 +289,10 @@ The Landing, IDE, Case Studies, Docs, and route link components live under
 Bundled stories live under `src/datafarm-solar/` and
 `src/datafarm-bikeshare/`.
 
-Production WASM files are served from `public/wasm/`.
+Production WASM files are served from `public/wasm/`. The default asset sync
+copies package-local runtime WASM from `node_modules` into that public
+directory; coordinated cross-repo checks MAY overwrite those files with locally
+built sibling WASM via `npm run copy:wasm`.
 
 GitHub Pages deployment is defined in
 `.github/workflows/studio-pages.yml`.
@@ -570,10 +579,10 @@ graph that records which runtime produced each generated file.
 ## 9. PDL Runtime Integration
 
 Studio loads PDL from `public/wasm/pdl.wasm` using the Vite public base path.
-Version 0.13.0 continues to consume `pdl-wasm@0.30.0` and
+Version 0.14.0 continues to consume `pdl-wasm@0.30.0` and
 `pdl-editor@0.30.0` from published npm packages.
 
-Version 0.13.0 requires a PDL v0.30-compatible browser package surface and a
+Version 0.14.0 requires a PDL v0.30-compatible browser package surface and a
 v0.30-compatible PDL source/WASM runtime. Bundled case-study story sources MUST
 remain compatible with the current story workflow. Because `state` is a PDL
 declaration keyword in this runtime surface, bundled PDL sources that reference
@@ -628,6 +637,10 @@ each run and MUST surface PDL runtime diagnostics returned from that run.
 
 Studio loads Algraf from `public/wasm/algraf.wasm` using the Vite public base
 path.
+
+Version 0.14.0 consumes `algraf-wasm@0.68.5` and `algraf-editor@0.68.5` from
+published npm packages. The served Algraf WASM SHOULD come from the installed
+`algraf-wasm` package during ordinary Studio development and production builds.
 
 The Algraf WASM module MUST expose:
 
@@ -946,7 +959,7 @@ margins, and card-like rounded panel styling.
 
 ## 16. Data Science IDE Direction
 
-Version 0.13.0 defines the current IDE surface as a browser-local, ephemeral
+Version 0.13.0 introduced the current IDE surface as a browser-local, ephemeral
 workspace. It MUST include:
 
 - local/manual CSV editing;
@@ -1086,16 +1099,15 @@ When a future package, extension, manifest, or generated doc carries a Studio
 version, it MUST be included in the version alignment checklist.
 
 PDL and Algraf runtime versions are external dependencies. Studio plans and pull
-requests SHOULD document whether they use latest release WASM assets or locally
+requests SHOULD document whether they use package-local WASM assets or locally
 built sibling artifacts.
 
-For version 0.13.0 package validation, Studio uses published npm installs of
-`pdl-wasm@0.30.0`, `pdl-editor@0.30.0`, `algraf-wasm@0.67.0`, and
-`algraf-editor@0.67.0`. Runtime loading still uses `public/wasm/pdl.wasm`,
+For version 0.14.0 package validation, Studio uses published npm installs of
+`pdl-wasm@0.30.0`, `pdl-editor@0.30.0`, `algraf-wasm@0.68.5`, and
+`algraf-editor@0.68.5`. Runtime loading still uses `public/wasm/pdl.wasm`,
 `public/wasm/algraf.wasm`, and `public/wasm/sql-wasm.wasm`, populated by
-`npm run copy:wasm` for coordinated local runtime validation or by
-`npm run build:wasm` for downloaded release assets plus the packaged SQL.js
-WASM asset.
+`npm run copy:package-wasm` for package-pinned runtime validation or by
+`npm run copy:wasm` for coordinated local sibling runtime validation.
 
 ## 22. Build And Deployment
 
@@ -1104,7 +1116,11 @@ WASM asset.
 `npm run check` MUST run TypeScript with `tsc --noEmit`.
 
 `npm run build:wasm` MUST place production PDL, Algraf, and SQL.js WASM assets
-in `public/wasm/`.
+in `public/wasm/` from the installed runtime packages and SQL.js package.
+
+`npm run copy:package-wasm` MUST copy packaged WASM artifacts from
+`node_modules/pdl-wasm/dist/pdl.wasm`, `node_modules/algraf-wasm/dist/algraf.wasm`,
+and `node_modules/sql.js/dist/sql-wasm.wasm` into `public/wasm/`.
 
 `npm run copy:wasm` MUST copy locally built sibling WASM artifacts from
 `../pdl` and `../algraf` into `public/wasm/` and copy SQL.js WASM from
@@ -1146,7 +1162,7 @@ authorization, and storage boundaries before implementation.
 
 ## 24. Performance
 
-Version 0.13.0 runs a landing page, an initial IDE workspace, small bundled case
+Version 0.14.0 runs a landing page, an initial IDE workspace, small bundled case
 studies, a small reactive demo, and an in-memory SQL.js workflow; it does not
 define strict performance budgets.
 
@@ -1297,6 +1313,9 @@ workflow.
 
 Version 0.13.0 cleans up visible Studio page copy and case-study copy while
 preserving the v0.12 runtime, editor, routing, and workflow behavior.
+
+Version 0.14.0 aligns the served WASM assets with the installed browser runtime
+packages and updates the Algraf editor setup contract for `algraf-editor@0.68.5`.
 
 Future versions should move from fixed case studies toward:
 
