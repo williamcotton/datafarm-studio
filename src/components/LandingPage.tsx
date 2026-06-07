@@ -85,11 +85,13 @@ export function LandingPage({
     <div className="landing-page">
       <section className="landing-hero">
         <div className="landing-hero-copy">
-          <p className="eyebrow">Browser workspace for analytical projects</p>
-          <h1>Datafarm Studio</h1>
+          <p className="eyebrow">Datafarm Studio</p>
+          <h1>Two languages. Two runtimes.</h1>
           <p>
-            Prepare data with PDL or SQL, render charts with Algraf, inspect the intermediate files, and keep
-            diagnostics close to the work.
+            PDL prepares data. Algraf renders charts. Each is its own small language with its own parser,
+            language server, and WASM runtime — the two editors below are driven by independent toolchains.
+            The same .pdl and .ag files also build as native Rust CLIs that stream Arrow IPC between stages
+            for fast pipelines on large data.
           </p>
           <div className="hero-actions">
             <RouteLink className="primary-button" onNavigate={onNavigate} to="/ide">
@@ -248,13 +250,14 @@ export function LandingPage({
         <div className="landing-cli-copy">
           <p className="eyebrow">
             <Terminal size={14} aria-hidden="true" />
-            Also runs on your terminal
+            Same files, native binaries
           </p>
-          <h2>Same languages, native Rust CLI.</h2>
+          <h2>Native Rust CLIs, Arrow IPC between them.</h2>
           <p>
-            The PDL and Algraf files you edit here also run as standalone Rust binaries. Native execution
-            adds Polars-backed engines, Arrow IPC streaming on stdin/stdout, and Unix-pipeline composition
-            with the rest of your toolbox.
+            The .pdl and .ag files you edit in the browser also build as standalone Rust binaries. Pipe PDL's
+            output straight into Algraf as Arrow IPC — columnar batches over stdout/stdin, no CSV roundtrip,
+            no re-parsing between stages. Stays fast on large row sets, composes with the rest of your Unix
+            toolbox.
           </p>
           <div className="landing-cli-links">
             <a href="https://williamcotton.github.io/pdl/">PDL site</a>

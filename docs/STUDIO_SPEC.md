@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.17.0
+Status: 0.18.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.17.0. It is a Vite/React application
+The current implementation is version 0.18.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
 client-side IDE surface with PDL and SQL preparation modes, two bundled case
 studies, a dedicated reactive interactivity lab, browser-local SQL.js
@@ -127,6 +127,16 @@ Version 0.14.0 updates the Algraf browser package surface to
 Onigasm and Monaco worker assets required by the Algraf editor package, and
 changes the default WASM sync path so `npm run dev` and `npm run build` serve
 the WASM files shipped by the installed browser runtime packages.
+
+Version 0.18.0 rewrites the landing-page hero around "Two languages. Two
+runtimes." and folds the native Rust CLI and Arrow IPC story into the hero
+blurb so the headline is grounded immediately. The landing CLI strip below
+the section grid is rewritten so the Arrow IPC pipe between PDL and Algraf is
+its headline claim rather than a generic "also runs on your terminal"
+footnote. The hero `h1` font size is tuned down from the global 64px default
+to a clamped scale that sits proportionate to the live preview shell beside
+it. Routes, story bundles, runtime adapter contracts, story workflow helpers,
+WASM ABIs, panel structures, and section-card destinations are unchanged.
 
 The current Case Studies section contains:
 
