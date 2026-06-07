@@ -1,59 +1,85 @@
 # Datafarm Studio
 
 Datafarm Studio is the browser workspace for Datafarm's data-story workflow. It
-currently ships as a Vite/React app with two editable case studies: Solar and
-Bikeshare. Each case study exposes raw data, PDL preparation code, Algraf chart
-code, prepared CSV output, and the rendered chart in one page.
-
-The long-term project direction is a data science IDE for building, running,
-debugging, visualizing, and publishing Datafarm projects. The current case
-studies are the first marketing and workflow slice of that IDE: they prove the
-PDL -> Algraf browser runtime path and provide realistic stories to preserve as
-the product surface grows.
-
-The normative reference is [`docs/STUDIO_SPEC.md`](docs/STUDIO_SPEC.md).
-Versioned work plans live in [`docs/`](docs/) as `V0_<minor>_PLAN.md` files.
+ships as a Vite/React app with a landing page, a free-form IDE, two editable
+case studies (Solar and Bikeshare), documentation pages including a "How Built"
+walkthrough, and an interactivity lab. Each case study exposes raw data, PDL
+preparation code, Algraf chart code, prepared CSV output, and the rendered
+chart in one page.
 
 ## A tour in five panels
 
-The shipped application is organized around the same repeated analytical unit in
-each story.
+Studio is organized around the same repeated analytical unit: raw data flows
+through PDL into a prepared CSV, Algraf renders it as a chart, and narrative
+wraps the result. The snippets below are a deliberately tiny version of that
+loop — the actual landing page runs the same pipeline live in the browser.
 
 ## 1. Raw data
 
-Raw CSV and GeoJSON files are bundled into the app and opened in Monaco editors.
-Edits stay in browser memory and feed the runtime file map used by PDL and
-Algraf.
+Raw CSV (and GeoJSON, etc.) files are bundled into the app and opened in
+Monaco editors. Edits stay in browser memory and feed the runtime file map
+used by PDL and Algraf.
 
-Solar includes state capacity, seasonal generation, and a county basemap.
-Bikeshare includes raw trips, station metadata, and daily weather.
+```csv
+day,value
+1,18
+2,34
+3,48
+4,61
+```
 
 ## 2. PDL preparation
 
-Each section has a `.pdl` file that prepares the smallest table needed by that
-section. The default run uses a story-level PDL program with named outputs; when
-a user edits any per-section PDL source, Studio switches to running each section
-program independently so local edits are reflected immediately.
+A `.pdl` file declares the transform. It loads the source by filename, applies
+ordered stages, and saves a named output that the chart will read.
+
+```pdl
+output sorted_days =
+  load "day_value.csv"
+  | select day, value
+  | sort value desc
+  | save "sorted_days.csv"
+```
 
 ## 3. Prepared output
 
-PDL runs in the browser through `public/wasm/pdl.wasm`. Studio displays the CSV
-produced for the active section and also passes that CSV to Algraf as both
-`prepared.csv` and the section's expected data filename.
+PDL runs in the browser through `public/wasm/pdl.wasm` and returns the saved
+table. Studio displays it as CSV and also exposes it to Algraf through the
+runtime file map under the name the chart expects.
 
-Studio consumes the published `pdl-wasm@0.30.0` and `pdl-editor@0.30.0` npm
-packages. Runtime WASM still loads from `public/wasm/pdl.wasm`, populated by
-the installed `pdl-wasm` package during ordinary dev/build runs or by
+```csv
+day,value
+4,61
+3,48
+2,34
+1,18
+```
+
+Studio consumes the published `pdl-wasm@0.39.0` and `pdl-editor@0.39.0` npm
+packages. Runtime WASM loads from `public/wasm/pdl.wasm`, populated by the
+installed `pdl-wasm` package during ordinary dev/build runs or by
 `npm run copy:wasm` for coordinated local runtime validation.
 
 ## 4. Algraf chart
 
-Each section has a `.ag` file backed by Algraf editor services and runtime
-rendering. Algraf runs in the browser through `public/wasm/algraf.wasm`, reads
-the in-memory files supplied by Studio, and returns deterministic SVG.
+A `.ag` file declares the chart. It points at the prepared CSV, declares the
+algebraic frame, picks scales, and draws one or more geometries. Algraf runs
+in the browser through `public/wasm/algraf.wasm` and returns deterministic
+SVG.
+
+```algraf
+Chart(data: "sorted_days.csv", width: 520, height: 240) {
+    Scale(fill: value, gradient: ["#d8f3dc", "#145f52"], label: "Value")
+    Scale(axis: x, type: "categorical")
+
+    Space(day * value) {
+        Bar(fill: value, tooltip: [day, value])
+    }
+}
+```
 
 Studio consumes the published `algraf-wasm@0.68.5` and
-`algraf-editor@0.68.5` npm packages. Runtime WASM still loads from
+`algraf-editor@0.68.5` npm packages. Runtime WASM loads from
 `public/wasm/algraf.wasm`, populated by the installed `algraf-wasm` package
 during ordinary dev/build runs. Use `npm run copy:wasm` after building sibling
 WASM artifacts only when coordinated local runtime validation needs local
@@ -61,45 +87,16 @@ WASM artifacts only when coordinated local runtime validation needs local
 
 ## 5. Story evidence
 
-The current UI wraps every run in narrative evidence, conclusions, headline
-metrics, and story navigation. This area is product content, not the core IDE.
-Future IDE work should preserve it as a marketing/publishing surface while
-building project, file, execution, data, and preview tools around the same
-runtime contracts.
+Studio wraps the run in narrative prose so the chart reads as a claim rather
+than just an image. Each section has a short headline, supporting evidence,
+and a conclusion that ties back to the data the user can edit above.
 
-## Run locally
+```markdown
+# Sorted days
 
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start Vite:
-
-```bash
-npm run dev
-```
-
-Type-check:
-
-```bash
-npm run check
-```
-
-Build with production WASM assets from the latest PDL and Algraf releases:
-
-```bash
-npm run build
-```
-
-Use locally built sibling WASM artifacts when coordinating with `../pdl` or
-`../algraf`:
-
-```bash
-npm run copy:wasm
-npm run check
-npm run dev
+After ranking each day by value, the busiest days cluster at the end of the
+window. The prepared CSV makes the ordering auditable, and the chart shows
+the gap between top and bottom days at a glance.
 ```
 
 ## Runtime model
@@ -117,33 +114,29 @@ The host is responsible for:
 - passing prepared PDL outputs into Algraf file maps;
 - rendering returned SVG in the browser.
 
-## Project layout
+## Native CLI companions
 
-| Path | Responsibility |
-| --- | --- |
-| `src/App.tsx` | Main Studio state container, story switching, runtime loading |
-| `src/components/` | Shell controls, story panels, story sections, interactivity page |
-| `src/storyWorkflow.ts` | Story-level and per-section workflow execution helpers |
-| `src/studioTypes.ts` | Shared Studio runtime, snapshot, and interactivity types |
-| `src/studioUtils.ts` | Shared diagnostics, CSV, formatting, and snapshot helpers |
-| `src/interactivityDemoData.ts` | Reactive demo defaults, sources, and constants |
-| `src/storyBundles.ts` | Solar and Bikeshare story metadata, default source maps, raw files |
-| `src/PdlEditor.tsx` | Monaco editor host for PDL |
-| `src/pdlEditorProviders.ts` | Monaco provider adapters backed by PDL editor services |
-| `src/pdlRuntime.ts` | Browser loader and JSON ABI wrapper for `pdl.wasm` |
-| `src/AlgrafEditor.tsx` | Monaco editor host for Algraf |
-| `src/algrafEditorProviders.ts` | Monaco provider adapters backed by Algraf editor services |
-| `src/algrafRuntime.ts` | Browser loader and JSON ABI wrapper for `algraf.wasm` |
-| `src/DataEditor.tsx` | Monaco editor host for bundled data files |
-| `src/datafarm-solar/` | Solar case-study source, data, section outputs, story program |
-| `src/datafarm-bikeshare/` | Bikeshare case-study source, data, section outputs, story program |
-| `public/wasm/` | Browser WASM artifacts loaded at runtime |
-| `docs/` | Studio specification and versioned work plans |
+The `.pdl` and `.ag` files Studio edits are the same source files consumed by
+the standalone PDL and Algraf Rust binaries. The CLI side adds a Polars 0.53
+native execution engine, Arrow IPC streaming on stdin/stdout, additional
+formats (Parquet, JSON Lines, Arrow file/stream, SQLite, GeoJSON), and Unix
+pipeline composition with the rest of your toolbox.
 
-## Release discipline
+Install both binaries with Homebrew:
 
-Behavioral changes should update the active `docs/V0_<minor>_PLAN.md`, the
-relevant section of `docs/STUDIO_SPEC.md`, implementation code, and validation
-commands together. If a change depends on new PDL or Algraf runtime behavior,
-document the producer version or local-build assumption in the plan and pull
-request.
+```bash
+brew tap williamcotton/pdl && brew install williamcotton/pdl/pdl
+brew tap williamcotton/algraf && brew install williamcotton/algraf/algraf
+```
+
+Then a Studio pipeline can run end to end natively, no intermediate files:
+
+```bash
+pdl run prep.pdl --stdout-format arrow-stream \
+  | algraf render chart.ag --data - --data-format arrow-stream \
+  --output chart.svg
+```
+
+See [`williamcotton/pdl`](https://github.com/williamcotton/pdl) and
+[`williamcotton/algraf`](https://github.com/williamcotton/algraf) for the full
+CLI, LSP, and editor surfaces.

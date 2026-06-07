@@ -1,6 +1,6 @@
 import React from "react";
 import type { AlgrafDiagnostic, AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
-import { AlertCircle, BarChart3, BookOpenText, CheckCircle2, Database, FlaskConical, FolderKanban, Rows3, Table2, Workflow } from "lucide-react";
+import { AlertCircle, BarChart3, BookOpenText, CheckCircle2, Database, FlaskConical, FolderKanban, Rows3, Table2, Terminal, Workflow } from "lucide-react";
 import type { PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
 import { DataPanel } from "./DataPanel";
@@ -240,8 +240,33 @@ export function LandingPage({
         <div className="landing-section-card landing-section-card-static">
           <Database size={18} aria-hidden="true" />
           <strong>Runtime Model</strong>
-          <span>Studio runs PDL, Algraf, and SQL.js in the browser and keeps their diagnostics visible.</span>
+          <span>Studio runs PDL, Algraf, and SQL.js in the browser; the same .pdl and .ag files also run as native Rust CLIs with Polars and Arrow IPC streaming.</span>
         </div>
+      </section>
+
+      <section className="landing-cli-strip" aria-label="Native CLI">
+        <div className="landing-cli-copy">
+          <p className="eyebrow">
+            <Terminal size={14} aria-hidden="true" />
+            Also runs on your terminal
+          </p>
+          <h2>Same languages, native Rust CLI.</h2>
+          <p>
+            The PDL and Algraf files you edit here also run as standalone Rust binaries. Native execution
+            adds Polars-backed engines, Arrow IPC streaming on stdin/stdout, and Unix-pipeline composition
+            with the rest of your toolbox.
+          </p>
+          <div className="landing-cli-links">
+            <a href="https://williamcotton.github.io/pdl/">PDL site</a>
+            <a href="https://williamcotton.github.io/algraf/">Algraf site</a>
+            <a href="https://github.com/williamcotton/datafarm">Datafarm on GitHub</a>
+          </div>
+        </div>
+        <pre className="landing-cli-pipe">
+          <code>{`pdl run prep.pdl --stdout-format arrow-stream \\
+  | algraf render chart.ag --data - --data-format arrow-stream \\
+  --output chart.svg`}</code>
+        </pre>
       </section>
     </div>
   );

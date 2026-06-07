@@ -1,6 +1,6 @@
 # Datafarm Studio Detailed Specification
 
-Status: 0.14.0
+Status: 0.17.0
 Audience: implementers, product engineers, runtime integrators, UI engineers, editor-service authors, and test authors
 Scope: browser-based Datafarm workspace, case-study publishing surface, PDL and Algraf WASM integration, Monaco editor host, in-memory project model, and planned data science IDE surface
 
@@ -12,7 +12,7 @@ Studio is the browser application that brings PDL data preparation, Algraf
 visualization, editable source files, data previews, diagnostics, and published
 data stories into one workspace.
 
-The current implementation is version 0.14.0. It is a Vite/React application
+The current implementation is version 0.17.0. It is a Vite/React application
 with a Datafarm landing page, route-aware top-level navigation, an initial
 client-side IDE surface with PDL and SQL preparation modes, two bundled case
 studies, a dedicated reactive interactivity lab, browser-local SQL.js

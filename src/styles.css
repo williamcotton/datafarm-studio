@@ -506,6 +506,82 @@ p {
   color: #d46658;
 }
 
+.landing-cli-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: stretch;
+  gap: 22px;
+  padding: 22px;
+  border: 1px solid #dce5e2;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(34, 48, 54, 0.06);
+}
+
+.landing-cli-copy {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+}
+
+.landing-cli-copy h2 {
+  margin: 0;
+  color: #142128;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.landing-cli-copy p {
+  margin: 0;
+  color: #4f6068;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.landing-cli-copy .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.landing-cli-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.landing-cli-links a {
+  color: #176c5c;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.landing-cli-links a:hover {
+  text-decoration: underline;
+}
+
+.landing-cli-pipe {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid #e0e6ea;
+  border-radius: 7px;
+  background: #fbfbf9;
+  color: #1d2a30;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 0.86rem;
+  line-height: 1.55;
+  overflow: auto;
+  white-space: pre;
+}
+
+.landing-cli-pipe code {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .case-studies-hero,
 .docs-hero,
 .ide-hero {
@@ -2257,6 +2333,7 @@ p {
   .build-hero,
   .control-grid,
   .landing-section-grid,
+  .landing-cli-strip,
   .case-study-card-grid,
   .docs-grid,
   .ide-workspace-grid,
