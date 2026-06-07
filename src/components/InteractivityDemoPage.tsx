@@ -10,12 +10,12 @@ import {
   Table2,
   Workflow,
 } from "lucide-react";
-import { PdlEditor } from "pdl-editor";
 import type { PdlContextValue, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
 import { DataPanel } from "./DataPanel";
 import { Metric } from "./Metric";
 import { AlgrafEditor } from "../AlgrafEditor";
+import { PdlEditor } from "../PdlEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import {
   ACTIVE_RANKINGS_PATH,

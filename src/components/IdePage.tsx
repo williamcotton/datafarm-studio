@@ -2,11 +2,11 @@ import React from "react";
 import type { AlgrafDiagnostic, AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
 import initSqlJs, { type Database as SqlJsDatabase, type SqlJsStatic } from "sql.js";
 import { AlertCircle, BarChart3, CheckCircle2, Database, FileUp, Play, Rows3, Table2, Workflow } from "lucide-react";
-import { PdlEditor } from "pdl-editor";
 import type { PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
 import { DataPanel } from "./DataPanel";
 import { AlgrafEditor } from "../AlgrafEditor";
+import { PdlEditor } from "../PdlEditor";
 import { SqlEditor } from "../SqlEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import { publicAssetUrl } from "../publicAssets";

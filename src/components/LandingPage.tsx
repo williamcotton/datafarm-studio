@@ -1,12 +1,12 @@
 import React from "react";
 import type { AlgrafDiagnostic, AlgrafRenderResult, AlgrafRuntime } from "algraf-wasm";
 import { AlertCircle, BarChart3, BookOpenText, CheckCircle2, Database, FlaskConical, FolderKanban, Rows3, Table2, Workflow } from "lucide-react";
-import { PdlEditor } from "pdl-editor";
 import type { PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
 import { DataPanel } from "./DataPanel";
 import { RouteLink } from "./RouteLink";
 import { AlgrafEditor } from "../AlgrafEditor";
+import { PdlEditor } from "../PdlEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import type { RuntimeState } from "../studioTypes";
 import { countDataRows, diagnosticsForAlgrafEditor, errorMessage, selectSavedCsvArtifact, type SavedCsvArtifact } from "../studioUtils";

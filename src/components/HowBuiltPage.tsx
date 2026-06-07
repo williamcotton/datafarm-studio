@@ -4,10 +4,10 @@ import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
 import "monaco-editor/min/vs/editor/editor.main.css";
 import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import { AlertCircle, BarChart3, CheckCircle2, Rows3, SlidersHorizontal, Table2 } from "lucide-react";
-import { PdlEditor } from "pdl-editor";
 import type { PdlContextValue, PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
 import { AlgrafEditor } from "../AlgrafEditor";
+import { PdlEditor } from "../PdlEditor";
 import { DATAFARM_EDITOR_THEME, DATAFARM_EDITOR_THEME_NAME } from "../editorTheme";
 import type { RuntimeState } from "../studioTypes";
 import {
@@ -75,10 +75,12 @@ import { publicAssetUrl } from "./publicAssets";
 loadPdlRuntime({ wasmUrl: publicAssetUrl("wasm/pdl.wasm") });
 loadAlgrafRuntime({ wasmUrl: publicAssetUrl("wasm/algraf.wasm") });
 
-const algrafSetupOptions = {
+const pdlSetupOptions = {
   createEditorWorker: () => new EditorWorker(),
   onigasmWasmUrl,
-};`;
+};
+
+const algrafSetupOptions = pdlSetupOptions;`;
 
 const BUILD_STATE_SOURCE = `const [visibleDays, setVisibleDays] = React.useState(4);
 
@@ -134,6 +136,7 @@ const BUILD_EDITOR_SOURCE = `<PdlEditor
   runtime={pdlRuntime}
   files={{ "simple_series.csv": SIMPLE_SERIES_CSV }}
   diagnostics={pdlDiagnostics.diagnostics}
+  setupOptions={pdlSetupOptions}
 />
 
 <AlgrafEditor
@@ -254,7 +257,7 @@ const BUILD_STEPS: BuildStep[] = [
     title: "Render the language editors as controlled React components",
     body: [
       "The editor components are normal React inputs over host-owned strings. The live PDL and Algraf editors above are editable, so each keystroke updates the same source string the runtimes consume.",
-      "The host passes `value`, `runtime`, `files`, diagnostics, and Algraf's worker and Onigasm setup assets. The editor packages handle Monaco registration and language services.",
+      "The host passes `value`, `runtime`, `files`, diagnostics, and the worker and Onigasm setup assets. The editor packages handle Monaco registration and language services.",
     ],
     source: BUILD_EDITOR_SOURCE,
     height: 300,
