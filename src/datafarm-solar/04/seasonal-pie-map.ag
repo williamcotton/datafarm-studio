@@ -9,26 +9,22 @@ Chart(
     Theme(name: "void")
     Table points = "state_points.csv"
     Table mix = "seasonal_generation.csv"
+
+    Glyph pie(data: mix, key: [state => state], scales: "shared") {
+        Space(generation_gwh, coords: "polar", theta: "y") {
+            Scale(fill: season,
+                  range: ["Winter" => "#4E79A7", "Shoulder" => "#9C755F", "Summer" => "#F28E2B"],
+                  label: "Season")
+            Bar(fill: season, layout: "fill")
+        }
+        Scale(size: generation_gwh, range: [22, 54], label: "Annual generation (GWh)")
+    }
+
     Space(geom, projection: "albers_usa") {
         Geo(fill: "#f3f4f6", stroke: "#d1d5db", strokeWidth: 0.25)
     }
     Space(long * lat, projection: "albers_usa", data: points) {
-        Inset(data: mix,
-              match: [state => state],
-              size: generation_gwh,
-              minSize: 22,
-              maxSize: 54,
-              scales: "shared",
-              guides: false,
-              clip: "circle",
-              padding: 1) {
-            Space(generation_gwh, coords: "polar", theta: "y") {
-                Scale(fill: season,
-                      range: ["Winter" => "#4E79A7", "Shoulder" => "#9C755F", "Summer" => "#F28E2B"],
-                      label: "Season")
-                Bar(fill: season, layout: "fill")
-            }
-        }
+        pie(size: generation_gwh, clip: "circle", padding: 1)
         Text(label: state, dy: -28, size: 7, fill: "#1f2937", anchor: "middle")
     }
 }

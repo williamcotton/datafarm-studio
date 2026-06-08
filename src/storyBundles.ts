@@ -264,7 +264,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
         title: "Winter tells the truth",
         question: "Is low-sun capacity dependable through the year?",
         summary:
-          "Break each state's annual generation into Winter, Shoulder, and Summer, then map the mix as inset pies sized by annual output.",
+          "Break each state's annual generation into Winter, Shoulder, and Summer, then map the mix as glyph pies sized by annual output.",
         pdlLabel: "seasonal-mix.pdl",
         algrafLabel: "seasonal-pie-map.ag",
         dataFile: "seasonal_generation.csv",
@@ -278,7 +278,7 @@ export const STORY_BUNDLES: StoryBundle[] = [
         supportingOutputs: [{ outputName: "state_points", dataFile: "state_points.csv" }],
         evidence: [
           "The seasonal table stays long: one state-season row per slice.",
-          "The chart uses the bundled state points table to place each inset pie.",
+          "The chart uses the bundled state points table to place each glyph pie.",
           "Sun Belt winter generation is a much larger share than Snow Belt winter generation.",
         ],
         conclusion:

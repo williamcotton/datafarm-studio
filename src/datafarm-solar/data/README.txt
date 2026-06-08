@@ -4,7 +4,7 @@ The two map charts (01 bubble map, 04 seasonal pie map) reference
 
     us_counties.geojson
 
-This is the same US county basemap used by the us_city_bubbles / inset_city_pies
+This is the same US county basemap used by the us_city_bubbles / glyph pie-map
 examples. The Studio runtime serves it as a root-level virtual file, so the
 Algraf examples use the bare filename. You can point the GeoJson(...) call at
 another basemap if you prefer; a us_states.geojson works just as well with the

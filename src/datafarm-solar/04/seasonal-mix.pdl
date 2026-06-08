@@ -1,4 +1,4 @@
-// Step 04 - The stress test: seasonal generation mix per state, for inset pies.
+// Step 04 - The stress test: seasonal generation mix per state, for glyph pies.
 // The chart also reads state_points.csv from this bundle to place each pie.
 
 let seasonal =

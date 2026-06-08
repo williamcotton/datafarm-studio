@@ -244,7 +244,7 @@ seasonal
   | save "seasonal_generation.csv"
 ```
 
-### Algraf — `seasonal-pie-map.ag`  *(inset pies on a map)*
+### Algraf — `seasonal-pie-map.ag`  *(glyph pies on a map)*
 ```algraf
 Chart(data: GeoJson("us_counties.geojson"), width: 860, height: 520,
       title: "Winter tells the truth",
@@ -252,17 +252,20 @@ Chart(data: GeoJson("us_counties.geojson"), width: 860, height: 520,
     Theme(name: "void")
     Table points = "state_points.csv"
     Table mix = "seasonal_generation.csv"
+
+    Glyph pie(data: mix, key: [state => state], scales: "shared") {
+        Space(generation_gwh, coords: "polar", theta: "y") {
+            Scale(fill: season, range: ["Winter" => "#4E79A7", "Shoulder" => "#9C755F", "Summer" => "#F28E2B"], label: "Season")
+            Bar(fill: season, layout: "fill")
+        }
+        Scale(size: generation_gwh, range: [22, 54], label: "Annual generation (GWh)")
+    }
+
     Space(geom, projection: "albers_usa") {
         Geo(fill: "#f3f4f6", stroke: "#d1d5db", strokeWidth: 0.25)
     }
     Space(long * lat, projection: "albers_usa", data: points) {
-        Inset(data: mix, match: [state => state], size: generation_gwh,
-              minSize: 22, maxSize: 54, scales: "shared", guides: false, clip: "circle", padding: 1) {
-            Space(generation_gwh, coords: "polar", theta: "y") {
-                Scale(fill: season, range: ["Winter" => "#4E79A7", "Shoulder" => "#9C755F", "Summer" => "#F28E2B"], label: "Season")
-                Bar(fill: season, layout: "fill")
-            }
-        }
+        pie(size: generation_gwh, clip: "circle", padding: 1)
         Text(label: state, dy: -28, size: 7, fill: "#1f2937", anchor: "middle")
     }
 }
@@ -367,8 +370,8 @@ strings and paths, assignment-form `mutate` and `agg`, `save`,
 `pivot_longer ... names_to ... values_to`, `if_else`, `count_distinct`, joins on
 `k` / `(l, r)`; Algraf `caption:`/`subtitle:`, `Text(...)` annotations,
 `layout:"stack"`, `Space(a / b * y)` grouping, `GeoJson(...)` + `Space(geom,
-projection:)` basemaps, `Inset{ Space(count, coords:"polar") }` pies, `Label(at:,
-group:)`). Step 3 uses the supported PDL window syntax
+projection:)` basemaps, chart-scoped `Glyph pie(...) { Space(count,
+coords:"polar") }` pies invoked from a host `Space`, `Label(at:, group:)`). Step 3 uses the supported PDL window syntax
 `rank() over (order_by column desc)` to produce a 1-based rank over the whole table.
 One chart-side feature goes a step beyond the simpler examples: Step 3 uses
 `Scale(axis: y, domain: [11.5, 0.5])` to put rank 1 at the top. If a descending numeric

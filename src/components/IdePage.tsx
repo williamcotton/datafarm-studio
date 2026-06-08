@@ -5,6 +5,7 @@ import { AlertCircle, BarChart3, CheckCircle2, Database, FileUp, Play, Rows3, Ta
 import type { PdlEditorDiagnostic, PdlEditorServiceResult, PdlRunResult, PdlRuntime } from "pdl-wasm";
 
 import { DataPanel } from "./DataPanel";
+import { SqlTableViewer } from "./SqlTableViewer";
 import { AlgrafEditor } from "../AlgrafEditor";
 import { PdlEditor } from "../PdlEditor";
 import { SqlEditor } from "../SqlEditor";
@@ -468,16 +469,24 @@ export function IdePage({
           </div>
         </aside>
 
-        <DataPanel
-          className="ide-data-panel"
-          icon={<Table2 size={16} aria-hidden="true" />}
-          label={sourcePath}
-          language={sourceLanguage}
-          meta={sourceMeta}
-          modelUri={`inmemory://datafarm/ide/${encodeURIComponent(sourcePath)}`}
-          onChange={setDataSource}
-          value={dataSource}
-        />
+        {preparationMode === "sql" ? (
+          <SqlTableViewer
+            database={sqlDatabase}
+            databaseName={sqlDatabaseName}
+            refreshTrigger={sqlLastPreparedAt}
+          />
+        ) : (
+          <DataPanel
+            className="ide-data-panel"
+            icon={<Table2 size={16} aria-hidden="true" />}
+            label={sourcePath}
+            language={sourceLanguage}
+            meta={sourceMeta}
+            modelUri={`inmemory://datafarm/ide/${encodeURIComponent(sourcePath)}`}
+            onChange={setDataSource}
+            value={dataSource}
+          />
+        )}
 
         <article className="editor-panel ide-prep-panel">
           <div className="panel-header">

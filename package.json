@@ -15,8 +15,8 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "algraf-editor": "0.68.5",
-    "algraf-wasm": "0.68.5",
+    "algraf-editor": "0.72.1",
+    "algraf-wasm": "0.72.1",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.55.1",
     "monaco-editor-textmate": "^4.0.0",

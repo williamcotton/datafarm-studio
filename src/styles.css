@@ -858,6 +858,148 @@ p {
   height: 386px;
 }
 
+/* SQL Table Viewer in IDE */
+.sql-viewer-host {
+  display: flex;
+  flex-direction: column;
+  height: 386px;
+  background: #ffffff;
+  border-right: 1px solid #e2e9e6;
+  border-bottom: 1px solid #e2e9e6;
+}
+
+.sql-viewer-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: #f3f7f6;
+  border-bottom: 1px solid #e2e9e6;
+  gap: 8px;
+}
+
+.sql-viewer-select-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.sql-viewer-select {
+  width: 100%;
+  padding: 4px 24px 4px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #203036;
+  background: #ffffff;
+  border: 1px solid #cdd8d5;
+  border-radius: 0;
+  cursor: pointer;
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+.sql-viewer-select:hover {
+  border-color: #a8b8b4;
+}
+
+.sql-viewer-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.sql-viewer-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #62727a;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.sql-viewer-tab-btn:hover {
+  color: #203036;
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.sql-viewer-tab-btn.active {
+  color: #203036;
+  background: #ffffff;
+  border-color: #cdd8d5;
+  border-bottom-color: transparent;
+}
+
+.sql-viewer-content {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sql-viewer-scroll {
+  height: 100%;
+  overflow: auto;
+}
+
+.sql-viewer-scroll .sql-schema-table th,
+.sql-viewer-scroll .sql-result-table th {
+  top: 0;
+  position: sticky;
+  z-index: 1;
+  background: #f3f7f6;
+}
+
+.sql-viewer-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  gap: 10px;
+  color: #62727a;
+}
+
+.sql-viewer-empty p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 800;
+  color: #203036;
+}
+
+.sql-viewer-empty small {
+  font-size: 11px;
+  color: #82929a;
+  line-height: 1.4;
+}
+
+.sql-viewer-empty-preview {
+  padding: 32px 16px;
+  font-size: 12px;
+  color: #82929a;
+  font-style: italic;
+  text-align: center;
+}
+
+.sql-viewer-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 12px;
+  margin: 8px;
+  background: #fff5f4;
+  border: 1px solid #fbdad6;
+  color: #a33d2d;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+
 .ide-run-sql-button {
   min-height: 32px;
   padding: 0 12px;
