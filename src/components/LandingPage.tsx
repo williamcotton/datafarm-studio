@@ -89,7 +89,7 @@ export function LandingPage({
           <h1>Two languages. Two runtimes.</h1>
           <p>
             PDL prepares data. Algraf renders charts. Each is its own small language with its own parser,
-            language server, and WASM runtime — the two editors below are driven by independent toolchains.
+            language server, and WASM runtime — the two editors are driven by independent toolchains.
             The same .pdl and .ag files also build as native Rust CLIs that stream Arrow IPC between stages
             for fast pipelines on large data.
           </p>
@@ -218,6 +218,58 @@ export function LandingPage({
         </section>
       </section>
 
+      <section className="landing-cli-strip" aria-label="Native CLI">
+        <div className="landing-cli-copy">
+          <p className="eyebrow">
+            <Terminal size={14} aria-hidden="true" />
+            Same files, native binaries
+          </p>
+          <h2>Native Rust CLIs, Arrow IPC between them.</h2>
+          <p>
+            The .pdl and .ag files you edit in the browser also build as standalone Rust binaries. Pipe PDL's
+            output straight into Algraf as Arrow IPC — columnar batches over stdout/stdin, no CSV roundtrip,
+            no re-parsing between stages. Stays fast on large row sets, composes with the rest of your Unix
+            toolbox.
+          </p>
+          <div className="landing-cli-links">
+            <a href="https://williamcotton.github.io/pdl/">PDL site</a>
+            <a href="https://williamcotton.github.io/algraf/">Algraf site</a>
+            <a href="https://github.com/williamcotton/datafarm">Datafarm on GitHub</a>
+          </div>
+        </div>
+        <pre className="landing-cli-pipe">
+          <code>{`brew tap williamcotton/pdl && brew install williamcotton/pdl/pdl
+brew tap williamcotton/algraf && brew install williamcotton/algraf/algraf
+
+pdl run sort-days.pdl --stdout-format arrow-stream \\
+  | algraf render chart.ag --data - --data-format arrow-stream \\
+  --output chart.svg`}</code>
+        </pre>
+      </section>
+
+      <section className="landing-cli-strip" aria-label="Native CLI">
+        <div className="landing-cli-copy">
+          <p className="eyebrow">
+            <Terminal size={14} aria-hidden="true" />
+            Installing LSP Client
+          </p>
+          <h2>VS Code extension</h2>
+          <p>
+            The PDL and Algraf editors are built as a language server and a browser runtime. The VS Code extension
+            is a thin client that spawns the language server as a subprocess.
+          </p>
+
+        </div>
+        <pre className="landing-cli-pipe">
+          <code>{`curl -L https://github.com/williamcotton/algraf/releases/latest/download/algraf-vscode-latest.vsix -o algraf-vscode-latest.vsix
+cursor --install-extension algraf-vscode-latest.vsix
+
+curl -L https://github.com/williamcotton/pdl/releases/latest/download/pdl-vscode-latest.vsix -o pdl-vscode-latest.vsix
+cursor --install-extension pdl-vscode-latest.vsix
+// Developer: Reload Window in VS Code to activate the extension`}</code>
+        </pre>
+      </section>
+
       <section className="landing-section-grid" aria-label="Studio sections">
         <RouteLink className="landing-section-card" onNavigate={onNavigate} to="/ide">
           <Workflow size={18} aria-hidden="true" />
@@ -244,32 +296,6 @@ export function LandingPage({
           <strong>Runtime Model</strong>
           <span>Studio runs PDL, Algraf, and SQL.js in the browser; the same .pdl and .ag files also run as native Rust CLIs with Polars and Arrow IPC streaming.</span>
         </div>
-      </section>
-
-      <section className="landing-cli-strip" aria-label="Native CLI">
-        <div className="landing-cli-copy">
-          <p className="eyebrow">
-            <Terminal size={14} aria-hidden="true" />
-            Same files, native binaries
-          </p>
-          <h2>Native Rust CLIs, Arrow IPC between them.</h2>
-          <p>
-            The .pdl and .ag files you edit in the browser also build as standalone Rust binaries. Pipe PDL's
-            output straight into Algraf as Arrow IPC — columnar batches over stdout/stdin, no CSV roundtrip,
-            no re-parsing between stages. Stays fast on large row sets, composes with the rest of your Unix
-            toolbox.
-          </p>
-          <div className="landing-cli-links">
-            <a href="https://williamcotton.github.io/pdl/">PDL site</a>
-            <a href="https://williamcotton.github.io/algraf/">Algraf site</a>
-            <a href="https://github.com/williamcotton/datafarm">Datafarm on GitHub</a>
-          </div>
-        </div>
-        <pre className="landing-cli-pipe">
-          <code>{`pdl run prep.pdl --stdout-format arrow-stream \\
-  | algraf render chart.ag --data - --data-format arrow-stream \\
-  --output chart.svg`}</code>
-        </pre>
       </section>
     </div>
   );
