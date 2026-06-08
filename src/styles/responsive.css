@@ -1,0 +1,200 @@
+/* Responsive overrides for mid- and small-width viewports. */
+@media (max-width: 1180px) {
+  .hero,
+  .landing-hero,
+  .ide-hero,
+  .demo-hero,
+  .sql-hero,
+  .build-hero,
+  .control-grid,
+  .landing-section-grid,
+  .landing-cli-strip,
+  .case-study-card-grid,
+  .docs-grid,
+  .ide-workspace-grid,
+  .demo-chart-grid,
+  .demo-output-grid,
+  .demo-source-grid,
+  .sql-workspace-grid,
+  .sql-result-grid,
+  .build-demo-grid,
+  .build-section-header,
+  .results-grid,
+  .exploration-output-body,
+  .output-conclusion,
+  .fourfold-grid,
+  .story-conclusion,
+  .conclusion-section,
+  .guide-section {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-demo-shell {
+    min-height: 320px;
+  }
+
+  .landing-demo-grid {
+    grid-template-columns: repeat(2, minmax(260px, 1fr));
+    grid-template-areas:
+      "data pdl"
+      "output algraf"
+      "chart chart"
+      "status status";
+  }
+
+  .landing-chart-stage {
+    min-height: 360px;
+  }
+
+  .prepared-output-panel {
+    border-right: 0;
+    border-bottom: 1px solid #e2e9e6;
+  }
+
+  .source-grid,
+  .case-grid,
+  .workspace-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .build-demo-grid {
+    grid-template-areas:
+      "data"
+      "chart"
+      "source";
+  }
+
+  .build-demo-source-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .step-grid,
+  .recipe-list,
+  .guide-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 14px 18px;
+  }
+
+  .topbar-controls {
+    align-items: flex-start;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .topnav {
+    width: 100%;
+  }
+
+  .topnav a {
+    flex: 1 1 auto;
+    min-width: 92px;
+  }
+
+  main {
+    width: min(100vw - 24px, 1480px);
+    padding-top: 18px;
+  }
+
+  h1 {
+    font-size: 38px;
+  }
+
+  .hero-status,
+  .landing-section-grid,
+  .case-study-card-grid,
+  .case-study-card-metrics,
+  .docs-grid,
+  .ide-workspace-grid,
+  .source-grid,
+  .case-grid,
+  .workspace-grid,
+  .step-grid,
+  .build-detail-grid,
+  .recipe-list,
+  .audit-metrics,
+  .guide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-demo-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "data"
+      "pdl"
+      "output"
+      "algraf"
+      "chart"
+      "status";
+  }
+
+  .case-study-nav,
+  .docs-subnav {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .case-study-nav .segmented-control {
+    width: 100%;
+  }
+
+  .segment-link {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .story-section-header {
+    grid-template-columns: 1fr;
+  }
+
+  .build-flow-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .build-flow-body {
+    padding: 14px;
+  }
+
+  .build-demo-source-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .exploration-output-header,
+  .output-header-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .editor-host,
+  .raw-panel .editor-host,
+  .ide-editor-host,
+  .landing-data-panel .editor-host,
+  .landing-editor-host,
+  .sql-editor-host {
+    height: 300px;
+  }
+
+  .output-block,
+  .ide-output-block,
+  .landing-output-block {
+    min-height: 320px;
+    max-height: 320px;
+  }
+
+  .ide-diagnostics-list,
+  .ide-chart-stage,
+  .landing-chart-stage {
+    min-height: 320px;
+  }
+}

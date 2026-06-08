@@ -1,6 +1,4 @@
 import React from "react";
-import { loadAlgrafRuntime, type AlgrafRuntime } from "algraf-wasm";
-import { loadPdlRuntime, type PdlRuntime } from "pdl-wasm";
 
 import { CaseStudiesIndexPage, CaseStudyNav } from "./components/CaseStudiesPage";
 import { DocsHeader, DocsPage } from "./components/DocsPage";
@@ -10,46 +8,44 @@ import { InteractivityDemoPage } from "./components/InteractivityDemoPage";
 import { LandingPage } from "./components/LandingPage";
 import { StoryPage } from "./components/StoryPage";
 import { Topbar } from "./components/Topbar";
+import { useInteractivityDashboard } from "./hooks/useInteractivityDashboard";
+import { useRuntimeInitializer } from "./hooks/useRuntimeInitializer";
+import { useStoryState } from "./hooks/useStoryState";
+import { useStudioRouter } from "./hooks/useStudioRouter";
 import {
   DEFAULT_STORY_ID,
-  createDefaultRawDataByStory,
-  createDefaultSourcesByStory,
   createStoryFiles,
   getStoryBundle,
-  type RawDataFile,
-  type StoryId,
 } from "./storyBundles";
-import { hrefForRoutePath, routeFromLocation, routeFromPath, storyRoutePath, type StudioRoute } from "./router";
+import type { StudioRoute } from "./router";
 import {
-  DEFAULT_DASHBOARD_CONTEXT,
   INTERACTIVITY_DATA,
   INTERACTIVITY_PDL_SOURCE,
   RECEIVER_ALGRAF_SOURCE,
   SELECTOR_ALGRAF_SOURCE,
 } from "./interactivityDemoData";
-import { publicAssetUrl } from "./publicAssets";
 import { runPerStepPrograms, runSharedStoryProgram } from "./storyWorkflow";
-import type { AlgrafEmitPayload, RuntimeState, StepSnapshots, StudioPage } from "./studioTypes";
+import type { StepSnapshots, StudioPage } from "./studioTypes";
 import { emptyStepSnapshot, errorMessage, pdlRuntimeDiagnosticsForSnapshot } from "./studioUtils";
 
 export function App(): React.ReactElement {
-  const [route, setRoute] = React.useState<StudioRoute>(() => routeFromLocation());
-  const [pdlRuntime, setPdlRuntime] = React.useState<PdlRuntime | null>(null);
-  const [algrafRuntime, setAlgrafRuntime] = React.useState<AlgrafRuntime | null>(null);
-  const [pdlState, setPdlState] = React.useState<RuntimeState>("loading");
-  const [algrafState, setAlgrafState] = React.useState<RuntimeState>("loading");
-  const [runtimeError, setRuntimeError] = React.useState<string | null>(null);
-  const [rawDataByStory, setRawDataByStory] = React.useState<Record<StoryId, Record<string, string>>>(() =>
-    createDefaultRawDataByStory(),
-  );
-  const [pdlSourcesByStory, setPdlSourcesByStory] = React.useState<Record<StoryId, Record<string, string>>>(() =>
-    createDefaultSourcesByStory("pdl"),
-  );
-  const [algrafSourcesByStory, setAlgrafSourcesByStory] = React.useState<Record<StoryId, Record<string, string>>>(() =>
-    createDefaultSourcesByStory("algraf"),
-  );
-  const [dashboardContext, setDashboardContext] = React.useState(DEFAULT_DASHBOARD_CONTEXT);
-  const [lastEmit, setLastEmit] = React.useState<AlgrafEmitPayload | null>(null);
+  const { route, navigate } = useStudioRouter();
+  const { pdlRuntime, algrafRuntime, pdlState, algrafState, runtimeError, setRuntimeError } = useRuntimeInitializer();
+
+  const activePage: StudioPage = route.page;
+  const storyId = route.storyId ?? DEFAULT_STORY_ID;
+  const activeStory = React.useMemo(() => getStoryBundle(storyId), [storyId]);
+
+  const {
+    rawDataByStory,
+    pdlSourcesByStory,
+    algrafSourcesByStory,
+    handleRawDataChange,
+    handlePdlSourceChange,
+    handleAlgrafSourceChange,
+  } = useStoryState(activeStory.id);
+
+  const { dashboardContext, lastEmit, onContextChange, onEmit } = useInteractivityDashboard();
   const [interactivityData, setInteractivityData] = React.useState(INTERACTIVITY_DATA);
   const [interactivityPdlSource, setInteractivityPdlSource] = React.useState(INTERACTIVITY_PDL_SOURCE);
   const [selectorAlgrafSource, setSelectorAlgrafSource] = React.useState(SELECTOR_ALGRAF_SOURCE);
@@ -57,74 +53,16 @@ export function App(): React.ReactElement {
   const [running, setRunning] = React.useState(false);
   const [snapshots, setSnapshots] = React.useState<StepSnapshots>({});
 
-  const activePage: StudioPage = route.page;
-  const storyId = route.storyId ?? DEFAULT_STORY_ID;
-  const activeStory = React.useMemo(() => getStoryBundle(storyId), [storyId]);
   const rawSources = rawDataByStory[activeStory.id] ?? {};
   const pdlSources = pdlSourcesByStory[activeStory.id] ?? {};
   const algrafSources = algrafSourcesByStory[activeStory.id] ?? {};
   const files = React.useMemo(() => createStoryFiles(activeStory, rawSources), [activeStory, rawSources]);
 
   React.useEffect(() => {
-    const handlePopState = () => setRoute(routeFromLocation());
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  React.useEffect(() => {
-    const canonicalPath = hrefForRoutePath(route.path);
-    if (window.location.pathname !== new URL(canonicalPath, window.location.origin).pathname) {
-      window.history.replaceState(null, "", canonicalPath);
-    }
-  }, [route.path]);
-
-  const navigate = React.useCallback((path: string) => {
-    const nextRoute = routeFromPath(path);
-    const href = hrefForRoutePath(nextRoute.path);
-    window.history.pushState(null, "", href);
-    setRoute(nextRoute);
-    window.scrollTo({ top: 0, left: 0 });
-  }, []);
-
-  React.useEffect(() => {
-    let cancelled = false;
-    setPdlState("loading");
-    setAlgrafState("loading");
-
-    loadPdlRuntime({ wasmUrl: publicAssetUrl("wasm/pdl.wasm") })
-      .then((runtime) => {
-        if (cancelled) return;
-        setPdlRuntime(runtime);
-        setPdlState("ready");
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        setPdlState("error");
-        setRuntimeError(errorMessage(error));
-      });
-
-    loadAlgrafRuntime({ wasmUrl: publicAssetUrl("wasm/algraf.wasm") })
-      .then((runtime) => {
-        if (cancelled) return;
-        setAlgrafRuntime(runtime);
-        setAlgrafState("ready");
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        setAlgrafState("error");
-        setRuntimeError(errorMessage(error));
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  React.useEffect(() => {
     setRuntimeError(null);
     setSnapshots({});
     setRunning(false);
-  }, [activePage, activeStory.id]);
+  }, [activePage, activeStory.id, setRuntimeError]);
 
   const runWorkflow = React.useCallback(() => {
     if (activePage !== "case-study") {
@@ -148,7 +86,7 @@ export function App(): React.ReactElement {
         setRunning(false);
       }
     }, 0);
-  }, [activePage, activeStory, algrafRuntime, algrafSources, files, pdlRuntime, pdlSources]);
+  }, [activePage, activeStory, algrafRuntime, algrafSources, files, pdlRuntime, pdlSources, setRuntimeError]);
 
   React.useEffect(() => {
     if (activePage !== "case-study") {
@@ -161,56 +99,6 @@ export function App(): React.ReactElement {
     const timer = window.setTimeout(runWorkflow, 280);
     return () => window.clearTimeout(timer);
   }, [activePage, algrafState, pdlState, runWorkflow]);
-
-  const handleStoryChange = React.useCallback((nextStoryId: StoryId) => {
-    navigate(storyRoutePath(nextStoryId));
-  }, [navigate]);
-
-  const handleRawDataChange = React.useCallback(
-    (rawFile: RawDataFile, value: string) => {
-      setRawDataByStory((current) => ({
-        ...current,
-        [activeStory.id]: {
-          ...(current[activeStory.id] ?? {}),
-          [rawFile.id]: value,
-        },
-      }));
-    },
-    [activeStory.id],
-  );
-
-  const handlePdlSourceChange = React.useCallback(
-    (stepId: string, value: string) => {
-      setPdlSourcesByStory((current) => ({
-        ...current,
-        [activeStory.id]: {
-          ...(current[activeStory.id] ?? {}),
-          [stepId]: value,
-        },
-      }));
-    },
-    [activeStory.id],
-  );
-
-  const handleAlgrafSourceChange = React.useCallback(
-    (stepId: string, value: string) => {
-      setAlgrafSourcesByStory((current) => ({
-        ...current,
-        [activeStory.id]: {
-          ...(current[activeStory.id] ?? {}),
-          [stepId]: value,
-        },
-      }));
-    },
-    [activeStory.id],
-  );
-
-  const handleDemoEmit = React.useCallback((payload: AlgrafEmitPayload) => {
-    setLastEmit(payload);
-    if (payload.type === "click" && payload.field === "zone") {
-      setDashboardContext((current) => ({ ...current, selected_zone: payload.value }));
-    }
-  }, []);
 
   const runtimeReady = pdlState === "ready" && algrafState === "ready";
   const totalDiagnostics = activeStory.steps.reduce((total, step) => {
@@ -274,9 +162,9 @@ export function App(): React.ReactElement {
             algrafState={algrafState}
             context={dashboardContext}
             lastEmit={lastEmit}
-            onContextChange={setDashboardContext}
+            onContextChange={onContextChange}
             onDataChange={setInteractivityData}
-            onEmit={handleDemoEmit}
+            onEmit={onEmit}
             onPdlSourceChange={setInteractivityPdlSource}
             onReceiverAlgrafSourceChange={setReceiverAlgrafSource}
             onSelectorAlgrafSourceChange={setSelectorAlgrafSource}
