@@ -285,3 +285,11 @@ artifacts.
 
 If work touches source behavior, make sure spec, active plan, code, and checks
 are aligned before stopping.
+
+## Commits
+
+Do not create git commits. Make file edits, run the required validation
+checks, and stop. Every commit must be authored manually by a human
+author after they review the working tree. Stage and commit only when
+explicitly asked to do so for a specific commit, and never as part of
+finishing a task or closing out a multi-step plan.
