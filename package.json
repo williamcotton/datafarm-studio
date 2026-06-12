@@ -15,15 +15,15 @@
     "preview": "vite preview --host 0.0.0.0"
   },
   "dependencies": {
-    "algraf-editor": "0.75.0",
-    "algraf-wasm": "0.75.0",
+    "algraf-editor": "0.81.0",
+    "algraf-wasm": "0.81.0",
     "lucide-react": "^0.468.0",
     "monaco-editor": "^0.55.1",
     "monaco-editor-textmate": "^4.0.0",
     "monaco-textmate": "^3.0.1",
     "onigasm": "^2.2.5",
-    "pdl-editor": "0.47.0",
-    "pdl-wasm": "0.47.1",
+    "pdl-editor": "0.52.0",
+    "pdl-wasm": "0.52.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sql.js": "^1.13.0"
